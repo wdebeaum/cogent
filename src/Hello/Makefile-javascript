@@ -1,0 +1,7 @@
+MODULE = Hello
+MAIN = Hello.js
+SRCS = Hello.js
+
+CONFIGDIR=../config
+include $(CONFIGDIR)/javascript/prog.mk
+

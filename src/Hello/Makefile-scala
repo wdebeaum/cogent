@@ -1,0 +1,18 @@
+MAIN=Hello
+PACKAGE=TRIPS.Hello
+USES=TRIPS.TripsModule TRIPS.KQML TRIPS.util
+
+SRCS=Hello.scala
+
+CLASSES=$(SRCS:.scala=.class) Hello$$.class
+
+CONFIGDIR=../config
+
+# first remove TRIPS symlink if it exists
+# (this is only necessary because this directory contains Java code as well as
+# this Scala code)
+all::
+	if test -L TRIPS ; then rm -f TRIPS TRIPS-stamp; fi
+
+include $(CONFIGDIR)/scala/prog.mk
+

@@ -1,0 +1,7 @@
+MODULE = Hello
+MAIN = Hello.rb
+SRCS = Hello.rb
+
+CONFIGDIR=../config
+include $(CONFIGDIR)/ruby/prog.mk
+

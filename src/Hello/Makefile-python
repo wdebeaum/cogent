@@ -1,0 +1,13 @@
+MODULE=Hello
+# For pure Python:
+MAIN=Hello.py
+SRCS=Hello.py
+
+# For Jython:
+#USES=TRIPS.TripsModule TRIPS.KQML TRIPS.util
+#MAIN=Hello-jython.py
+#SRCS=Hello-jython.py
+
+CONFIGDIR=../config
+include $(CONFIGDIR)/python/prog.mk
+

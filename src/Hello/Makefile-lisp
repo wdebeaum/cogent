@@ -1,0 +1,11 @@
+# To create a new module, the NAME= and SYSTEM = need to be
+# changed appropriately.  DEFSYS, CONFIGDIR, and include should 
+# not be modified.
+
+NAME = Hello
+DEFSYS = defsys.lisp
+SYSTEM = :hello
+
+CONFIGDIR=../config
+include $(CONFIGDIR)/lisp/prog.mk
+

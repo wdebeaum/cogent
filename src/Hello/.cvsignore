@@ -1,0 +1,6 @@
+.*.swp
+*.class
+*.fasl
+*.x86f
+*.dx86fsl
+Hello

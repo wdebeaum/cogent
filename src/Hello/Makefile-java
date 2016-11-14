@@ -1,0 +1,11 @@
+MAIN=Hello
+PACKAGE=TRIPS.Hello
+USES=TRIPS.TripsModule TRIPS.KQML TRIPS.util
+
+SRCS=Hello.java
+
+CLASSES=$(SRCS:.java=.class)
+
+CONFIGDIR=../config
+include $(CONFIGDIR)/java/prog.mk
+

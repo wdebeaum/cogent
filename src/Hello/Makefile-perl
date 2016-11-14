@@ -1,0 +1,7 @@
+MODULE = Hello
+MAIN = Hello.pl
+SRCS = Hello.pl
+
+CONFIGDIR=../config
+include $(CONFIGDIR)/perl/prog.mk
+
