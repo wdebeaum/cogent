@@ -3,7 +3,7 @@
 # File: trips-cogent.sh
 # Creator: Lucian Galescu, based on template by George Ferguson
 # Created: Wed Jun 20 10:38:13 2012
-# Time-stamp: <Sat Nov 12 17:38:05 CST 2016 lgalescu>
+# Time-stamp: <Wed Nov 30 12:55:24 CST 2016 lgalescu>
 #
 # trips-cogent: Run TRIPS/COGENT
 #
@@ -34,7 +34,7 @@ TRIPS_SYSNAME_ALLCAPS=`echo $TRIPS_SYSNAME | tr "[:lower:]" "[:upper:]"`
 #
 # Command-line
 
-usage="trips-$TRIPS_SYSNAME [-debug] [-port 6200] [-display tty] [-nouser] [-nochat] [-nolisp] [-nocsm]"
+usage="trips-$TRIPS_SYSNAME [-debug] [-port 6200] [-display tty] [-nouser] [-nochat] [-nolisp] [-nocsm] [-graphviz-display true]"
 
 logdir=''
 debug=false
@@ -45,6 +45,7 @@ nocsm=''
 who=User
 channel=Desktop
 display=''
+graphviz_display=false
 nochat=''
 nobeep=''
 showgen=false
@@ -64,6 +65,7 @@ while test ! -z "$1"; do
 	-nochat)	nochat=t;;
 	-nobeep)	nobeep=t;;
 	-quiet)		nobeep=t;;
+        -graphviz-display)      graphviz_display="$2";  shift;;
 	-showgen)	showgen=t;;
 	-help|-h|-\?)
 	    echo "usage: $usage"
@@ -190,7 +192,8 @@ cat - <<_EOF_ >>/tmp/trips$$
                 "$TRIPS_BASE/etc/java/TRIPS.KQML.jar"
                 "$TRIPS_BASE/etc/java/TRIPS.util.jar"
                 "$TRIPS_BASE/src/CollaborativeStateManager/src")
-    :argv ($port_opt $TRIPS_SYSNAME)))
+    :argv ($port_opt
+    	   -data "$TRIPS_BASE/etc/$TRIPS_SYSNAME")))
 _EOF_
 fi
 
@@ -201,7 +204,7 @@ fi
 
 # Lisp
 if test -z "$nolisp"; then
-  (sleep 5; $TRIPS_BASE/bin/trips-cogent-lisp) 2>&1 | tee lisp.log &
+  (sleep 5; $TRIPS_BASE/bin/trips-$TRIPS_SYSNAME-lisp) 2>&1 | tee lisp.log &
 fi
 
 # Start TextTagger
@@ -209,10 +212,15 @@ fi
  $TRIPS_BASE/bin/TextTagger \
      $port_opt \
      -process-input-utterances yes \
-     -terms-file $TRIPS_BASE/etc/domain-terms.tsv \
+     -terms-file $TRIPS_BASE/etc/$TRIPS_SYSNAME/domain-terms.tsv \
      -init-taggers terms-from-file \
      -default-type '(or affixes words punctuation terms-from-file)' \
  2>&1 | tee $logdir/TextTagger.err) &
+
+# Start Graphviz
+(sleep 5; \
+ $TRIPS_BASE/bin/Graphviz $port_opt -display-enabled $graphviz_display \
+ 2>&1 | tee Graphviz.err) &
 
 # set display option for facilitator           
 if test -n "$nouser"; then

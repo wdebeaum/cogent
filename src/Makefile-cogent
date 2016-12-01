@@ -1,6 +1,6 @@
 # Makefile-cabot
 #
-# Time-stamp: <Thu Nov 10 13:31:03 CST 2016 lgalescu>
+# Time-stamp: <Wed Nov 30 12:52:27 CST 2016 lgalescu>
 #
 # Author: Lucian Galescu <lgalescu@ihmc.us>, 14 Oct 2015
 #
@@ -25,6 +25,7 @@ LISP_MODULES = \
 	SimpleKB \
 	NewIM \
 	BasicDialogueAgent \
+	AlarmClock \
 	Dummy
 
 LISP_PROGRAMS = \
@@ -52,6 +53,7 @@ JAVA_PROGRAMS = \
 	CollaborativeStateManager
 
 OTHER_PROGRAMS = \
+	Graphviz \
 	TextPP \
 	TextTagger \
 	Tools

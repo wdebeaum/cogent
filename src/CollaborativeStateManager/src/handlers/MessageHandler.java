@@ -10,12 +10,14 @@ public abstract class MessageHandler {
 
 	KQMLPerformative msg;
 	KQMLList content;
+	ReferenceHandler referenceHandler;
 	
-	
-	public MessageHandler(KQMLPerformative msg, KQMLList content)
+	public MessageHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler)
 	{
 		this.msg = msg;
 		this.content = content;
+		this.referenceHandler = referenceHandler;
+		addContextToReferenceHandler();
 	}
 	
 	public abstract KQMLList process();
@@ -23,6 +25,14 @@ public abstract class MessageHandler {
 	public KQMLList failureMessage(String what, KQMLObject context)
 	{
 		return failureMessage(what,context,null);
+	}
+	
+	private void addContextToReferenceHandler()
+	{
+		KQMLObject contextObject = content.getKeywordArg(":CONTEXT");
+		if (contextObject != null && contextObject instanceof KQMLList)
+			referenceHandler.addReferences((KQMLList)contextObject);
+		
 	}
 	
 	public KQMLList failureMessage(String what,KQMLObject context, KQMLObject reason, KQMLObject possibleSolutions)
@@ -72,7 +82,10 @@ public abstract class MessageHandler {
     	reportContent.add(":content");
     	reportContent.add(content);
     	reportContent.add(":context");
-    	reportContent.add(context);
+    	if (context != null)
+    		reportContent.add(context);
+    	else
+    		reportContent.add(new KQMLList());
     	
     	return reportContent;
     }

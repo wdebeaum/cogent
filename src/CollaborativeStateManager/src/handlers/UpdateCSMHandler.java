@@ -19,9 +19,10 @@ public class UpdateCSMHandler extends MessageHandler {
 	GoalPlanner goalPlanner;
 	String activeGoal = null;
 	
-	public UpdateCSMHandler(KQMLPerformative msg, KQMLList content,
+	public UpdateCSMHandler(KQMLPerformative msg, KQMLList content, 
+			ReferenceHandler referenceHandler,
 			GoalPlanner goalPlanner) {
-		super(msg, content);
+		super(msg, content, referenceHandler);
 		this.goalPlanner = goalPlanner;
 		// TODO Auto-generated constructor stub
 	}
@@ -75,6 +76,8 @@ public class UpdateCSMHandler extends MessageHandler {
 			return handleDefaultInitiative();
 		case "set-override-initiative":
 			return handleOverrideInitiative();
+		case "status-report":
+			return handleStatusReport();
 		case "answer":
 			return handleAnswer();
 			
@@ -85,6 +88,34 @@ public class UpdateCSMHandler extends MessageHandler {
 		return null;
 		
 	}
+	
+	private KQMLList handleStatusReport() {
+		KQMLObject goalSymbolObject = innerContent.getKeywordArg(":goal");
+		boolean completedStatus = false;
+		String goalName = null;
+		if (goalSymbolObject != null)
+			goalName = goalSymbolObject.stringValue();
+
+		KQMLObject statusObject = innerContent.getKeywordArg(":status");
+		
+		if (statusObject != null && statusObject.stringValue().equalsIgnoreCase("ONT::DONE"))
+			completedStatus = true;
+		
+		// This was a specific goal that with initiative taken
+		if (goalName != null && goalPlanner.hasGoal(goalName))
+		{
+			if (completedStatus)
+			{
+				goalPlanner.setCompleted(goalPlanner.getGoal(goalName));
+				System.out.println("Set goal " + goalName + " as completed via status-report");
+				return null;
+			}
+		}
+		
+		System.out.println("No such goal to be completed");
+		return null;
+	
+	}	
 	
 	private KQMLList handleActionCompleted() {
 		KQMLObject goalNameObject = innerContent.getKeywordArg(":action");
@@ -325,22 +356,17 @@ public class UpdateCSMHandler extends MessageHandler {
 				System.out.println("Action " + goalName + " accepted.");
 			}
 			else
+			{
 				goalPlanner.setActiveGoal(goalName);
-			System.out.println("Active goal now: " + goalName);
+				System.out.println("Active goal now: " + goalName);
+			}
 		}
 		else // Do we want to add this if we don't know of the goal?
 		{
-			KQMLList goalLF = TermExtractor.extractTerm(goalName, (KQMLList)context);
-			if (goalLF == null)
-			{
-				System.out.println("Not a valid goal to add to the system");
-				return null;
-			}
-			Goal newGoal = new Goal(goalLF);
-			goalPlanner.addGoal(newGoal);
-			newGoal.setAccepted();
-			goalPlanner.setActiveGoal(newGoal);
-			System.out.println("Active goal now: " + goalName);
+			if (goalPlanner.createGoalFromAct(acceptContent, (KQMLList)context))
+				System.out.println("Goal successfully created from act");
+			else
+				System.out.println("Failed to create goal from act");
 		}
 		
 		return null;

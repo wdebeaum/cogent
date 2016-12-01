@@ -279,12 +279,6 @@
   :parent ont::move
   )
 
-
-;(define-type ont::saturate
-;  :wordnet-sense-keys ("saturate%2:30:04")
-;  :parent ont::filling
-;  )
-
 (define-type ONT::move-by-means
  :wordnet-sense-keys ("take%2:38:02" "drive%2:38:11" "take%2:38:11")
 ; :parent ONT::MOVE
@@ -357,8 +351,9 @@
  )
 
 ;; tilt,lean
-(define-type ONT::lean
- :parent ONT::MOVE
+(define-type ONT::leaning
+    :comment "The state of being in a position of leaning (against something)"
+ :parent ONT::be-at-loc
  )
 
 ;; pan
@@ -802,6 +797,16 @@
 
 (define-type ONT::PUSH
  :wordnet-sense-keys ("poke%2:35:01" "push%2:38:00" "force%2:38:00" "thrust%2:38:00" "thrust%2:42:01")
+  :parent ONT::apply-force
+ )
+
+(define-type ONT::PUSH-LIQUID
+ :wordnet-sense-keys ("squirt%2:35:00" "squirt%2:35:10" "sprinkle%2:35:01" "spray%2:35:03")
+  :parent ONT::apply-force
+ )
+
+(define-type ONT::RUB-scrape-wipe
+ :wordnet-sense-keys ("rub%2:35:00" "rub%2:39:00" "stroke%2:35:00")
   :parent ONT::apply-force
  )
 
@@ -2195,6 +2200,17 @@
  :parent ONT::PUT
  )
 
+(define-type ONT::place-in-position
+ :comment "placing an object in a certain position: e.g., lean, sit, stand,  ..."
+ :wordnet-sense-keys ("lean%2:35:00" "set_down%2:35:00" "seat%2:35:00" "stand%2:35:01" "perch%2:35:10")
+ :parent ONT::PUT
+ )
+
+(define-type ONT::SOW-SEED
+ :wordnet-sense-keys ("seed%2:35:01" "sow%2:35:02" "plant%2:35:00")
+ :parent ONT::PUT
+ )
+
 (define-type ONT::Correlation
  :wordnet-sense-keys ("indicate%2:32:02" "argue%2:32:01" "imply%2:32:01" "entail%2:42:01" "imply%2:42:00" "mean%2:42:00" "affirm%2:31:00" "read%2:32:02")
  :parent ONT::event-of-state
@@ -2206,10 +2222,12 @@
 
 ;;  something that encodes a message
 (define-type ONT::encodes-message
- :wordnet-sense-keys ("read%2:42:00" "go%2:42:02")
- :arguments ((:REQUIRED ONT::neutral ((? n  F::Phys-obj f::abstr-obj) (f::information f::information-content))))
- :parent ONT::EVENT-OF-STATE
- )
+    :comment "some artifact conveys some message"
+    :wordnet-sense-keys ("read%2:42:00" "go%2:42:02")
+    :arguments ((:REQUIRED ONT::neutral ((? n  F::Phys-obj f::abstr-obj) (f::information f::information-content)))
+		(:OPTIONAL ONT::neutral1 ((? n1 F::Phys-obj f::abstr-obj))))
+    :parent ONT::EVENT-OF-STATE
+    )
 
 (define-type ONT::RELATE
  :wordnet-sense-keys ("associate%2:31:00" "tie_in%2:31:00" "relate%2:31:00" "link%2:31:00" "colligate%2:31:02" "link_up%2:31:00" "connect%2:31:00" "correlate%2:42:00")
@@ -2390,6 +2408,15 @@
  :arguments ((:optional ONT::Affected ((? o1 F::Situation F::Phys-obj f::abstr-obj))))
  )
 
+;; rescue the dog
+(define-type ONT::rescue
+ :wordnet-sense-keys ("rescue%2:41:00" "bring_through%2:41:00" "deliver%2:41:03")
+ :parent ONT::HELP
+ :sem (F::Situation (F::cause F::agentive) (F::aspect F::dynamic))
+ :arguments ((:REQUIRED ONT::affected ((? ftt f::situation f::abstr-obj f::phys-obj)))
+              )
+ )
+
 ;; this needs to be able to have stative ont::effect, as in 'let him know'
 ;; also need to have phys & abstr objects as in "are pets allowed"
 (define-type ONT::Allow
@@ -2553,10 +2580,10 @@
 
 (define-type ONT::Fill-container
  :wordnet-sense-keys ("fill%2:30:01" "fill_up%2:30:00" "make_full%2:30:00" "charge%2:35:00")
- :parent ONT::FILLING
+ :parent ONT::event-of-causation
  :arguments ((:ESSENTIAL ONT::affected-result (F::phys-obj (F::Container +)))
              )
- )
+ ) 
 
 ;;; The actions of someone else picking up or gathering objects
 ;; collect, gather up
@@ -2588,14 +2615,6 @@
  :parent ont::choosing
  )
 
-(define-type ONT::Unload
- :wordnet-sense-keys ("offload%2:35:00" "unlade%2:35:00" "unload%2:35:00" "drop%2:35:00" "drop_off%2:35:00" "set_down%2:35:00" "put_down%2:35:01" "unload%2:35:02" "discharge%2:35:06")
- :parent ONT::EMPTYING
- :sem (F::Situation (F::Aspect F::Dynamic) (F::Cause F::Agentive) (F::Trajectory -))
- :arguments (
-;	     (:ESSENTIAL ONT::From-Loc (F::Phys-obj (F::Container +)))
-             )
- )
 
 ;; abandon, desert, leave behind
 (define-type ONT::leave-behind
@@ -2694,12 +2713,22 @@
 
 (define-type ONT::empty
  :wordnet-sense-keys ("empty%2:30:01")
- :parent ONT::event-of-causation
+ :parent ONT::cause-come-from
  :arguments ((:OPTIONAL ONT::Agent)
-             (:OPTIONAL ONT::Source)
+             (:OPTIONAL ONT::affected-result (F::phys-obj (F::Container +)))
 	     (:OPTIONAL ONT::affected)
 	     )
  )
+
+(define-type ONT::Unload
+ :wordnet-sense-keys ("offload%2:35:00" "unlade%2:35:00" "unload%2:35:00" "drop%2:35:00" "drop_off%2:35:00" "set_down%2:35:00" "put_down%2:35:01" "unload%2:35:02" "discharge%2:35:06")
+ :parent ONT::EMPTY
+ :sem (F::Situation (F::Aspect F::Dynamic) (F::Cause F::Agentive) (F::Trajectory -))
+ :arguments (
+;	     (:ESSENTIAL ONT::From-Loc (F::Phys-obj (F::Container +)))
+             )
+ )
+
 
 (define-type ONT::remove-from
  :wordnet-sense-keys ("disembarrass%2:40:00")
@@ -2740,7 +2769,7 @@
 
 ;; 20120524 GUM change new type
 (define-type ont::act-behave
-    :wordnet-sense-keys ("act%2:36:04" "act%2:41:00" "act%2:41:07")
+    :wordnet-sense-keys ("act%2:36:04" "act%2:41:00" "act%2:41:07" "behave%2:41:01")
     :parent ont::acting
     :arguments ((:REQUIRED ONT::formal (F::phys-obj)))   ;; the role -- acted as a judges, acts as a catalyst
     )
@@ -3273,11 +3302,11 @@
 
 ;; add the oranges into the square -- must be trajectory + to allow pp into
 (define-type ONT::combine-objects
+    :comment "symmetric combination of objects, abstract or physical: e.g., X combines with y = y combines with x = x and y combine"
  :wordnet-sense-keys ("merge%2:30:01" "combine%2:30:00" "meld%2:30:00" "coalesce%2:30:00" "fuse%2:30:00" "immix%2:30:00" "commingle%2:30:00" "conflate%2:30:00" "mix%2:30:00" "flux%2:30:00" "blend%2:30:00" "mix_in%2:30:01" "mix%2:30:01" "mix%2:35:00" "mingle%2:35:00" "commix%2:35:00" "unify%2:35:00" "amalgamate%2:35:00")
  :parent ONT::coalesce
  :sem (F::SITUATION (F::Cause F::agentive) (f::trajectory +))
  )
-
 
 (define-type ONT::add-include
  :wordnet-sense-keys ("include%2:30:00" "introduce%2:38:00" "add%2:30:00")
@@ -3364,6 +3393,12 @@
 		)
     )
 
+(define-type ONT::UNATTACH
+ :wordnet-sense-keys ("disconnect%2:35:00" "disengage%2:35:01")
+ :parent ONT::SEPARATION
+ :sem (F::Situation (F::Aspect F::Dynamic) (F::Cause F::Agentive))
+ )
+
 ;; cut, slice, chop
 (define-type ONT::cut
  :parent ONT::break-object
@@ -3382,7 +3417,7 @@
 
 ;; this isn't a child of ont::combine-objects because of incompatibility of f::trajectory feature
 (define-type ONT::Joining
- :wordnet-sense-keys ("join%2:35:00" "conjoin%2:35:00")
+ :wordnet-sense-keys ("conjoin%2:35:00" "join%2:35:00")
  :comment "abstract, social, or physical connection of objects"
  :parent ONT::event-of-causation
  :sem (F::Situation (F::Trajectory -))
@@ -3402,7 +3437,7 @@
  )
 
 (define-type ONT::ASSOCIATE
- :wordnet-sense-keys ("team%2:33:00" "pair%2:41:00" "pair%2:35:01" "join%2:41:00" "join%2:41:01")
+ :wordnet-sense-keys ("join%2:41:00" "join%2:41:01" "pair%2:35:01" "pair%2:41:00" "team%2:33:00")
  :parent ONT::JOINING
  :sem (F::Situation (F::Aspect F::Dynamic) (F::Cause F::Agentive))
  )
@@ -3414,6 +3449,7 @@
 
 (define-type ONT::ATTACH
  :wordnet-sense-keys ("attach%2:35:01" "attach%2:35:02" "catch%2:35:08" "connect%2:35:00")
+ :comment "Typically Asymmetric joining: e.g. Attach the paper to the wall =/= attach the wall to the paper!"
  :arguments ((:required ont::agent (F::phys-obj (F::origin F::natural))))
  :parent ONT::JOINING
  :sem (F::Situation (F::Aspect F::Dynamic) (F::Cause F::Agentive))
@@ -3431,12 +3467,22 @@
 	     )
  )
 
-(define-type ONT::UNATTACH
- :wordnet-sense-keys ("disconnect%2:35:00" "disengage%2:35:01")
- :parent ONT::SEPARATION
- :sem (F::Situation (F::Aspect F::Dynamic) (F::Cause F::Agentive))
+;; register for a conference, check in/out at a hotel, enroll in a program
+(define-type ONT::enroll
+ :wordnet-sense-keys ("enrol%2:41:00" "enroll%2:41:00" "enter%2:33:00" "enter%2:41:06" "inscribe%2:41:00" "recruit%2:41:01")
+ :parent ONT::joining
+ :sem (F::situation)
+ :arguments ((:REQUIRED ONT::Formal (f::phys-obj (f::intentional +))) ;; check in a person
+	     (:optional ont::neutral ((? oc f::phys-obj f::situation f::abstr-obj))) ;; at a hotel, in a program
+	   
+             )
  )
 
+;; stretch  20120524 GUM change new type
+(define-type ONT::admit
+  :wordnet-sense-keys ("accept%2:40:03")
+  :parent ont::enroll
+ )
 
 ;; cover
 ;; neutral covers formal, or agent causes affected to cover formal
@@ -3566,18 +3612,11 @@
 
 ;; for positionals: lie, stand
 (define-type ONT::BE-AT-LOC
+ :comment "relations that indicate an postural attitude as well as a location"
  :wordnet-sense-keys ("sit%2:35:00" "sit_down%2:35:03" "settle%2:30:00" "fall%2:35:00" "hang%2:35:03" "hang%2:35:05" "hang%2:35:06" "hang%2:42:01" "confine%2:41:00" "lie%2:35:00" "trail%2:35:05")
  :parent ONT::BE-AT
  :sem (F::Situation (F::aspect F::stage-level))
  :arguments ((:ESSENTIAL ONT::neutral (F::Phys-obj)) ;; formal is restricted to phys-obj; otherwise same as be-at
-             )
- )
-
-(define-type ONT::Posture
- :parent ONT::be-at-loc
- :sem (F::Situation (F::Cause F::Agentive))
- :arguments ((:REQUIRED ONT::Agent)
-             (:ESSENTIAL ONT::Location)
              )
  )
 
@@ -3771,24 +3810,6 @@
              )
   )
 
-;; register for a conference, check in/out at a hotel, enroll in a program
-(define-type ONT::enroll
- :wordnet-sense-keys ("enroll%2:41:00" "inscribe%2:41:00" "enter%2:41:06" "enrol%2:41:00" "recruit%2:41:01" "enter%2:33:00")
- :parent ONT::joining
- :sem (F::situation)
- :arguments ((:REQUIRED ONT::Formal (f::phys-obj (f::intentional +))) ;; check in a person
-	     (:optional ont::neutral ((? oc f::phys-obj f::situation f::abstr-obj))) ;; at a hotel, in a program
-	   
-             )
- )
-
-;; stretch  20120524 GUM change new type
-(define-type ONT::admit
-  :wordnet-sense-keys ("accept%2:40:03")
-  :parent ont::enroll
- )
-
-
 ;; back up/copy the data/files (formal)
 ;; back up the computer (source)
 (define-type ONT::duplicate
@@ -3872,7 +3893,7 @@
 
 ;; break a browser, a promise
 (define-type ont::render-ineffective
-    :wordnet-sense-keys ("break%2:32:05")
+    :wordnet-sense-keys ("break%2:30:05")
     :parent ont::change-state-action
     :arguments (
 		(:required ONT::affected ((? th27 f::situation F::Abstr-obj)))
@@ -3935,15 +3956,6 @@
              ;;; Place-2
 ;             (:OPTIONAL ONT::To-loc)
              )
- )
-
-;; rescue the dog
-(define-type ONT::rescue
- :wordnet-sense-keys ("rescue%2:41:00" "bring_through%2:41:00" "deliver%2:41:03")
- :parent ONT::change-state
- :sem (F::Situation (F::cause F::agentive) (F::aspect F::dynamic))
- :arguments ((:REQUIRED ONT::affected ((? ftt f::situation f::abstr-obj f::phys-obj)))
-              )
  )
 
 ;; evacuate an area

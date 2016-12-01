@@ -14,10 +14,10 @@ public class TakeInitiativeHandler extends MessageHandler {
 	private GoalPlanner goalPlanner;
 	private OntologyReader ontologyReader;
 	
-	public TakeInitiativeHandler(KQMLPerformative msg, KQMLList content,
+	public TakeInitiativeHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
 			GoalPlanner goalPlanner, OntologyReader ontologyReader)
 	{
-		super(msg,content);
+		super(msg,content,referenceHandler);
 		this.goalPlanner = goalPlanner;
 		this.ontologyReader = ontologyReader;
 	}
@@ -97,7 +97,25 @@ public class TakeInitiativeHandler extends MessageHandler {
 				String affectedResult = affectedResultObject.stringValue();
 				KQMLList affectedResultTerm = TermExtractor.extractTerm(affectedResult,
 						(KQMLList)context);
-				String affectedResultType = affectedResultTerm.getKeywordArg(":INSTANCE-OF").stringValue();
+				// Can't be found in context
+				if (affectedResultTerm == null)
+				{
+					KQMLList reference = referenceHandler.getReference(affectedResult);
+					if (reference == null)
+					{
+						System.out.println("Couldn't find affected result " + affectedResult + " in context or goal hierarchy");
+						takeInitContent = takeInitiativeContent("NO", goalWhat, context);
+					}
+					else
+					{
+						affectedResultTerm = reference;
+					}
+					
+				}
+				
+				String affectedResultType = "";
+				if (affectedResultTerm != null)
+					affectedResultType = affectedResultTerm.getKeywordArg(":INSTANCE-OF").stringValue();
 				
 				// "Let's build a *model*."
 				if (affectedResultType.contains("REPRESENTATION"))
@@ -108,6 +126,10 @@ public class TakeInitiativeHandler extends MessageHandler {
 					takeInitContent = takeInitiativeContent("NO", goalWhat, context);
 			}
 			takeInitContent = takeInitiativeContent("NO", goalWhat, context);
+		}
+		else if (goalTypeUpper.contains("EVENTS-IN-MODEL"))
+		{
+			takeInitContent = takeInitiativeContent("YES", goalWhat, context);
 		}
 		else
 		{

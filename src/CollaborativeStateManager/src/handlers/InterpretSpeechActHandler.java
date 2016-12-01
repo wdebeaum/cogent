@@ -29,11 +29,11 @@ public class InterpretSpeechActHandler extends MessageHandler{
 	GoalPlanner goalPlanner;
 
 
-	public InterpretSpeechActHandler(KQMLPerformative msg, KQMLList content,
+	public InterpretSpeechActHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
 										GoalPlanner goalPlanner, 
 										OntologyReader ontologyReader)
 	{
-		super(msg,content);
+		super(msg,content, referenceHandler);
 		
 		this.ontologyReader = ontologyReader;
 		this.goalPlanner = goalPlanner;
@@ -275,6 +275,24 @@ public class InterpretSpeechActHandler extends MessageHandler{
 			activeGoal = currentAcceptedGoal.getVariableName();
 		KQMLList proposeAdoptContent = null;
 		
+		// The system wants to rollback a goal
+		if (what != null)
+		{
+			KQMLList term = TermExtractor.extractTerm(what, (KQMLList)context);
+			if (term != null)
+			{
+				if (term.getKeywordArg(":INSTANCE-OF").equals("ONT::ROLLBACK"))
+				{
+					goalPlanner.rollback();
+				}
+				else if (term.getKeywordArg(":INSTANCE-OF").equals("ONT::RESTART"))
+				{
+					goalPlanner.startOver();
+				}
+			}
+			
+		}
+		
 		KQMLObject asObject = innerContent.getKeywordArg(":AS");
 		KQMLList asList = null;
 		if (asObject != null && asObject instanceof KQMLList)
@@ -323,7 +341,7 @@ public class InterpretSpeechActHandler extends MessageHandler{
 			proposeAdoptContent = adoptContent(what,"GOAL",null);
 			goalPlanner.addGoal(new Goal(what,(KQMLList)context));
 		}
-		else
+		else // Currently adds as subgoal by default
 		{
 			proposeAdoptContent = adoptContent(what,"SUBGOAL",activeGoal);
 			goalPlanner.addGoal(new Goal(what,(KQMLList)context), activeGoal);

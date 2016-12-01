@@ -3,7 +3,7 @@
 ;;;
 ;;; Author:  James Allen <james@cs.rochester.edu>
 ;;;
-;;; Time-stamp: <Sat Oct 29 14:21:09 EDT 2016 jallen>
+;;; Time-stamp: <Tue Nov 29 14:11:44 EST 2016 jallen>
 
 (in-package "PARSER")
 
@@ -1227,16 +1227,18 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	    (if (eql (list-length reduced-val) 0)
 		nil
 		(if (eql (list-length reduced-val) 1)
-		    (if (null (car val))
+		    (car val)
+		    #||(if (null (car val))    ;; this is commented out as it generates stuff that not a valif LF form at times
 			nil
 			(if negated
 			    (list 'ONT::NOT (car reduced-val))
-			    (car val)))
+			    (car val)))||#
 		    (if (eq (car val) '$)
 			(mapcar #'clean-out-vars reduced-val)
-			(if negated
+			(car val)))))
+			#||(if negated
 			    (list 'ONT::NOT (cons 'ont::or reduced-val))
-			    (cons 'ONT::or reduced-val))))))
+			    (cons 'ONT::or reduced-val))))))||#
 	  val)))
    ((consp expr)
     (mapcar #'clean-out-vars expr))
@@ -1887,32 +1889,32 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	(ont::motion
 	 ((ont::pos-as-containment-reln) :location)
 	 ((ont::to-loc ont::position-reln ont::goal-reln ont::direction-reln) :result)
-	 ((ont::from-loc ont::from) :source)
-	 
+	 ((ont::source-reln) :source)
+	 ((ont::obj-in-path ont::trajectory) :transient-result)
 	 )
 	(ont::put
 	 ((ont::to-loc ont::position-reln ont::goal-reln  ont::direction-reln) :result)
-	 ((ont::from-loc ont::from) :source)
+	 ((ont::source-reln) :source)
 	 )
 	(ont::apply-force
 	 ((ont::to-loc ont::position-reln ont::goal-reln  ont::direction-reln) :result)
-	 ((ont::from-loc ont::from) :source)
+	 ((ont::source-reln) :source)
 	 )
 	(ont::giving
 	 ((ont::to-loc) :result)
-	 ((ont::from-loc ont::from) :source)
+	 ((ont::source-reln) :source)
 	 )
 	(ont::acquire 
 	  ((ont::to-loc ont::position-reln ont::goal-reln  ont::direction-reln) :result)
-	 ((ont::from-loc ont::from) :source)
+	 ((ont::source-reln) :source)
 	 )
 	(ont::joining 
 	  ((ont::goal-reln) :result)  ; into
-	 ((ont::from-loc ont::from) :source)
+	 ((ont::source-reln) :source)
 	 )
 	(ont::change
 	  ((ont::to-loc ont::goal-reln ont::direction-reln) :result)
-	  ((ont::from-loc ont::from) :source))
+	  ((ont::source-reln) :source))
 	(ont::phys-object 
 	 ((ont::position-reln ) :location))
 	 ;;((ont::assoc-with) :assoc-with))
@@ -1938,7 +1940,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 ((ont::accompaniment) :agent1)
 	 ((ont::by-means-of) :method)
 	 ((ont::beneficiary) :beneficiary)
-	 ((ont::from-loc ont::from) :source)
+	 ((ont::source-reln) :source)
 	 ((ont::manner ont::abstract-object-property ) :manner)
 	 ((ont::likelihood ont::qualification) :qualification)
 	 )

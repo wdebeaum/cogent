@@ -432,6 +432,8 @@
 	      (save-pending-alarm user alarm-msg)
 	      (trace-msg 3 "~%Alarm at ~S saved to pending because time is past: ~S:" time alarm-msg))))))||#
 
+
+;; reworked ALARM handler for the new FST system, not backwards compatablie with ASMA!
 (defun alarm-handler (&key msg)
   (let* ((id (find-arg-in-act msg :user))
 	 (user (lookup-user id)))
@@ -443,35 +445,25 @@
 	  (when (and (> (time-difference-in-minutes (user-time-of-last-interaction user) (get-time-of-day))
 		      *max-wait-until-prompt-in-minutes*)
 		   )
-	      (send-reply "haven't heard from you for a while..." (user-channel-id user))
+	      (send-reply "haven't heard from you for a while. what's up" (user-channel-id user))))
 	      ;; if a question is still hanging, reask it
-	      (reask-question user (user-channel-id user) 0)))
+	      ;;(reask-question user (user-channel-id user) 0)))
 	;; normal case for alarms
 	(if (user-p user)
 	    (case (car msg)
 	      (alarm
 	       ;; we only act on the alarm if the system is not currently waiting for an answer from the system
 	       ;;  note: if the alarm is persistent, the question will get asked after the other question is completed
-	       (if (and (or (null (user-wizard-response-pending user))` 
-			    (> (time-difference-in-`minutes (user-time-of-last-wizard-interaction user) (get-time-of-day))
+	       (if (and (or *disabled-wizard*
+			    (null (user-wizard-response-pending user))` 
+			    (> (time-difference-in-minutes (user-time-of-last-wizard-interaction user) (get-time-of-day))
 			       *max-wait-for-wizard-reply*))
 			(null (user-current-dstate user)))
 		   ;; everything is OK to handle the alarm
-		   (if (evaltrigger (find-arg-in-act msg :test) (user-channel-id user) user nil)
-		       ;; trigger test was successful
-		       (progn
-			 (when (> (time-difference-in-minutes (user-time-of-last-wizard-interaction user) (get-time-of-day))
-				  *max-wait-for-wizard-reply*)
-			   ;; reset the wizard state
-			   (setf (user-wizard-response-pending user) nil)
-			   (setf (user-wizard-controlling-dialogue user) nil)
-			   (send-msg `(REQUEST :content (WIZARDCANCEL :userchannel ,id))))
-			 (set-user-alarm-last-asked user msg)
-			 (invoke-state (find-arg-in-act msg :start-state) user (find-arg-in-act msg :args) nil))
-		       ;;  trigger test failed - we ignore alarm and check for any other pending alarms
-		       (check-posted-alarms user (user-channel-id user))
-		       )
-		   ;; we are not ready for the alarm right now, save it for later
+		   (progn
+		     (cache-response-for-processing '(list msg))
+		     (invoke-state 'handle-alarm user nil nil))
+		   ;; we are not ready for the alarm right now because there's an ongoing wizard interaction, save it for later
 		   (save-pending-alarm user msg)))
 	      
 	      (end-of-day   ;; here we send an email report if we haven't done so already
@@ -882,7 +874,7 @@
 	       (invoke-ba 
 		(invoke-ba (cdr act) user channel uttnum)
 		nil)
-	       (notify-ba 
+	       ((notify-ba request)
 		(notify-ba (cdr act) user channel uttnum))
 	       (extract-goal-description
 		(apply #'extract-goal-description (cdr act)))

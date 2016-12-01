@@ -10,7 +10,7 @@ sub init {
   my $self = shift;
   $self->{name} = 'Hello';
   $self->SUPER::init();
-  $self->send_msg('(subscribe :content (request &key (hello . *)))');
+  $self->send_msg('(subscribe :content (request &key :content (hello . *)))');
 }
 
 sub receive_request {

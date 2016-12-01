@@ -180,6 +180,35 @@ ONT::INTERACT
 		     )
 	  :destination 'handle-csm-response
 	  :trigger t)
+
+	 (transition
+	  :description "rejectance"
+	  :pattern '((ONT::SPEECHACT ?sa1 ONT::REJECT )
+		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
+				 :feature PROPOSAL-ON-TABLE))
+		     -user-response2>
+		     (UPDATE-CSM (REJECTED :content ?!content :context ?!context))
+		     (GENERATE
+		      :content (ONT::REQUEST :content (ONT::PROPOSE-GOAL :agent *USER*))))
+	  :destination 'what-next-initiative)
+	 
+	 (transition
+	  :description "acceptance"
+	  :pattern '((ONT::SPEECHACT ?!sa ONT::ACCEPT)
+		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
+				 :feature PROPOSAL-ON-TABLE))
+		     -user-response1>
+		     (UPDATE-CSM (ACCEPTED :content ?!content :context ?!context))
+		     (NOTIFY-BA :msg (COMMIT
+				      :content ?!content)) ;; :context ?!context))  SIFT doesn't want the context
+		     (RECORD ACTIVE-GOAL ?!content)
+		     (RECORD ACTIVE-CONTEXT ?!context)
+;		     (NOTIFY-BA :msg (SET-SHARED-GOAL
+;				      :content ?!content
+;				      :context ?!context))
+		     )
+	  :destination 'what-next-initiative)
+	 
 	 
 	 )
 	))
@@ -258,20 +287,23 @@ ONT::INTERACT
 	  :pattern '((BA-RESPONSE X ACCEPTABLE :what ?!psgoal :context ?!context)
 		     ;; (ont::eval (extract-feature-from-act :result (? goal-id ONT::USER ONT::SYS) :expr ?!psgoal :feature :what))
 		     (ont::eval (extract-feature-from-act :result (ANSWER :TO ?R) :expr ?!psgoal :feature :as))
-		     (ont::eval (find-attr :result ?!popgoal :feature POP-GOAL))
-		     (ont::eval (find-attr :result ?!popcontext :feature POP-CONTEXT))
+		     ;(ont::eval (find-attr :result ?!popgoal :feature POP-GOAL))
+		     ;(ont::eval (find-attr :result ?!popcontext :feature POP-CONTEXT))
 		     -goal-response-q-answered>
 		     (UPDATE-CSM (ACCEPTED :content ?!psgoal :context ?!context))
+
 		     (UPDATE-CSM (SET-OVERRIDE-INITIATIVE :OVERRIDE T :VALUE T))  ; system will take initiative
+
 		     (NOTIFY-BA :msg (COMMIT
 				      :content ?!psgoal)) ;; :context ?!context))  SIFT doesn't want the context
-		     (RECORD POP-GOAL nil)
-		     (RECORD POP-CONTEXT nil)
-		     (RECORD ACTIVE-GOAL ?!popgoal)
-		     (RECORD ACTIVE-CONTEXT ?!popcontext)
+		     ;(RECORD POP-GOAL nil)
+		     ;(RECORD POP-CONTEXT nil)
+		     ;(RECORD ACTIVE-GOAL ?!popgoal)
+		     ;(RECORD ACTIVE-CONTEXT ?!popcontext)
+		     (QUERY-CSM :content (ACTIVE-GOAL))
 		     (GENERATE :content (ONT::ACCEPT))
 		     )
-	  :destination 'what-next-initiative)
+	  :destination 'what-next-initiative-on-new-goal)
 		      
 	 (transition
 	  :description "acceptance of changing the agent (e.g., You do it.)"
@@ -319,12 +351,12 @@ ONT::INTERACT
 		     (RECORD ACTIVE-GOAL ?!reason)   ; we don't need QUERY-GOAL then
 		     (RECORD ACTIVE-CONTEXT ?!context)
 		     (RECORD QUERY-GOAL ?!reason)
-		     (RECORD POP-GOAL ?goal-id)  ; tmp hack
-		     (RECORD POP-CONTEXT ?!context)  ; tmp hack
+		     ;(RECORD POP-GOAL ?goal-id)  ; tmp hack
+		     ;(RECORD POP-CONTEXT ?!context)  ; tmp hack
 		     (GENERATE :content (ONT::ACCEPT))
 		     (GENERATE :content (ONT::QUERY :what ?!reason) :context ?!context)
 		     )
-	  :destination 'process-user-response-to-question)
+	  :destination 'segmentend)
 				
 	 (transition
 	  :description "BA rejects the goal (old format -- probably obsolete)"
@@ -346,7 +378,7 @@ ONT::INTERACT
 		     (UPDATE-CSM (V FAILURE))
 		     (GENERATE :content (V FAILURE) :context ?context)
 		     )
-	  :destination 'process-user-response-to-problem)
+	  :destination 'segmentend)
 	 
 	 (transition
 	  :description "BA fails to identify the goal, and no guess. Right now we just prompt the user
@@ -361,7 +393,7 @@ ONT::INTERACT
 	  :destination 'explore-alt-interp)
 	 )
 	))
-
+#||
 (add-state 'process-user-response-to-problem
  (state :action nil
 	:transitions
@@ -429,6 +461,7 @@ ONT::INTERACT
 	  :destination 'handle-csm-response)
 	 )
 	))
+||#
 
 (add-state 'explore-alt-interp
  (state :action '(continue)
@@ -456,7 +489,8 @@ ONT::INTERACT
 		     -failure-with-no-alt>>
 		     (GENERATE :content ?failure)
 		     )
-	  :destination 'clarify-goal)
+;	  :destination 'clarify-goal)
+	  :destination 'segmentend)
 	 )
 	))
 
@@ -588,7 +622,9 @@ ONT::INTERACT
 		      :context ?context)
 		     )
 	  :destination 'segmentend)
-				
+	
+
+	 ;;  OBSOLETE -- delete soon
 	 (transition
 	  :description "solution to goal reported"
 	  :pattern '((BA-RESPONSE X SOLUTION :what ?!what :goal ?goal :context ?akrl-context)
@@ -600,7 +636,8 @@ ONT::INTERACT
 		      :context ?akrl-context)
 		     )
 	  :destination 'segmentend)
-				
+	
+	 ;;  OBSOLETE -- delete soon			
 	 ;; initiative declined, enter a wait state
 	 (transition
 	  :description "BA has nothing to do"
@@ -608,7 +645,9 @@ ONT::INTERACT
 		     -wait>
 		     (UPDATE-CSM (BA-WAITING)))
 	  :destination 'segmentend)
-				
+		
+	 #|
+	  ;;  OBSOLETE -- delete soon	
 	 (transition
 	  :description "suggestion of user action"
 	  :pattern '((BA-RESPONSE ?!X PERFORM :agent *USER* :action ?!action :context ?context)
@@ -622,17 +661,51 @@ ONT::INTERACT
 		      :content (ONT::PROPOSE :content (ONT::PERFORM :action ?!action :context ?context)))
 		     )
 	  :destination 'proposal-response)
+	 |#
 
+	 ;;NEW  -- this is the revised version of the old what-next1>
+	 (transition
+	  :description "suggestion of goal update"
+	  :pattern '((BA-RESPONSE ?!X PROPOSE :content ?!ps-action :context ?context)
+		     ;(ont::eval (find-attr :result ?goal :feature ACTIVE-GOAL))
+		     (ont::eval (extract-feature-from-act :result ?!goal :expr ?!ps-action :feature :what))
+		     -ba-propose-psact>
+		     (UPDATE-CSM (PROPOSED :content ?!ps-action :context ?context))
+		     (RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE :content ?!ps-action :context ?context))
+		     (RECORD ACTIVE-GOAL ?!goal)
+		     (RECORD ACTIVE-CONTEXT ?context)
+		     (GENERATE
+		      :content (ONT::PROPOSE :content ?!ps-action :context ?context))
+		     )
+;	  :destination 'proposal-response)
+	  :destination 'propose-cps-act)
+
+	 
 	 (transition
 	  :description "action completed!"
-	  :pattern '((BA-RESPONSE ?!X EXECUTION-STATUS :action ?!action :status ONT::DONE)
+	  :pattern '((BA-RESPONSE ?!X EXECUTION-STATUS :goal ?!action :status ONT::DONE)
 		     -what-next5>
-		     (UPDATE-CSM (ACTION-COMPLETED :action ?!action))
+		     (UPDATE-CSM (STATUS-REPORT :goal ?!action :status ONT::DONE))
+		     (QUERY-CSM :content (ACTIVE-GOAL))
 		     (GENERATE :content (ONT::EVALUATION :content (ONT::GOOD)))
 		     )
-	  :destination 'what-next-initiative)
+	  :destination 'what-next-initiative-on-new-goal)
+
+	 ;;NEW
+	 (transition
+	  :description "a goal is in progress"
+	  :pattern '((BA-RESPONSE ?!X EXECUTION-STATUS :goal ?!action 
+		      :status (? stat ONT::WAITING-FOR-USER ONT::WORKING-ON-IT))
+		     -what-next5>
+		     (UPDATE-CSM (STATUS-REPORT :goal ?!action 
+				  :status (? stat ONT::WAITING-FOR-USER ONT::WORKING-ON-IT)))
+		     (RECORD goal-status (? stat ONT::WAITING-FOR-USER ONT::WORKING-ON-IT))
+		     )
+	  
+	  :destination 'generate-if-timeout-occured)
 				
-				
+	 #|
+	  ;;  OBSOLETE -- delete soon	
 	 (transition
 	  :description "action completed!"
 	  :pattern '((BA-RESPONSE ?!X GOAL-ACHIEVED)
@@ -642,6 +715,7 @@ ONT::INTERACT
 		     (GENERATE :content (ONT::CLOSE))
 		     )
 	  :destination 'segmentend)
+	 |#
 	 
 	 (transition
 	  :description "answer to a question"
@@ -649,13 +723,28 @@ ONT::INTERACT
 		     ;;(ont::eval (generate-AKRL-context :what ?!what :result ?akrl-context))
 		     -answer>
 		     (UPDATE-CSM (ANSWER :what ?!what :of ?of :goal ?goal :justification ?j :context ?akrl-context))
+		     (QUERY-CSM :content (ACTIVE-GOAL))
 		     (GENERATE 
 		      :content (ONT::ANSWER :content (?!what :of ?of :goal ?goal :justification ?j :context ?akrl-context)))
 		     )
-	  :destination 'what-next-initiative)
+	  :destination 'what-next-initiative-on-new-goal)  ;;  wondering if we should be waiting to see how user responds to the answer??
 	 )
 	))
 
+(add-state 'what-next-initiative-on-new-goal
+ (state :action nil
+	:transitions
+	(list
+	 (transition
+	  :description "we don't have a private goal, we ask the user"
+	  :pattern '((REPORT :content (ACTIVE-GOAL :what ?!goal) :context ?context)
+		     -set-active-goal>
+		     (record active-goal ?!goal)
+		     (record active-context ?context))
+	  
+	  :destination 'what-next-initiative)
+	 )
+	))
 ;;;;
 ;;    Here are the acts starting a dialogue with system intitative
 
@@ -675,7 +764,7 @@ ONT::INTERACT
 		     -prompt-user-goal>
 		     ;;(RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE-GOAL :what ?!content :context ?context))
 		     (GENERATE
-		      :content (QUERY :what ?what :as ?as)
+		      :content (ONT::QUERY :what ?what :as ?as)
 		      :context ?context)
 		     )
 	  :destination 'propose-cps-act)
@@ -684,14 +773,16 @@ ONT::INTERACT
 	  :description "we know the private goal, so we propose it to the user"
 	  :pattern '((CSM-RESPONSE ?!x PRIVATE-SYSTEM-GOAL :content ?!content :context ?context)
 		     -propose-sys-goal>
-		     (RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE-GOAL :what ?!content :context ?context))
+		     (RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE :content ?!content :context ?context))
 		     (GENERATE
 		      :content (ONT::PROPOSE-GOAL :content ?!content :context ?context))
 		     )
-	  :destination 'initiate-csm-goal-response)
+;	  :destination 'initiate-csm-goal-response)
+	  :destination 'propose-cps-act)
 	 )
 	))
 
+#|
 (add-state 'initiate-csm-goal-response
  (state :action nil
 	:implicit-confirm t
@@ -701,6 +792,8 @@ ONT::INTERACT
 	 (transition
 	  :description "rejectance"
 	  :pattern '((ONT::SPEECHACT ?sa1 ONT::REJECT )
+		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
+				 :feature PROPOSAL-ON-TABLE))
 		     -intitiate-response2>
 		     (UPDATE-CSM (REJECTED :content ?!content :context ?!context))
 		     (GENERATE
@@ -710,7 +803,7 @@ ONT::INTERACT
 	 (transition
 	  :description "acceptance"
 	  :pattern '((ONT::SPEECHACT ?!sa ONT::ACCEPT)
-		     (ont::eval (find-attr :result (?prop :what ?!content :context ?!context) 
+		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
 				 :feature PROPOSAL-ON-TABLE))
 		     -initiate-response1>
 		     (UPDATE-CSM (ACCEPTED :content ?!content :context ?!context))
@@ -718,13 +811,14 @@ ONT::INTERACT
 				      :content ?!content)) ;; :context ?!context))  SIFT doesn't want the context
 		     (RECORD ACTIVE-GOAL ?!content)
 		     (RECORD ACTIVE-CONTEXT ?!context)
-		     (NOTIFY-BA :msg (SET-SHARED-GOAL
-				      :content ?!content
-				      :context ?!context))
+;		     (NOTIFY-BA :msg (SET-SHARED-GOAL
+;				      :content ?!content
+;				      :context ?!context))
 		     )
 	  :destination 'what-next-initiative)
 	 )
 	))
+|#
 
 (add-state 'user-prompt
  (state :action nil
@@ -732,9 +826,11 @@ ONT::INTERACT
 	(list
 	 (transition
 	  :description "what next"
-	  :pattern '((ONT::WH-TERM ?!sa ONT::REFERENTIAL-SEM :proform ont::WHAT)
+	  :pattern '((ONT::WH-TERM ?!sa ONT::REFERENTIAL-SEM :proform w::WHAT)
 		     ;; ((? sp ONT::F ONT::EVENT) ?s1 ONT::SEQUENCE-VAL)
 		     (ONT::F ?s1 ONT::SEQUENCE-VAL)
+		     (ont::eval (find-attr :result ?!result :feature ACTIVE-GOAL))   ; we assume there is an ACTIVE-GOAL
+		     (ont::eval (find-attr :result ?context :feature ACTIVE-CONTEXT))
 		     -what-next>
 		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?!result
 				      :context ?context))
@@ -742,11 +838,13 @@ ONT::INTERACT
 	  :destination 'perform-BA-request
 	  :trigger t)
 	 
-	 ;; If the user rejects this, we ask them to propose something
+	 ;; This doesn't work, as S_WH-QUESTION is mapped to ASK-WHAT-IS
 	 (transition
 	  :description "what should we do next?"
 	  :pattern '((ONT::SPEECHACT ?sa1 ONT::S_WH-QUESTION :focus ?!foc)
-		     (ONT::WH-TERM ?!sa ONT::REFERENTIAL-SEM :proform ont::WHAT)
+		     (ONT::WH-TERM ?!sa ONT::REFERENTIAL-SEM :proform w::WHAT)
+		     (ont::eval (find-attr :result ?!result :feature ACTIVE-GOAL))   ; we assume there is an ACTIVE-GOAL
+		     (ont::eval (find-attr :result ?context :feature ACTIVE-CONTEXT))
 		     -what-next2>
 		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?!result
 				      :context ?context))
@@ -767,9 +865,9 @@ ONT::INTERACT
 				 :feature PROPOSAL-ON-TABLE))
 		     -proposal-response1>
 		     (UPDATE-CSM  (ACCEPTED :content ?!content :context ?!context))
-		     (NOTIFY-BA :msg (COMMIT
+		     (REQUEST :msg (COMMIT
 				      :content ?!content)) ;; :context ?!context))  SIFT doesn't want the context
-		     (NOTIFY-BA :msg (NOTIFY-WHEN-COMPLETED :agent *USER*
+		     (REQUEST :msg (NOTIFY-WHEN-COMPLETED :agent *USER*
 				      :content ?!content
 				      :context ?!context))
 		     )
@@ -777,11 +875,12 @@ ONT::INTERACT
 				
 	 (transition
 	  :description "action completed (from BA)"
-	  :pattern '((EXECUTION-STATUS :action ?!act :status ont::DONE)
+	  :pattern '((EXECUTION-STATUS :goal ?!act :status ont::DONE)
 		     -demonstrate-action1>
-		     (RECORD ACTIVE-GOAL ?!act)
+		     (QUERY-CSM :content (ACTIVE-GOAL))
+		     ;(RECORD ACTIVE-GOAL ?!act)
 		     )
-	  :destination 'what-next-initiative)
+	  :destination 'what-next-initiative-on-new-goal)
 	 
 	 (transition
 	  :description "I can't do it"
@@ -822,11 +921,12 @@ ONT::INTERACT
 	(list
 	 (transition
 	  :description "action completed (from BA)"
-	  :pattern '((EXECUTION-STATUS :action ?!act :status ont::DONE)
+	  :pattern '((EXECUTION-STATUS :goal ?!act :status ont::DONE)
 		     -demonstrate-action2>
-		     (RECORD LAST-ACTION-DONE ?!act)
+		     (QUERY-CSM :content (ACTIVE-GOAL))
+		     ;(RECORD LAST-ACTION-DONE ?!act)
 		     )
-	  :destination 'what-next-initiative)
+	  :destination 'what-next-initiative-on-new-goal)
 	 
 	 ;;  user might speak while we're waiting for confirmation
 	 (transition
@@ -870,5 +970,90 @@ ONT::INTERACT
 		     (GENERATE :content (ONT::CLOSE)))
 	  :destination 'segmentend
 	  :trigger t)				
+	 )
+	))
+
+;; here we are setting alarms if we haven't been waiting, and notify the user if we have been waiting
+(add-state 'check-timeout-status
+ (state :action '(continue)
+	:transitions
+	(list
+	 (transition
+	  :description "system is going to wait for user"
+	  :pattern '((continue :arg ?!dummy)
+		     (ont::eval (find-attr :result WAITING-FOR-USER :feature TIMEOUT-TYPE))
+		     -waiting-for-user>
+		     (RECORD WAITING t)
+		     (REQUEST :msg (SET-ALARM :delay 5 :type WAITING-FOR-USER))
+		     )
+	  :destination 'segmentend
+	  )
+	 (transition
+	  :description "system is working on it (first check)"
+	  :pattern '((continue :arg ?!dummy)
+		     (ont::eval (find-attr :result WORKING-ON-IT :feature TIMEOUT-TYPE))
+		     (ont::eval (find-attr :result nil :feature WAITING))
+		     -waiting-for-user>
+		     (RECORD WAITING t)
+		     (REQUEST :msg (SET-ALARM :delay 5 :type WORKING-ON-IT))
+		     )
+	  :destination 'segmentend
+	  )
+	 (transition
+	  :description "system is working on it (second check)"
+	  :pattern '((continue :arg ?!dummy)
+		     (ont::eval (find-attr :result WORKING-ON-IT :feature TIMEOUT-TYPE))
+		     (ont::eval (find-attr :result t :feature WAITING))
+		     (ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
+		     -waiting-for-user>
+		     (GENERATE :content (ONT::WORKING-ON-IT :what ?!active))
+		     )
+	  :destination 'segmentend
+	  )
+	 
+	 )))
+
+(add-state 'alarm-handler
+ (state :action nil
+	:transitions
+	(list
+	 (transition
+	  :description "system has been waiting for user for the determined threshold of time"
+	  :pattern '((ALARM ?!x WAITING-FOR-USER)
+		     (ont::eval (find-attr :result WAITING-FOR-USER :feature TIMEOUT-TYPE))
+		     (ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
+		     (ont::eval (find-attr :result t :feature WAITING))
+		     -waiting-for-user>
+		     (GENERATE :content (ONT::WAITING :agent *SYS* :what ?!active))
+		     )
+	  :destination 'segmentend
+	  )
+	 ;; received alarm for working on it -- recheck with BA
+	 (transition
+	  :description "system has been waiting for user for the determined threshold of time"
+	  :pattern '((ALARM ?!x WORKING-ON-IT)
+		     (ont::eval (find-attr :result WORKING-ON-IT :feature TIMEOUT-TYPE))
+		     (ont::eval (find-attr :result ?!result :feature ACTIVE-GOAL))
+		     (ont::eval (find-attr :result ?context :feature ACTIVE-CONTEXT))
+		     (ont::eval (find-attr :result t :feature WAITING))
+		     -waiting-for-user>
+		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?!result
+				      :context ?context))
+		     )
+	  :destination 'perform-ba-request
+	  :trigger t)
+
+
+	 ;; if nothing else matches we just gobble up the message
+	 (transition
+	  :description "nothing to do"
+	  :pattern '((ALARM ?!x ?y)
+		     -waiting-for-user>
+		     (nop)
+		     )
+	  :destination 'segmentend
+	 )
+	 
+	 
 	 )
 	))

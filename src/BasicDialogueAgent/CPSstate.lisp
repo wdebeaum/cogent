@@ -23,8 +23,8 @@
 (defun update-csm (update)
   (send-msg `(REQUEST :content (UPDATE-CSM :content ,update))))
 
-(defun query-csm (&key content)
-  (send-and-wait `(REQUEST :content (QUERY-CSM :content ,content))))
+(defun query-csm (&key result content)
+  (cache-response-for-processing (list (send-and-wait `(REQUEST :content (QUERY-CSM :content ,content))))))
 
 (defun find-CSM-interps (&key sa what result context new-akrl-context test active-goal)
   (let* ((realgoal (if (consp active-goal) (find-arg-in-act active-goal :what)

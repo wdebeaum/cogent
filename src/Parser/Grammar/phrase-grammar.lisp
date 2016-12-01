@@ -1647,7 +1647,7 @@
 	    )      
       )
      (np (name +) (generated -) (sem ?sem) (class ?lf) (VAR ?v2) (time-converted -))
-     (add-to-conjunct (val (APPOS-EQ ?v2)) (old ?r) (new ?con)))
+     (add-to-conjunct (val (IDENTIFIED-AS ?v2)) (old ?r) (new ?con)))
 	
    ;; same with comma  the city, avon
     ((N1 (RESTR ?con) (CLASS ?c) (SORT ?sort) (QUAL ?qual) (COMPLEX +) 
@@ -2245,7 +2245,7 @@
 		    ))
 	  (class ont::quantity)
 	  (SPEC ont::INDEFINITE) (AGR 3s) (unit-spec +) (VAR ?v) (SORT unit-measure))
-         -unit-np-number-indef>
+         -unit-np-number-indef-special-case>
 	 (ART (VAR ?nv) (LEX w::a) )
  	 (head (N1 (VAR ?v) (SORT unit-measure) (INDEF-ONLY -) (CLASS ?c) (MASS ?m)
 		   (KIND -) (sem ?sem) (sem ($ f::abstr-obj  (f::scale ?sc)))
@@ -2329,7 +2329,7 @@
      (PP  (VAR ?v) (MASS ?mass) (ptype ?ptp)
 	  (KIND -) (GAP -) (agr |3S|)
 	  (LF (% DESCRIPTION (CLASS ?c) (sem ?sem) 
-		 (transform ?transform) (status (? xx ont::definite ont::definite-plural)))
+		 (transform ?transform) (status (? xx ont::definite ont::pro)))
 		  )))
     
     (append-conjuncts (conj1 (& (REFOBJECT ?v) (size ?card))) (conj2 ?restr) (new ?newr))
@@ -2347,13 +2347,13 @@
      -np-spec-of-def-plur-pp>
     (SPEC (LF ?spec) (ARG ?v) (VAR ?specvar) (name-spec -) (POSS -);;myrosia 12/27/01 added mass restriction to spec
      (WH ?w)
-     (RESTR ?restr) (MASS ?mass)
+     (RESTR ?restr)
      (SUBCAT (% PP (Ptype ?ptp) (agr |3S|) (SEM ?sem))))
     (head 
-     (PP  (VAR ?v) (MASS ?mass) (ptype ?ptp)
+     (PP  (VAR ?v) (mass count) (ptype ?ptp)
 	  (KIND -) (GAP -) (agr 3p)
 	  (LF (% DESCRIPTION (CLASS ?c) (sem ?sem) 
-		 (transform ?transform) (status (? xx ont::definite ont::definite-plural)))
+		 (transform ?transform) (status (? xx ont::definite-plural ont::pro-set)))
 		  )))
     
     (append-conjuncts (conj1 (& (REFOBJECT ?v) (size ?card))) (conj2 ?restr) (new ?newr))
@@ -2386,7 +2386,7 @@
        (append-conjuncts (conj1 (& (?!argmap ?ppv))) (conj2 ?restr) (new ?newr))
        )
       
-   ;;  NP with SPECS that subcategorize for "of" PP's that are mass and indefinite
+   ;;  NP with SPECS that subcategorize for "of" PP's that are mass
     ;; e.g., three gallons of water
    ((NP (LF (% description (STATUS ?spec) (VAR *) (CLASS ?c) (CONSTRAINT ?newr)
 	       (sem ?sem)  (transform ?transform) 
@@ -2395,16 +2395,44 @@
      (SORT PRED)
      (MASS mass)
      (VAR *) (WH ?w));; must move WH feature up by hand here as it is explicitly specified in a daughter.
-    -np-spec-of-mass-idef-pp>
-    (SPEC (LF ?spec) (ARG ?v) (VAR ?specvar) (name-spec -) (mass mass) (POSS -);;myrosia 12/27/01 added mass restriction to spec
+    -np-spec-of-mass-indef-pp>
+    (SPEC (LF ?spec) (ARG ?v) (VAR ?specvar) (name-spec -) (mass mass) 
+     (POSS -)
      (WH ?w)
      (RESTR ?restr)
      (SUBCAT (% PP (Ptype ?ptp) (SEM ?sem))))
     (head 
-     (PP  (VAR ?v) (MASS mass) (ptype ?ptp)
+     (PP  (VAR ?v) (MASS mass) 
+	  (ptype ?ptp)
 	  (KIND -) (GAP -)
 	  (LF (% DESCRIPTION (CLASS ?c) (sem ?sem) (constraint ?constr)
 		 (transform ?transform) (status (? st ont::bare ont::indefinite-plural))
+		 ))))
+                 
+    (append-conjuncts (conj1 ?constr) (conj2 ?restr) (new ?newr))
+    )
+
+   ;;  NP with SPECS that subcategorize for "of" PP's that are plural
+    ;; e.g., three gallons of beans
+   ((NP (LF (% description (STATUS ?spec) (VAR *) (CLASS ?c) (CONSTRAINT ?newr)
+	       (sem ?sem)  (transform ?transform) 
+	       ))
+     (case ?case)
+     (SORT PRED)
+     (MASS count)
+     (VAR *) (WH ?w));; must move WH feature up by hand here as it is explicitly specified in a daughter.
+    -np-spec-quantity-of-def-pp>
+    (SPEC (LF ?spec) (ARG ?v) (VAR ?specvar) (name-spec -)
+     (POSS -)
+     (WH ?w)
+     (RESTR ?restr)
+     (SUBCAT (% PP (Ptype ?ptp) (SEM ?sem))))
+    (head 
+     (PP  (VAR ?v) (MASS count) 
+	  (ptype ?ptp)
+	  (KIND -) (GAP -)
+	  (LF (% DESCRIPTION (CLASS ?c) (sem ?sem) (constraint ?constr)
+		 (transform ?transform) (status (? x ont::indefinite-plural))
 		 ))))
                  
     (append-conjuncts (conj1 ?constr) (conj2 ?restr) (new ?newr))
@@ -4613,11 +4641,13 @@
 	     )))
           
      -adj-conj1>
-     (ADJP (arg ?arg) (argument ?a) (VAR ?v1) (class ?c1) (sem ?s1) (lf ?lf1) (atype central) (post-subcat -)
+     (ADJP (arg ?arg) (argument ?a) (VAR ?v1) 
+      (lf (% PROP (class ?c1))) (sem ?s1) (atype central) (post-subcat -)
       (set-modifier -)
       )
      (CONJ (LF ?conj) (but-not -) (but -))
-     (ADJP (arg ?arg)  (argument ?a) (VAR ?v2) (class ?c2) (sem ?s2) (lf ?lf2) (atype central) (post-subcat -)
+     (ADJP (arg ?arg)  (argument ?a) (VAR ?v2) 
+      (LF (% PROP (class ?c2))) (sem ?s2) (atype central) (post-subcat -)
       (set-modifier -)
       )
      (sem-least-upper-bound (in1 ?s1) (in2 ?s2) (out ?sem))
@@ -4753,8 +4783,8 @@
 				    (constraint ?restr) (sem ?sem)))))
 	   (subj ?subj)
 	   (subj-map ?subjmap)
-	   (dobj ?dobj)
-	   (dobj-map ?dobjmap) 
+	   ;;(dobj ?dobj)
+	   ;;(dobj-map ?dobjmap) 
 	   (rate-activity-nom -)
 	   )
 	  -insert-rate-pred>
