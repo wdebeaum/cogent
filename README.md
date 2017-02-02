@@ -50,12 +50,12 @@ You'll also need to get these files from [WordNet](http://wordnet.princeton.edu/
  - http://wordnetcode.princeton.edu/3.0/WordNet-3.0.tar.bz2
  - http://wordnetcode.princeton.edu/glosstag-files/WordNet-3.0-glosstag.tar.bz2
 
-And unpack them in the same directory, `/usr/local/share/wordnet/` (create the directory if necessary). You should end up with these two directories:
+and unpack them in the same directory, `/usr/local/share/wordnet/` (create the directory if necessary). You should end up with these two directories:
 
     /usr/local/share/wordnet/WordNet-3.0/
     /usr/local/share/wordnet/WordNet-3.0/glosstag/
 
-Finally you will need [Stanford CoreNLP](http://stanfordnlp.github.io/CoreNLP/)  3.5.2+. The latest version as of this writing is [3.7.0](http://nlp.stanford.edu/software/stanford-corenlp-full-2016-10-31.zip). Download that zip file and unpack it in `/usr/local/share/stanford-corenlp/` (again, create the directory if necessary). Unpacking the zip file should create the directory `/usr/local/share/stanford-corenlp/stanford-corenlp-full-2016-10-31/`.
+Finally you will need [Stanford CoreNLP](http://stanfordnlp.github.io/CoreNLP/) 3.5.2+. The latest version as of this writing is [3.7.0](http://nlp.stanford.edu/software/stanford-corenlp-full-2016-10-31.zip). Download that zip file and unpack it in `/usr/local/share/stanford-corenlp/` (again, create the directory if necessary). Unpacking the zip file should create the directory `/usr/local/share/stanford-corenlp/stanford-corenlp-full-2016-10-31/`.
 
 ## Configuring, making, installing ##
 
@@ -77,13 +77,23 @@ The `--with-lisp` option lets you tell `configure` the command to use to run lis
 To run the whole system at once, run this command:
 
 ```bash
-$TRIPS_BASE/bin/trips-cogent
+$TRIPS_BASE/bin/trips-cogent -showgen
 ```
 
-If you want access to the Lisp REPL, you need to run the Lisp and non-lisp parts separately instead. First run the non-Lisp parts:
+The system display includes a Chat window where the user can type in utterances. Since the system does not include a surface generation component, the system doesn't produce natural language in respose. Using the `-showgen` option makes the Chat window diaplay the interaction acts sent for generation; in most cases the content of these acts is fairly easy to decode.
+
+If you want to see the graphical representation of the Logical Form (LF) resulting from parsing the user's utterances, first make sure you have Graphviz installed (see [these installation instructions](http://trips.ihmc.us/trac/drum/wiki/GraphvizInstallation)). Then, run the system using the `-graphviz-display` option set to `true`, e.g.:
 
 ```bash
-$TRIPS_BASE/bin/trips-cogent -nolisp
+$TRIPS_BASE/bin/trips-cogent -showgen -graphviz-display t
+```
+
+Alternatively, if you only want to see the LF output, you can use the [Cogent web service](http://trips.ihmc.us/parser/cgi/cogent). This service is also useful for testing [ontology mappings](http://trips.ihmc.us/ontology-mapper/ontology-mapper.html).
+
+If you want access to the Lisp REPL, you need to run the Lisp and non-Lisp parts separately. First run the non-Lisp parts, e.g.:
+
+```bash
+$TRIPS_BASE/bin/trips-cogent -nolisp -showgen
 ```
 
 Then in another window run the Lisp parts:
@@ -92,4 +102,3 @@ Then in another window run the Lisp parts:
 cd $TRIPS_BASE/src/Systems/cogent/
 sbcl --load test --eval '(run)'
 ```
-
