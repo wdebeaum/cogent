@@ -150,6 +150,24 @@
       (ONT::REQUEST :who *USER* :to ?!v :what ?!theme)
       )
 
+     ;; e.g., You/We buy me a computer
+     ;; I can't move this block.
+     ;; Note: "You/We can/can't move this block." "I can move this block" are taken as ONT::REQUEST (-request-to-propose-with-agent>)
+     ((ONT::SPEECHACT ?x ONT::SA_TELL :CONTENT ?!theme)
+      (ONT::F ?!theme (? type ONT::EVENT-OF-ACTION) :AGENT ?!ag :force ONT::IMPOSSIBLE)  ; restrict the ?type to exclude, e.g., "You are silly"
+      ((? p ONT::PRO-SET ONT::PRO) ?!ag ?t2 :PROFORM (? xx w::I))
+      -request-to-propose-with-agent-2> 1.01
+      (ONT::TELL :who *USER* :to *ME* :what ?!theme)
+      )
+
+     ;; e.g., You/We buy me a computer
+     ;; I'll/can move this block.
+     ((ONT::SPEECHACT ?x ONT::SA_TELL :CONTENT ?!theme)
+      (ONT::F ?!theme (? type ONT::EVENT-OF-ACTION) :AGENT ?!ag :force ?f)  ; restrict the ?type to exclude, e.g., "You are silly"
+      ((? p ONT::PRO-SET ONT::PRO) ?!ag ?t2 :PROFORM (? xx w::I w::WE w::you))
+      -request-to-propose-with-agent>
+      (ONT::REQUEST :who *USER* :to *ME* :what ?!theme)
+      )
   
     ;; basic inform acts  - default for tells if not other matches
    ((ONT::SPEECHACT ?x ONT::SA_TELL :CONTENT ?!c)
@@ -165,15 +183,21 @@
      ;; see rule as an answers to a question in generic-Q-model rules
      ;; ellipsis - followup after questions or proposals
 
-     ;; e.g., How about from Atlanta?
+   ;; e.g., How about from Atlanta?
+   #|
       ((ONT::SPEECHACT ?!xx ONT::SA_REQUEST-COMMENT :CONTENT ?!v)
        --ellipsis1>
        (ONT::ELLIPSIS :who *USER* :to *ME* :what ?!v));; :context ?context :prior-index ?index))
+   |#
 
+      ((ONT::SPEECHACT ?!xx ONT::SA_REQUEST-COMMENT :CONTENT ?!v)
+       -request-comment>
+       (ONT::REQUEST-COMMENT :who *USER* :to *ME* :what ?!v))
+      
       ;; e.g., Fill in the author field.   And the title field.
       ((ONT::SPEECHACT ?!xx ONT::SA_IDENTIFY :CONTENT ?!v :mods (?!m))
        (ONT::F ?!m ONT::CONJUNCT)
-       --ellipsis2>
+       -ellipsis2>
        (ONT::ELLIPSIS :who *USER* :to *ME* :what ?!v));; :context ?context :prior-index ?index))
       
    ;;==============================================================
@@ -480,7 +504,7 @@
 
       ;;  e.g., "goodbye."  (Note: "goodbye" without punctuation gives SA_IDENTIFY)
       ((ONT::SPEECHACT ?!x ONT::SA_CLOSE :content ?V1)
-       --close>
+       -close>
        (ONT::CLOSE :who *user* :to *me*  :what ?V1))
       
       ;; do not work: OK, you're welcome
@@ -574,18 +598,23 @@
 	   -YNQ-response-rule1>
 	   (ONT::ANSWER :who *USER* :to *ME* :what ?!x))
 
-	  ;; i do
+	  ;; I do/I will
 	  ((ONT::SPEECHACT ?!vv ONT::SA_TELL :content ?!x)
-	   (ONT::F ?!x ONT::ELLIPSIS :formal ?!i :force ONT::TRUE)
+	   ;(ONT::F ?!x ONT::ELLIPSIS :neutral ?!i :force (? f ONT::TRUE ONT::FUTURE))
+	   (ONT::F ?!x ONT::ELLIPSIS :neutral ?!i :NEGATION -)
 	   (ONT::PRO ?!i ONT::PERSON :proform w::I)
 	   -I-do-response-rule>
-	   (ONT::ANSWER :who *USER* :to *ME* :what ont::POS))
+	   ;(ONT::ANSWER :who *USER* :to *ME* :what ont::POS))
+	   (ONT::ANSWER :who *USER* :to *ME* :what ?!x))
 
-	  ;; i don't
+	  ;; I don't/I won't
 	  ((ONT::SPEECHACT ?!vv ONT::SA_TELL :content ?!x)
-	   (ONT::F ?!x ONT::ELLIPSIS :force ONT::FALSE)
+	   ;(ONT::F ?!x ONT::ELLIPSIS :neutral ?!i :force (? f ONT::FALSE ONT::FUTURENOT))
+	   (ONT::F ?!x ONT::ELLIPSIS :neutral ?!i :NEGATION +)
+	   (ONT::PRO ?!i ONT::PERSON :proform w::I)
 	   -I-dont-response-rule>
-	   (ONT::ANSWER :who *USER* :to *ME* :what ont::NEG))
+	   ;(ONT::ANSWER :who *USER* :to *ME* :what ont::NEG))
+	   (ONT::ANSWER :who *USER* :to *ME* :what ?!x))
 
 	  ;; I'm not sure
 	  ((ONT::SPEECHACT ?!x ONT::SA_TELL :CONTENT ?!c)

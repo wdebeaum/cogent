@@ -31,6 +31,7 @@
 (defvar *delay-to-clear* 720) ;; if we don't hear from the user in over X minutes, we reset the dialogue state
 (defvar *max-wait-until-prompt-in-hours* 4)  ;; if we don't hear from the user for X hours, we prompt.
 (defvar *max-wait-until-prompt-in-minutes* (* *max-wait-until-prompt-in-hours* 60))
+(defvar *max-wait-until-prompt-in-seconds* (* *max-wait-until-prompt-in-minutes* 60))
 (defvar *wait-after-inhaler* 0.333333)  ;; check with the user X hours after inhaler use or suggesting inhaler use (20 minutes)
 
 (defvar *last-internal-response* nil)   ;; this variable is used to store input to the state manager (e.g., a message from an external component like the BA, or a response to a function call within DAGENT.
@@ -94,8 +95,9 @@
   medications         ; list of medications (ASMA specific)
   other               ; available for storing other info as needed in attribute-value pair format
   ;; here are various timing records to manage each users dialogue
-  (time-of-last-interaction (list 0 0)) 
-  (time-of-last-wizard-interaction (list 0 0)) 
+  (time-of-last-user-interaction (list 0 0)) 
+  (time-of-last-wizard-interaction (list 0 0))
+  (time-of-last-BA-interaction (list 0 0))
   (wizard-response-pending nil)
   (wizard-controlling-dialogue nil)
   (immediately-prior-turns-that-failed 0)
@@ -108,7 +110,21 @@
   (when (eq (car msg) 'alarm)
     (setf (user-pending-alarms user) (append (user-pending-alarms user)
 					     (list msg)))))
-					   
+(defun add-to-local-kb (feature value user)
+  (setf (user-local-kb user)
+	(replace-feature-value feature value (user-local-kb user))))
+
+(defun replace-feature-value (f v kb)
+  (if (null kb)
+      (list (list f v))
+      (if (eq (caar kb) f)
+	  (if (not (eq (cadar kb) v))
+	      (cons (list f v)
+		    (cdr kb))
+	      kb)
+	  (reuse-cons (car kb)
+		      (replace-feature-value f v (cdr kb))
+		      kb))))
 
 (defun record-transcript (user type data)
   (when (user-p user)
@@ -285,7 +301,9 @@
   (cdr (assoc name *state-table*)))
 
 (defun restart-dagent nil
-  (mapcar #'reset-user (mapcar #'cdr *users*)))
+  (mapcar #'reset-user (mapcar #'cdr *users*))
+  (send-status 'OK)
+  )
 
 (defun reset-user (user)
   (setf (user-current-dstate user) nil)
@@ -327,29 +345,50 @@
 
 (defun current-dstate (user)
   (let ((dstate 
-	 (or (if user (user-current-dstate user))
+	 (or (if user (car (user-current-dstate user)))
 	     (let ((seg (find-segment *starting-segment*)))
 	       (if seg (find-state (segment-start-state seg)))))))
     dstate
     ))
 
 
-(defun update-current-dstate (state user args &optional triggered)
+(defun update-current-dstate (state push? user args &optional triggered)
   "we keep track of triggered states because they are handled differently in Wizrd interactions (e.g., how we handle IGNORE)"
   (when user
-    (if (state-p state) state
-	(find-state state))
-    (trace-msg 3 "Updating current state to ~S for user ~S with args ~S"
-	       (if (state-p state) state)
-	       (user-channel-id user) args)
+   ;; (if (state-p state) state   ;; seems like a noop to me
+   ;;	(find-state state))
+    (trace-msg 2 "Updating current state to ~S for user ~S with args ~S: push? is ~S"
+	       (if (state-p state) (state-id state))
+	       (user-channel-id user) args push?)
     (if (not (state-p state))
 	(setq state (find-state state)))
-    (setf (user-current-dstate user) state)
+    (if state 
+	(if push? 
+	    (push state (user-current-dstate user))
+	    ; if not push, we replace the top state
+	    (setf (user-current-dstate user) 
+		  (cons state (cdr (user-current-dstate user)))))
+	(setf (user-current-dstate user) nil))
     (if (and (state-p state) triggered)
 	(setf (state-triggered state) triggered))
+    ;; report status
+    (send-status `(OK :in-state ,(if (state-p state) (state-id state))))
+    (trace-msg 2 "STATE STACK is ~S" (mapcar #'state-id (user-current-dstate user)))
     (setf (user-dstate-args user) args)))
 
+(defun pop-current-dstate (user)
+  (pop (user-current-dstate user))
+  (if (user-current-dstate user)
+      (trace-msg 2 "Popping current dstate: new top state is ~S" (state-id (car (user-current-dstate user))))
+      (trace-msg 2 "current dstate is NIL"))
+  ;; report status
+  (let ((state (current-dstate user)))
+    (send-status `(OK :in-state ,(if (state-p state) (state-id state)))))
+  (user-current-dstate user))
+
 (defun go-to-restart-state (user)
+  ;; report status
+  (send-status '(OK :in-state nil))
   (setf (user-current-dstate user) nil))
 
 (defun record-for-current-user (act user)
@@ -357,9 +396,10 @@
       (let ((feature (cadr act))
 	    (value (instantiate-dstate-args (caddr act) user)))
 	(trace-msg 3 "Setting values ~S for user ~S" (cdr act) (user-channel-id user))
-	(if (or (symbolp value) (consp value) (numberp value))
-	    (push (list feature value)
-	      (user-local-kb user))))
+	(when (or (symbolp value) (consp value) (numberp value))
+	    (add-to-local-kb feature value user)
+	     
+	    (list feature value)))  ;; return this just for tracing
       (da-warn "Bad attribute-value pair in ~S" act)))
 
 (defun instantiate-dstate-args (value user)
@@ -436,35 +476,42 @@
 ;; reworked ALARM handler for the new FST system, not backwards compatablie with ASMA!
 (defun alarm-handler (&key msg)
   (let* ((id (find-arg-in-act msg :user))
-	 (user (lookup-user id)))
+	 (user (lookup-user id))
+	 )
     (trace-msg 3 "Alarm received: ~S user KB is ~S" msg (if (user-p user) (user-local-kb user)))
-    (if (and (user-p user) (eq (car msg) 'alarm) (eq (car (find-arg-in-act msg :msg)) 'idle-check))
+    (if (and (user-p user) 
+	     (eq (car msg) 'alarm) 
+	     (eq (car (find-arg-in-act msg :msg)) 'idle-check)
+	     )
+
 	;; special handling of idle-checks
 	(progn
-	  (trace-msg 3 "checking idle time: last interaction ~S. time of day ~S"  (user-time-of-last-interaction user) (get-time-of-day))
-	  (when (and (> (time-difference-in-minutes (user-time-of-last-interaction user) (get-time-of-day))
-		      *max-wait-until-prompt-in-minutes*)
-		   )
-	      (send-reply "haven't heard from you for a while. what's up" (user-channel-id user))))
-	      ;; if a question is still hanging, reask it
-	      ;;(reask-question user (user-channel-id user) 0)))
+	  (trace-msg 3 "checking idle time: last interaction with user: ~S. last interaction with BA: ~S time of day ~S"  (user-time-of-last-user-interaction user) (user-time-of-last-BA-interaction user) (get-time-of-day))
+	  (when (>= (time-difference-in-seconds (user-time-of-last-user-interaction user) (get-time-of-day))
+			 (- *max-wait-until-prompt-in-seconds* 1))
+	    ;; eventually we might want to save the current state and reestablish it after the alarm
+	   
+	    (cache-response-for-processing (list (list* 'ALARM 'XX (find-arg-in-act msg :msg))))
+	    (invoke-state 'alarm-handler 'push user nil nil nil))
+	  )
+	
 	;; normal case for alarms
 	(if (user-p user)
 	    (case (car msg)
 	      (alarm
 	       ;; we only act on the alarm if the system is not currently waiting for an answer from the system
 	       ;;  note: if the alarm is persistent, the question will get asked after the other question is completed
-	       (if (and (or *disabled-wizard*
-			    (null (user-wizard-response-pending user))` 
-			    (> (time-difference-in-minutes (user-time-of-last-wizard-interaction user) (get-time-of-day))
-			       *max-wait-for-wizard-reply*))
-			(null (user-current-dstate user)))
-		   ;; everything is OK to handle the alarm
-		   (progn
-		     (cache-response-for-processing '(list msg))
-		     (invoke-state 'handle-alarm user nil nil))
-		   ;; we are not ready for the alarm right now because there's an ongoing wizard interaction, save it for later
-		   (save-pending-alarm user msg)))
+	       (if  (or *disabled-wizard*
+			(null (user-wizard-response-pending user))` 
+			(> (time-difference-in-minutes (user-time-of-last-wizard-interaction user) (get-time-of-day))
+			   *max-wait-for-wizard-reply*))
+		    ;;(null (user-current-dstate user)))
+		    ;; everything is OK to handle the alarm
+		    (progn
+		      (cache-response-for-processing (list (list* 'ALARM 'XX (find-arg-in-act msg :msg))))
+		      (invoke-state 'alarm-handler 'push user nil nil))
+		    ;; we are not ready for the alarm right now because there's an ongoing wizard interaction, save it for later
+		    (save-pending-alarm user msg)))
 	      
 	      (end-of-day   ;; here we send an email report if we haven't done so already
 	       (trace-msg 3 "END OF DAY check: KB is  ~S." (user-local-kb user))
@@ -533,6 +580,8 @@
   "Takes a set of hypotheses from the next utterance and matches then against the current discourse state"
   (let* ((user (lookup-user channel))
 	 (newchannel (if (user-p user) (user-channel-id user) channel)))  ;; convert to internal channel name ('DESKTOP -> "desktop")
+
+    (record-for-current-user '(RECORD WAITING NO) user)
     (setq *current-user* user)
     (trace-msg 3 "~%new act ~S, user is ~S, state is ~S, channel ~S." words 
 	       (if (user-p user) (user-name user) newchannel)
@@ -546,9 +595,9 @@
 	       (clear-pending-speech-acts))
 	      ;; if we haven't heard from the user in over some specified time in *delay-to-clear*, and we are in a state wainting for an answer, we bail out
 	      ((and 
-		(> (time-difference-in-minutes (user-time-of-last-interaction user) (get-time-of-day)) *delay-to-clear*)
+		(> (time-difference-in-minutes (user-time-of-last-user-interaction user) (get-time-of-day)) *delay-to-clear*)
 		(current-dstate user))
-	       (update-current-dstate nil user nil)
+	       (update-current-dstate nil nil user nil)
 	       (send-reply "Sorry, Its been a while so I forgot what we were doing" newchannel)
 	       (check-posted-alarms user newchannel))
 	      
@@ -560,7 +609,7 @@
 		      (dstate (current-dstate user)))
 		 (setq *words* words)
 		 (setq *most-recent-lfs* lfs)
-		 (setf (user-time-of-last-interaction user) (get-time-of-day))
+		 (setf (user-time-of-last-user-interaction user) (get-time-of-day))
 		 (if dstate
 		     (when (not (process-lf-in-state lfs hyps context newchannel words user uttnum))
 		       (if (state-implicit-confirm dstate)
@@ -578,6 +627,36 @@
 			     ;;(uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) nil user uttnum)))
 		     (check-for-triggers lfs hyps context newchannel words user *segments* uttnum)))))
 	(send-reply "Hi. You are not yet registered for our study" newchannel))))
+
+(defun handle-input-message (msg)
+  "this handles spontaneous report from the BA or other components"
+  (let* ((msg-content (find-arg-in-act msg :content))  ;; this should be a REPORT
+	 (content (find-arg-in-act msg-content :content))
+	 (user (lookup-user 'desktop))
+	 (dstate (current-dstate user))
+	 (newchannel (if (user-p user) (user-channel-id user) "desktop"))
+	 (uttnum 'x)
+	 (context)
+	 (lfs (list content))
+	 (hyps))
+	     
+      (if dstate
+      (when (not (process-lf-in-state lfs hyps context newchannel nil user uttnum))
+	(if (state-implicit-confirm dstate)
+	    ;; clear the state and start again
+	    (progn
+	      (if (consp (state-implicit-confirm dstate))
+		  (mapcar #'execute-action (state-implicit-confirm dstate)))
+	      (trace-msg 2 "~%Popping state ~S to try triggers"
+			 (state-id (current-dstate user)))
+	      (go-to-restart-state user)
+	      (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum))
+	    ;; we failed to interpret utterance, release send part of input and try again
+	    (release-pending-speech-act))
+	)
+      ;;(uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) nil user uttnum)))
+      (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum)))
+  )
 
 (defun make-mods-unique (lf)
   "If an LF has multiple MOD features, we add digits to the second and thrid, etc"
@@ -649,7 +728,7 @@
 			    (im::match-result-output (car action))
 			    ))
 	    (record-success user)
-	    (invoke-state next user (user-dstate-args user) uttnum)  ;; pass along args 
+	    (invoke-state next nil user (user-dstate-args user) uttnum)  ;; pass along args 
 	    (when *last-internal-response*
 	      (interpret-new-responses hyps context channel words user uttnum)
 	      )
@@ -691,21 +770,28 @@
 			(im::match-result-output result)))
 	;; now do state transition, or 
 	;;(if (segment-start-state segment)
-	(update-current-dstate (segment-start-state segment) user nil t)
+	;; report status
+	(send-status `(OK :in-segment ,(segment-id segment)))
+	(update-current-dstate (segment-start-state segment) nil user nil t)
 	
 	(cond 
 	  ;;  the rule involved calling the BA, so we now process the reply
 	  (*last-internal-response*
 	   (interpret-new-responses hyps context channel words user uttnum)
 	   )
-   	; reinterpret the LF if this was not derived from a rule (if it was from a rule, the interpretations already been done!)   Also, if it was a triggered that involves a BA call, we are not done yet!
-	  ((or (segment-derived-from-rule segment) (null (segment-start-state segment)) (eq (segment-start-state segment) 'segmentend))
+   	; If we're now in the end state, we are done!
+	  ((or (null (segment-start-state segment)) (eq (segment-start-state segment) 'segmentend))
+	   (setq *interpretable-utt* t)   
 	   (check-posted-alarms user channel))
+	  ;;  the segment triggered a rule, and has a valid destination, so we invoke the destination state
+	  ((segment-derived-from-rule segment)
+	   (invoke-state (segment-start-state segment) nil user nil uttnum)
+	   )
 	  (t
 	   (when (not (process-lf-in-state lfs hyps context channel words user uttnum))
 	     ;; interpretation failed
 	     ;;(uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) segment user uttnum)))
-	     (update-current-dstate nil user nil t)  ;; clear the failed start-state
+	     (update-current-dstate nil nil user nil t)  ;; clear the failed start-state
 	     (trace-msg 3 "Trigger test failed, trying the next ...")
 	     (try-triggered-states-until-success (caar backup-results) (cadar backup-results) (cdr backup-results) terms lfs hyps context channel words user uttnum)
 	     ))
@@ -827,17 +913,17 @@
 		(record-for-current-user act user))
 	       (say
 		(clear-pending-speech-acts  uttnum channel)
-		(setf (user-time-of-last-interaction user) (get-time-of-day))
+		(setf (user-time-of-last-user-interaction user) (get-time-of-day))
 		(record-transcript user 'system-says act)
 		(prepare-reply (find-arg-in-act act :content) channel))
 	       (say-one-of 
 		(clear-pending-speech-acts  uttnum channel)
-		(setf (user-time-of-last-interaction user) (get-time-of-day))
+		(setf (user-time-of-last-user-interaction user) (get-time-of-day))
 		(record-transcript user 'system-says act)
 		(prepare-reply (pick-one (find-arg-in-act act :content)) channel))
 	       (compound-say 
 		(clear-pending-speech-acts  uttnum channel)
-		(setf (user-time-of-last-interaction user) (get-time-of-day))
+		(setf (user-time-of-last-user-interaction user) (get-time-of-day))
 		(record-transcript user 'system-says act)
 		(prepare-reply (compound-say (find-arg-in-act act :content) (user-dstate-args user) user) channel))
 	       (say-one-of-next
@@ -875,7 +961,15 @@
 		(invoke-ba (cdr act) user channel uttnum)
 		nil)
 	       ((notify-ba request)
-		(notify-ba (cdr act) user channel uttnum))
+		(notify (cdr act) user channel uttnum))
+	       (set-alarm
+		(if *using-alarms*
+		  (let ((delay (find-arg-in-act act :delay))
+			(msg (find-arg-in-act act :msg)))
+		    (notify (list :msg (list 'SET-ALARM :delay delay :msg (list 'ALARM :user (user-channel-id user) :msg msg))
+				  :msg-type 'REQUEST)
+			    user channel uttnum))
+		  (trace-msg 1 "Not using alarms!")))
 	       (extract-goal-description
 		(apply #'extract-goal-description (cdr act)))
 	       ;; this function is called only if it is the the action slot of a state, so results are cached so the pattern rules 
@@ -897,7 +991,7 @@
 	       (no-contact-today-yet (no-contact-today-yet user))
 	       (email-summary 
 		(send-email-summary channel user))
-	       (nop t)   ; don't do anything (for triggers)
+	       (nop t)   ; don't do anything (fortriggers)
 	       (continue
 		(cache-response-for-processing '((continue :arg dummy))))
 	       (true (clear-pending-speech-acts  uttnum channel))
@@ -910,28 +1004,36 @@
 ;;  BA invocation
 
 (defun invoke-BA (args user channel uttnum)
-  "here we invoke the BA with a message and record the result for the followup state.
+  "here we invoke a backend aganet with a message and record the result for the followup state.
     Since we are using send and wait we don't have syncronization problems"
   ;; clear clear any remaining input in the input stream
 ;  (clear-pending-speech-acts uttnum channel)
   (setq *interpretable-utt* t)
+  (setf (user-time-of-last-BA-interaction user) (get-time-of-day))
   (let* ((msg (instantiate-dstate-args (find-arg args :msg) user))
+	 (x (send-status `(WAITING :on ,(car msg))))
 	 (reply (send-and-wait `(REQUEST :content ,msg)))
 	 (content (find-arg-in-act reply :content))
 	 (context (find-arg-in-act reply :context))
-	 (converted-response (append (list* 'BA-RESPONSE 'X content) (list :context context))))
+	 (converted-response (append (list* 'BA-RESPONSE 'X (car reply) :psact content) (list :content content :context context))))
+    (declare (ignore x))
+    ;; (send-status '(READY GOT-REPLY)) ; now OK turns the light green
+    ;;(converted-response (list 'BA-RESPONSE 'X (car reply) :content content :context context) )) ; probably the same as (list* 'BA-RESPONSE 'X reply) ?
+    (setf (user-time-of-last-BA-interaction user) (get-time-of-day))  ;; we set if again now we have a response
     ;;  we record the BA response
     (if content (cache-response-for-processing (list converted-response))
 	(format t "~%WARNING: BA returned uninterpretable response: ~S:" reply))
     (trace-msg 3 "~% *last-internal-response* is ~S~%" *last-internal-response*)	  
    ))
 
-(defun notify-BA (args user channel uttnum)
+(defun notify (args user channel uttnum)
   "here we invoke the BA with a message but don't expect a response"
 ;  (clear-pending-speech-acts uttnum channel)
   (setq *interpretable-utt* t)
-  (let ((msg (instantiate-dstate-args (find-arg args :msg) user)))
-    (send-msg `(REQUEST :content ,msg))
+  (let ((msg (instantiate-dstate-args (find-arg args :msg) user))
+	(msg-type (instantiate-dstate-args (find-arg args :msg-type) user))
+	)
+    (send-msg `(,msg-type :content ,msg))
     ))
 
 (defun extract-goal-description (&key cps-act context result goal-id)
@@ -966,6 +1068,7 @@
 (defun invoke-generator (msg user channel uttnum)
   "here we invoke the BA with a message and record the result for the followup state.
     Since we are using send and wait we don't have syncronization problems"
+  (setf (user-time-of-last-user-interaction user) (get-time-of-day))
   (let ((expanded-msg (expand-args msg)))
     (Format t "~%~%==========================~% System generating: ~S ~%========================~%" expanded-msg)
     ;;  we clear any remaining input as we generate
@@ -1006,7 +1109,7 @@
 	    (or (element-in x (car ll)) (element-in  x (cdr ll)))))))
 
 (defun no-contact-today-yet (user)
-  (equal (user-time-of-last-interaction user) '(0 0)))
+  (equal (user-time-of-last-user-interaction user) '(0 0)))
 			       
 (defun note-speech (text)
   "This saves some text that will be used in the next message"
@@ -1019,21 +1122,21 @@
   (send-reply (concatenate 'string *saved-text* text) channel)
   (setq *saved-text* ""))
 
-(defun invoke-state (stateID user args uttnum &optional input)
+(defun invoke-state (stateID push? user args uttnum &optional input)
   (let ((channel (user-channel-id user)))
-    (trace-msg 1 "Invoking state ~S" stateID)
+    (trace-msg 1 "~S state ~S" (if (eq push? 'push) "Pushing" "Invoking") stateID)
     (record-transcript user 'invoke-state stateID)
     ;; ending a segment
     (if (or (eq stateID 'segmentend) (null stateID))
 	(progn
-	  (trace-msg 3 "Segment ended")
-	  (update-current-dstate nil user nil)
+	  (trace-msg 2 "Segment ended")
+	  (pop-current-dstate user)
 	  (check-posted-alarms user channel)
 	  (release-pending-speech-act)
 	  )
     ;; shifting to a new state
     (let ((newstate (find-state stateID)))
-      (update-current-dstate newstate user args)
+      (update-current-dstate newstate push? user args)
       
       (if newstate
 	  (if (null input)
@@ -1046,7 +1149,7 @@
 		    ;; otherwise we are done, except for the immediate transition states
 		(when (state-immediate-transition newstate)
 		  (trace-msg 1 "immediate transition to state ~S"  (state-immediate-transition newstate))
-		  (invoke-state (state-immediate-transition newstate) user nil uttnum)))
+		  (invoke-state (state-immediate-transition newstate) nil user nil uttnum)))
 	      ;; if input is provided, we process it in the new state
 	      (process-lf-in-state input nil nil channel nil user uttnum))
 	     
@@ -1064,7 +1167,7 @@
   "Assuming we're in a specific state, we invoke the wizard"
   ;; sometimes state is not specified, and we get is from the USER record
   (if (and (null state) (user-p user))
-      (setq state (user-current-dstate user)))
+      (setq state (current-dstate user)))
   
   (if (or *disabled-wizard*   ;; do not invoke wizard if   (1) wizard is disabled
 	  (and state         ;; or we are in a non-critical state and haven'y exceeded the reask limit
@@ -1105,7 +1208,7 @@
   )
 
 (defun reask-question (user channel uttnum)
-  (let* ((current-state (user-current-dstate user))
+  (let* ((current-state (current-dstate user))
 	 (current-action (if (state-p current-state)
 			     (state-action current-state))))
     (if (member (car current-action) '(compound-say say))
@@ -1128,7 +1231,7 @@
 	   (let ((outp (im::subst-in (transition-output transition) 
 				     (apply-transition-tests (transition-tests transition) nil))))
 	     (every #'(lambda (x) (execute-action x channel user uttnum)) outp)
-	     (invoke-state (transition-destination transition) user nil uttnum))
+	     (invoke-state (transition-destination transition) nil user nil uttnum))
 	    (trace-msg 3 "Wizard choice ~S not understood for patient ~S"  choice channel))))
     (uninterpretable
      (send-reply "I didn't understand. Can you rephrase" channel))
@@ -1138,7 +1241,7 @@
     (ignore
      (trace-msg 3 "Wizard said to ignore the utterance")
      (if (state-triggered user)
-	 (update-current-dstate nil user nil)))
+	 (update-current-dstate nil nil user nil)))
     (wizard-took-over
      (trace-msg 3 "SHOULD NEVER GET HERE!!! Wizard taking over dialogue")
      (setf (user-wizard-controlling-dialogue user) t)
@@ -1158,7 +1261,7 @@
 
 (defun try-other-questions (lfs words hyps context channel state segment-id user uttnum)
   (trace-msg 3 "~%Trying other segments past ~S" segment-id)
-  (update-current-dstate nil user nil) 
+  (update-current-dstate nil nil user nil) 
   (check-for-triggers lfs hyps context channel words user 
 		      (if segment-id (remove-segments-up-to segment-id *segments*)
 			  *segments*) uttnum))
@@ -1178,6 +1281,11 @@
       (format t "~%**********************~%*~%SYS: ~S~%*~%**************************" msg)
       (send-msg `(REQUEST :content (SAY :content ,msg :channel ,channel)))
   ))
+
+(defun send-status (status)
+  (send-msg `(TELL :content (component-status
+			     :who DAGENT ;;; FIXME: surely we must know our name, no?
+			     :what ,status))))
 
 (defun pick-one (elements)
   (nth (random (list-length elements)) elements))
@@ -1200,7 +1308,7 @@
       (when possible-alarms
 	(let ((a (first possible-alarms)))
 	  (setf (alarm-last-asked a) (get-time-of-day))
-	  (invoke-state (alarm-start-state a) user (alarm-args a) nil)))
+	  (invoke-state (alarm-start-state a) nil user (alarm-args a) nil)))
       )))
 ||#
 
@@ -1230,7 +1338,7 @@
 	(second minute hour)
       (get-decoded-time)
       (declare (ignore second))
-    (list hour minute)))
+    (list hour minute second)))
 
 
 (defun t-before (time1 time2)
@@ -1240,11 +1348,14 @@
 	   (< (cadr time1) (cadr time2)))))
 
 #||(defun since-last-interaction (durationlimit user)
-  (let* ((duration (time-difference-in-minutes (user-time-of-last-interaction user) (get-time-of-day))))
+  (let* ((duration (time-difference-in-minutes (user-time-of-last-user-interaction user) (get-time-of-day))))
     (> duration durationlimit)))||#
 
 (defun time-difference-in-minutes (t1 t2)
   (+ (* (- (car t2) (car t1)) 60) (- (cadr t2) (cadr t1))))
+
+(defun time-difference-in-seconds (t1 t2)
+  (+ (* (- (car t2) (car t1)) 3600) (* (- (cadr t2) (cadr t1)) 60) (- (caddr t2) (caddr t1))))
 
 ;; ========================================
 ;;  Built-in functions supporting the automatic construction of a rules from patterns

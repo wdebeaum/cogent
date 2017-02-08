@@ -3,25 +3,35 @@
 
 (in-package :dagent)
 
-(defun set-system-goal (&key content context)
+(defun set-system-goal (&key id what context)
   (let* ((user (lookup-user 'desktop))
     ;; eventually get rid of the next two and do within the model
     ;;(set-CPS-variable :current-shared-goal content)
     ;;(set-CPS-variable :system-context context)
 	 (goal ;;(if (equal content '(IDENTIFY :agent ONT::USER :what WH-TERM :as (GOAL)))
 		 ;;  '(PRIVATE-SYSTEM-GOAL :content (IDENTIFY :agent ont::USER  :what X :as (GOAL))
-		   (list 'PRIVATE-SYSTEM-GOAL :content content :context context)))
+		   (list 'PRIVATE-SYSTEM-GOAL :id id :what what :context context)))
 		    
-      (update-csm goal)
-      (setf (user-time-of-last-interaction user) (get-time-of-day))
+    ;(update-csm goal)
+    (setf (user-time-of-last-user-interaction user) (get-time-of-day))
       (cache-response-for-processing (list (list* 'CSM-RESPONSE 'XXX goal)))
-      (invoke-state 'initiate-CPS-goal user nil nil))
+      (invoke-state 'initiate-CPS-goal nil user nil nil))
     )
 
 ;;;  Here's the code that manages the interface to the CSM
 
 (defun update-csm (update)
-  (send-msg `(REQUEST :content (UPDATE-CSM :content ,update))))
+  (multiple-value-bind
+	(content context)
+      (separate-context update)
+  (send-msg `(REQUEST :content (UPDATE-CSM :content ,content :context ,context))))
+  )
+
+(defun separate-context (term)
+  (values (cons (car term) (remove-arg (cdr term) :context))
+	  (find-arg-in-act term :context)))
+  
+
 
 (defun query-csm (&key result content)
   (cache-response-for-processing (list (send-and-wait `(REQUEST :content (QUERY-CSM :content ,content))))))
@@ -43,7 +53,7 @@
 	
 (defun take-initiative? (&key result goal context)
   (let* (;(reply (send-and-wait `(REQUEST :content (take-initiative? :goal ,goal :context ,context))))
-	 (realgoal (if (consp goal) (find-arg-in-act goal :what) goal))
+	 (realgoal (if (consp goal) (find-arg-in-act goal :id) goal))
 	 (reply (send-and-wait `(REQUEST :content (take-initiative? :goal ,realgoal :context ,context))))
 	 )
 	 ;(result-value (find-arg-in-act reply :result))

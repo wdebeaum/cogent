@@ -31,10 +31,10 @@
 
 (parser::augment-grammar
  '((headfeatures
-    (vp vform var agr neg sem iobj dobj comp3 part cont aux tense-pro gap subj subjvar modal auxname lex headcat transform subj-map template complex)
+    (vp vform var agr neg sem iobj dobj comp3 part cont aux tense-pro gap subj subjvar modal auxname lex headcat transform subj-map template complex ellipsis)
     (vp- vform var agr neg sem iobj dobj comp3 part cont   tense-pro aux modal auxname lex headcat transform subj-map advbl-needed
 	 passive passive-map template) 
-    (s vform var neg sem subjvar dobjvar cont  lex headcat transform)
+    (s vform var neg sem subjvar dobjvar cont  lex headcat transform ellipsis)
     (cp vform var neg sem subjvar dobjvar cont  transform subj-map subj lex)
     (v lex sem lf neg var agr cont aux modal auxname ellipsis tma transform headcat)
     (aux vform var agr neg sem subj iobj dobj comp3 part cont  tense-pro lex headcat transform subj-map advbl-needed
@@ -276,7 +276,7 @@
     -how-about-s>
     (word (lex (? x how what)) (var ?v1))
     (word (lex about)) 
-    (head ((? cat np vp) (gap -) (var ?v) (lf ?lf) (case (? case obj -)))))
+    (head (np (gap -) (var ?v) (lf ?lf) (case (? case obj -)))))
 
     ;; test: how about horizontally?
     ;; test: what about from the cat?
@@ -315,7 +315,7 @@
      (advbl-needed ?avn)
      )
     -s1>
-    (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) ;; lex needed for expletives?
+    (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) ;; lex needed for expletives? 
       (pp-word -) (changeagr -) (gap -))
     (head (vp (lf ?lf) (gap ?g)
               (template (? !x  lxm::propositional-equal-templ))
@@ -500,7 +500,7 @@
      (preadvbl +) (subj ?subj) 
      (advbl-needed -)
      )
-     -wh-setting1> .98 ;; really don't want this to apply before gaps
+     -wh-advbl-q1> .98 ;; really don't want this to apply before gaps
     (advbl
      ;;(argument (% s (sem ?sem) (sem ($ f::situation (f::type f::eventuality)))))
      (var ?advv)
@@ -520,7 +520,7 @@
      (preadvbl +) (subj ?subj) 
      (advbl-needed -)
        )
-    -wh-setting2> .98 ;; don't want this to apply before gaps
+    -wh-advbl-q2> .98 ;; don't want this to apply before gaps
     (np (wh q) (var ?tv) (sem ($ f::time (f::time-scale f::point))))  ;; should only be time points, not intervals
     (head (s (stype ynq) (var ?v) (gap -) (subj ?subj) (tag -)
 	   (lf (% prop (sem ?sem) (class ?c) (constraint ?con) (tma ?tma) (transform ?transform)))
@@ -985,14 +985,14 @@
      ;; e.g., (the train) is orange
      ;; test: the dog is short.
      ((pred (lf ?lf) (arg ?arg) (argument ?argument) (var ?v) (agr ?agr) (sem ?sem)    
-            (filled -) (adjectival +)
+            (filled -) (adjectival +) (how ?how)
             )
       -pred-adj> 1
       (head (adjp (lf ?lf) (var ?v) (arg ?arg) (argument ?argument) (argument (% ?argcat (var ?arg))) ;;(wh -) eliminated to allow "how red"
 	     (set-modifier -) ;; numbers are set-modifier +, and they don't behave as normal adjps in predicates
 	     (atype (? atp central predicative-only))
 	     ;; md 2008/17/07 eliminated cases with positive post-subcat, they should only happen when an adjective is looking for an argument after an np, not possible in the pred situation
-	     (post-subcat -)
+	     (post-subcat -) (how ?how)
 	     ))
       )
 
@@ -1416,7 +1416,7 @@
    ;; vp rule with dobj gap
    ;; test: who did he see
    ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?dobjvar)
-     (main +) (gap (% ?s3 (var ?gapvar) (sem ?gapsem) (agr ?gapagr) (gap -) 
+     (main +) (gap (% ?!cat (var ?gapvar) (sem ?gapsem) (agr ?gapagr) (arg ?arg) (gap -) 
 		      (case ?dcase) (ptype ?ptype)
 		      ))
      (var ?v) 
@@ -1433,7 +1433,7 @@
              (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
 	     (iobj ?iobj) (iobj (% ?s2 (case (? icase obj -)) (var ?iobjvar) (sem ?iobjsem) (gap -)))
 	     (part ?part) 
-	     (dobj ?!dobj) (dobj (% np (case (? dcase obj -)) (var ?gapvar) (sem ?gapsem) (agr ?gapagr) (ptype ?ptype))) ;; must have a possibility of np dobj
+	     (dobj ?!dobj) (dobj (% ?!cat (case (? dcase obj -)) (var ?gapvar) (arg ?arg) (sem ?gapsem) (agr ?gapagr) (ptype ?ptype))) ;; must have a possibility of np dobj
 	     (comp3 ?comp) (comp3 (% ?s4 (case (? ccase obj -)) (var ?compvar) (sem ?compsem) (gap -))) 
 	     (subj-map ?lsubj-map) (dobj-map ?!dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
 	      
@@ -1471,7 +1471,7 @@
 	    (be-there -)
 	   ))
     
-    ?iobj     
+    ?iobj 
     ?dobj
     ?part
     ?comp
@@ -1531,7 +1531,8 @@
 	   ;;(subjvar ?subjvar)
 	   (iobj ?iobj)  (iobj (% ?s2 (var ?iobjvar) (sem ?iobjsem) (gap -) (case (? icase obj -))))
 	   (part ?part) 
-	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (gap -) (case (? dcase obj -))))
+	   (dobj ?dobj)			
+	   (dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (gap -) (case (? dcase obj -))))
 	   (comp3 ?!comp) (comp3 (% ?s4 (var ?!gapvar) (sem ?compsem) (agr ?gapagr) (case (? ccase obj -)) (ptype ?ptype) ))
 	   (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
 	   
@@ -2049,7 +2050,7 @@
 	    ))
      (clex ?lex)
      )
-    -s-ifa-to> .97 ;; set this below wh-desc1a, but above adv-vp-post
+    -s-ifa-to> .97 ;; set this below wh-descg1a, but above adv-vp-post
     (word (lex (? lex if whether)))
     (head (cp (ctype s-to) (sem ?argsem) (var ?s-v) (lf ?lf-s) (gap -)
 	   (lex ?hlex) (headcat ?hcat) ;; aug-trips
@@ -2414,7 +2415,7 @@
     (head (np (wh -) (sort (? x pred unit-measure)) (complex -) (var ?v) (sem ($ ?!type))))
     (punc (punctype ?p) (lex w::punc-question-mark))
     )
-
+   
    ; What next?  What color?
    ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?v) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p))
@@ -2423,6 +2424,14 @@
     (punc (punctype ?p) (lex w::punc-question-mark))
     )
    
+   ; How big?
+   ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?v) (punctype ?p))) )) (var *)
+	 (punc +) (punctype ?p)) 
+    -how-adj-utt-simple-q> .98
+    (head (adjp (wh Q) (sort (? x pp-word)) (complex -) (var ?v) (sem ($ ?!type))))
+    (punc (punctype ?p) (lex w::punc-question-mark))
+    )
+
    ;; complex nps (e.g., disjunctions, conjunctions) are dispreferred over parses with disjunction more deeply attached
     ((utt (lf (% speechact (var *) (class ont::sa_identify) (constraint (& (content ?v))))) (var *))
      -np-utt> .97
@@ -3380,6 +3389,26 @@
     
     )
 
+   ; (the dog that) chased and ate the cat
+   ((vp- (seq +) (vform ?vf) (var *)  (subjvar ?subj)  (subj ?subject) (agr ?agr) (gap ?gap)(subj-map ?subjmap)
+     (class ?class) (sem ?sem)
+     (constraint (&  (OPERATOR ?lx) 
+		     (SEQUENCE 
+		      ((% *PRO* (var ?v1) (status ont::f) (class ?c1) (tma ?tma1) (sem ?sem1) (constraint ?con1))
+		       (% *PRO* (var ?v2) (status ont::f) (class ?c2) (tma ?tma2) (sem ?sem2) (constraint ?con2)))))))
+     
+    -vbar-conj-dobj>
+    (head (vp- (vform ?vf) (subjvar ?subj)  (subj ?subject) (var ?v1) (seq -)  (agr ?agr) (gap ?!dobj)
+	       (advbl-needed -) (class ?c1) (constraint ?con1) (tma ?tma1) (sem ?sem1) (subj-map ?subjmap)
+	   ))
+    (CONJ (lf ?lx) (but-not -)) ;;(? lx or but however plus otherwise so and)))
+    (vp- (vform ?vf) (var ?v2) (subjvar ?subj) (subj ?subject) (agr ?agr) (gap -) (dobj ?!dobj)
+     (Advbl-needed -) (class ?c2) (constraint ?con2)  (tma ?tma2) (sem ?sem2))
+    (sem-least-upper-bound (in1 ?sem1) (in2 ?sem2) (out ?sem))
+    (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
+    
+    )
+   
    ;; they had come, seen and conquered
   ;;  starting the VBARSEQ 
    ((VBARSEQ (vform ?vf) (var *) (subjvar ?subj)  (subj ?subject) (gap ?gap)  (agr ?agr)

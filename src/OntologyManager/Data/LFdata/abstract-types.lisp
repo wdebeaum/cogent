@@ -690,63 +690,81 @@
 
 (define-type ONT::green
  :parent ONT::color-VAL
+ :sem (F::Abstr-obj (F::scale ONT::GREEN*1--07--00))
  )
 
 (define-type ONT::yellow
  :parent ONT::color-VAL
+ :sem (F::Abstr-obj (F::scale ONT::YELLOW*1--07--00))
  )
 
 (define-type ONT::orange
  :parent ONT::color-VAL
- )
+  :sem (F::Abstr-obj (F::scale ONT::ORANGE*1--07--00))
+  )
 
 (define-type ONT::purple
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::PURPLE*1--07--00))
  )
 
 (define-type ONT::black
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::BLACKNESS*1--07--00))
  )
 
 (define-type ONT::brown
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::BROWNNESS*1--07--00))
  )
 
 (define-type ONT::white
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::white*1--07--00))
  )
 
 (define-type ONT::gold
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::gold*1--07--00))
  )
 
 (define-type ONT::silver
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::silver*1--07--00))
  )
 
 (define-type ONT::magenta
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::magenta*1--07--00))
  )
 
 (define-type ONT::pink
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::pink*1--07--00))
  )
 
 (define-type ONT::tan
  :parent ONT::color-VAL
  )
 
-(define-type ONT::grey
- :parent ONT::color-VAL
- )
-
 (define-type ONT::gray
  :parent ONT::color-VAL
+  :sem (F::Abstr-obj (F::scale ONT::greyness*1--07--00))
  )
 
 (define-type ONT::SHAPE-VAL
   :parent ONT::spatial
- :sem (F::Abstr-obj (F::MEasure-function F::VALUE))
+ :sem (F::Abstr-obj (F::Measure-function F::VALUE))
+ )
+
+(define-type ONT::round-val
+ :parent ONT::shape-VAL
+  :sem (F::Abstr-obj (F::scale ONT::roundness*1--07--00))
+ )
+
+(define-type ONT::square-val
+ :parent ONT::shape-VAL
+  :sem (F::Abstr-obj (F::scale ONT::squareness*1--07--00))
  )
 
 ;; smooth, rough, soft, hard
@@ -754,6 +772,23 @@
  :parent ONT::tangible-PROPERTY-VAL
  :sem (F::Abstr-obj (F::MEasure-function F::VALUE))
  )
+
+(define-type ONT::soft-VAL
+ :parent ONT::texture-VAL
+ :sem (F::Abstr-obj (F::scale ONT::softness*1--07--00))
+ )
+
+(define-type ONT::hard-VAL
+ :parent ONT::texture-VAL
+ :sem (F::Abstr-obj (F::scale ONT::hardness*1--07--00))
+ )
+
+(define-type ONT::smooth-VAL
+ :parent ONT::texture-VAL
+ :sem (F::Abstr-obj (F::scale ONT::smoothness*1--07--00))
+ )
+
+
 
 
 ;; loud, soft, quiet
@@ -1085,6 +1120,28 @@
 ;; delicious, zesty, spicy, salty...
 (define-type ONT::TASTE-VAL
  :parent ONT::tastable-property-val
+ :sem (F::Abstr-obj (F::scale ONT::tastefulness*1--07--00xs))
+ )
+
+(define-type ONT::SWEET-VAL
+ :parent ONT::taste-val
+ :sem (F::Abstr-obj (F::scale ONT::sweetness*1--07--00))
+ )
+
+(define-type ONT::bitter-VAL
+ :parent ONT::taste-val
+ :sem (F::Abstr-obj (F::scale ONT::bitter*1--07--00))
+ )
+
+
+(define-type ONT::tart-VAL
+ :parent ONT::taste-val
+ :sem (F::Abstr-obj (F::scale ONT::tartness*1--07--00))
+ )
+
+(define-type ONT::sour-VAL
+ :parent ONT::taste-val
+ :sem (F::Abstr-obj (F::scale ONT::sourness*1--07--00))
  )
 
 ;; beautiful, ugly
@@ -1449,6 +1506,7 @@
 ;;; A domain is a single-valued function
 (define-type ONT::DOMAIN
  :parent ONT::ABSTRACT-object
+ :wordnet-sense-keys ("attribute%1:03:00")
  :comment "Nouns that name domain/scales, and can serve as relational nouns (e.g., the COLOR of the box)"
  :arguments ((:REQUIRED ONT::FIGURE)
 	     (:optional ont::GROUND)
@@ -1496,11 +1554,13 @@
 ;; comfort, discomfort
 (define-type ONT::comfortableness
  :parent ONT::non-measure-ordered-domain
+ :wordnet-sense-keys ("discomfort%1:26:00" "discomfort%1:12:00")
  )
 
 ;; security, privacy
 (define-type ONT::confidentiality
- :parent  ONT::NON-MEASURE-ORDERED-DOMAIN
+    :wordnet-sense-keys ("privacy%1:07:00" "privacy%1:26:02")
+    :parent  ONT::NON-MEASURE-ORDERED-DOMAIN
  )
 
 ;; protection, insurance
@@ -1510,13 +1570,15 @@
 
 ;; severity, intensity
 (define-type ONT::intensity
- :parent  ONT::NON-MEASURE-ORDERED-DOMAIN
+    :wordnet-sense-keys ("intensity%1:07:00" "intensity%1:07:03")
+    :parent  ONT::NON-MEASURE-ORDERED-DOMAIN
  )
 
 ;; priority
 (define-type ONT::importance
- :parent  ONT::NON-MEASURE-ORDERED-DOMAIN
- )
+    :wordnet-sense-keys ("importance%1:26:00" "importance%1:07:00")
+    :parent  ONT::NON-MEASURE-ORDERED-DOMAIN
+    )
 
 ;; custom, habit, practice, tradition
 (define-type ONT::practice
@@ -1525,7 +1587,8 @@
 
 ;; layer (of ozone, chocolate), sheet (of ice, paper), slice
 (define-type ont::sheet
-  :parent ont::non-measure-ordered-domain
+;  :parent ont::non-measure-ordered-domain
+  :parent ONT::GROUP-OBJECT
   )
 
 (define-type ONT::MEASURE-UNIT
@@ -1981,7 +2044,8 @@
 
 (define-type ONT::ASSETS
  :wordnet-sense-keys ("assets%1:21:00")
- :parent ONT::MEASURE-DOMAIN
+; :parent ONT::MEASURE-DOMAIN
+ :parent ONT::FUNCTION-OBJECT
  :sem (F::Abstr-obj (F::Scale Ont::money-scale))
  :arguments ((:REQUIRED ONT::FIGURE ((? fot F::phys-obj F::situation)))
              (:ESSENTIAL ONT::GROUND (F::abstr-obj (F::measure-function F::value) (F::scale ont::money-scale)))
@@ -2190,7 +2254,8 @@
 
 ;; confidence, authority, trust
 (define-type ont::assurance
-  :parent ont::non-measure-ordered-domain
+    :wordnet-sense-keys ("trust%1:26:00")
+    :parent ont::non-measure-ordered-domain
   )
 
 ;; gist, essence, substance
@@ -2236,7 +2301,7 @@
  )
 
 (define-type ONT::attribute
- :wordnet-sense-keys ("dimension%1:09:00" "attribute%1:09:00" "property%1:09:00" "property%1:07:00" "holding%1:21:00" "belongings%1:21:00" "property%1:21:00" "attribute%1:03:00")
+ :wordnet-sense-keys ("dimension%1:09:00" "attribute%1:09:00" "property%1:09:00" "property%1:07:00" "holding%1:21:00" "belongings%1:21:00" "property%1:21:00")
  :parent ont::abstract-object-nontemporal
  :arguments ((:OPTIONAL ONT::FIGURE ((? lo f::phys-obj f::abstr-obj)))
              )
@@ -2468,7 +2533,8 @@
 
 ;; lottery, contest
 (define-type ont::competition
-  :parent ont::process
+  :wordnet-sense-keys ("competition%1:11:00")
+  :parent ont::event-defined-by-activity
   )
 
 ;; game
@@ -2486,6 +2552,10 @@
 (define-type ONT::athletic-game
  :wordnet-sense-keys ("athletics%1:04:00" "sport%1:04:00")
  :parent ONT::sport
+ )
+
+(define-type ONT::court-game
+ :parent ONT::athletic-game
  )
 
 ;; chess
@@ -3263,16 +3333,17 @@
 
 (define-type ONT::HEIGHT-VAL
     :sem (F::Abstr-obj (F::Scale Ont::height-scale))
+    :wordnet-sense-keys ("high%3:00:02" "high%3:00:01" "tall%3:00:00")
     :parent ONT::linear-dimension
     )
 
-(define-type ONT::HIGH-VAL
+#||(define-type ONT::HIGH-VAL
  :parent ONT::linear-dimension
  :wordnet-sense-keys ("high%3:00:02" "high%3:00:01" "tall%3:00:00")
-)
+)||#
 
 (define-type ONT::LOW-VAL
- :parent ONT::linear-dimension
+ :parent ONT::height-val
  :wordnet-sense-keys ("low%3:00:02" "low%3:00:01")
 )
 
@@ -3693,6 +3764,7 @@
 (define-type ONT::activity-val
     :comment "predicates relating to whether something is acting as intended for some process"
   :parent ONT::property-val
+  :arguments ((:required ONT::FIGURE ((? lof f::phys-obj ))))
  )
 
 (define-type ONT::active
@@ -3701,7 +3773,7 @@
  ; Words: (W::ACTIVE W::BUSY)
  :wordnet-sense-keys ("busy%3:00:00" "active%3:00:03" "active%3:00:06" "busy%5:00:01:active:06")
  ; Antonym: ONT::INACTIVE (W::PASSIVE W::IDLE)
-  :arguments ((:required ONT::FIGURE ((? lof f::phys-obj))))
+  :arguments ((:required ONT::FIGURE ((? lof f::phys-obj) (f::type (? !t2 ont::location)))))
  )
 
 (define-type ONT::INACTIVE

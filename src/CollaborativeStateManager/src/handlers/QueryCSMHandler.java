@@ -1,6 +1,7 @@
 package handlers;
 
 import TRIPS.KQML.KQMLList;
+import TRIPS.KQML.KQMLToken;
 import TRIPS.KQML.KQMLObject;
 import TRIPS.KQML.KQMLPerformative;
 
@@ -74,6 +75,7 @@ public class QueryCSMHandler extends MessageHandler {
 		{
 			listToReturn.add(g.getVariableName());
 			//newContext.add(g.getKQMLTerm());
+			newContext.addAll(g.getOriginalContext());
 			newContext.addAll(referenceHandler.generateContextForTerm(g.getKQMLTerm()));
 		}
 		
@@ -111,18 +113,25 @@ public class QueryCSMHandler extends MessageHandler {
 		KQMLList newContext = new KQMLList();
 		if (content.getKeywordArg(":CONTEXT") != null)
 			newContext.addAll((KQMLList)content.getKeywordArg(":CONTEXT"));
-
+		
 		String goalVariable = "NIL";
+		String goalId = "NIL";
 		if (activeGoal != null)
 		{
 			goalVariable = activeGoal.getVariableName();
+			goalId = activeGoal.getId();
 			//newContext.add(activeGoal.getKQMLTerm());
+			newContext.addAll(activeGoal.getOriginalContext());
 			newContext.addAll(referenceHandler.generateContextForTerm(activeGoal.getKQMLTerm()));
+			
 		}
 		KQMLList response = new KQMLList();
 		response.add("ACTIVE-GOAL");
+		response.add(":ID");
+		response.add(new KQMLToken(goalId));
 		response.add(":WHAT");
-		response.add(goalVariable);
+		response.add(new KQMLToken(goalVariable));
+		
 		
 		return reportContent(response, newContext);
 	}

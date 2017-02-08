@@ -2,7 +2,7 @@
 ;;;; File: Systems/core/test.lisp
 ;;;; Creator: George Ferguson
 ;;;; Created: Thu Jul 12 15:48:37 2007
-;;;; Time-stamp: <Tue Jan  6 18:31:26 EST 2015 jallen>
+;;;; Time-stamp: <Sat Dec 17 11:25:46 CST 2016 lgalescu>
 ;;;;
 ;;;; Based on Test/test-socket.lisp from 14 Jun 1999
 ;;;;
@@ -30,6 +30,9 @@
 (defvar *test-dialog* nil
   "List of utterances making up the test dialog.")
 
+(defvar *sample-dialogues* nil
+  "Association list of test dialogues, keyed by dialogue ids.")
+
 (defvar *use-texttagger* nil
   "Set to t to make test-utterance (and test, next, etc.) use TextTagger to send stuff to the parser rather than sending it directly.")
 
@@ -51,19 +54,33 @@
   (loop for i from 1 to 3
       do (format t ".")
 	 (sleep 1))
-#||
+  #||
   ;; Send start-conversation messages
-  (format t "~%Starting conversation~%")
-  (COMM:send 'test
-   '(broadcast :sender test
-     :content (tell :sender splash :content (start-conversation))))
-  ;; Wait to print listener prompt
-  (sleep 2)
-||#
-  (format t "~%System started; use (test \"...\") to test single sentences.~%")
-  (format t "Or use (test) followed by (next), (again), or (start-over)~%")
-  (format t "to test the sample dialogue for this scenario.~%")
+  (start-conversation)
+  ||#
+  (format t "~%System started.~%")
+  (help)
   )
+
+;;;
+;;; Help
+;;;
+
+(defun help ()
+  "Show a few hints of what one can do"
+  (format t "Use (test \"...\") to test single sentences.~%")
+  (format t "Or use (test) followed by (next), (again), or (start-over)~%")
+  (format t "to test the default sample dialogue for this scenario.~%")
+  (format t "Use (ptest 'dkey) to test the sample dialogue associated with the key \"dkey\". ~%")
+  (format t "To see what sample dialogues keys there are use (show-sample-dialogues).~%")
+  (format t "Use (help) to see again these hints.~%")
+  )
+
+(defun show-sample-dialogues ()
+  "Show keys for sample dialogues"
+  (format t "Sample dialogues: ~{~a~^, ~}"
+	  (sort (mapcar #'car *sample-dialogues*) #'string-lessp)))
+
 
 ;;;
 ;;; Various useful functions
@@ -147,7 +164,10 @@ after each utterance is processed."
 	 (format t "Sample dialogue has ended. Use (START-OVER) to start over.~%"))
 	(t
 	 (incf *test-uttnum*)
-	 (test-one (elt *test-dialog* *test-uttnum*)))))
+	 (test-one (elt *test-dialog* *test-uttnum*))
+	 (when (eql (1+ *test-uttnum*) (length *test-dialog*))
+	   (COMM::send 'test `(TELL :content (component-status :who TEST :what (OK TEST-FINISHED))))
+	   ))))
 
  ;; NEXT3 and NEXT4 here for historical reasons...
 (defun next3 ()
@@ -196,6 +216,12 @@ TEST."
   (loop for x in *test-dialog*
      do (test x)))
 
+(defun test-all-of (key)
+  "Set *TEST-DIALOG* to the dialog identified by KEY on *SAMPLE-DIALOGUES*,
+then invoke TEST-ALL to test all its utterances."
+  (setf *test-dialog* (cdr (assoc key *sample-dialogues*)))
+  (test-all))
+
 (defun test-lines-from-file (filename)
   "Read lines from the named file into *test-dialog*, and then invoke test-all
    to test all of the lines as utterances."
@@ -216,6 +242,16 @@ TEST."
     (let ((str (make-array (file-length f) :element-type 'character :fill-pointer t)))
       (setf (fill-pointer str) (read-sequence str f))
       (test str))))
+
+(defun start-conversation ()
+  ;; Send start-conversation messages
+  (format t "~%Starting conversation~%")
+  (COMM:send 'test
+   '(broadcast :content (tell :content (start-conversation))))
+  ;; Wait to print listener prompt
+  (sleep 2)
+  )
+
 
 ;;;
 ;;; Tell the user what to do next

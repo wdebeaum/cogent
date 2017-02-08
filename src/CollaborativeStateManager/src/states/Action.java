@@ -7,14 +7,14 @@ public class Action extends Goal {
 	Goal contributesTo;
 	String actionType;
 	
-	public Action(KQMLList term) {
-		super(term);
+	public Action(KQMLList term, KQMLList context) {
+		super(term,context);
 		actionType = "unknown";
 		// TODO Auto-generated constructor stub
 	}
 
-	public Action(KQMLList term, Goal parent) {
-		super(term, parent);
+	public Action(KQMLList term, Goal parent,KQMLList context) {
+		super(term, parent, context);
 		actionType = "unknown";
 		// TODO Auto-generated constructor stub
 	}

@@ -198,7 +198,8 @@
       r))
 
 (defun add-alt (name)
-  (intern (concatenate 'string (symbol-name name) "ALT>")))
+  ;(intern (concatenate 'string (symbol-name name) "ALT>")))
+  (intern (concatenate 'string (symbol-name name) "ALT>" (symbol-name (gen-symbol 'A)))))
   
 (defun explode-LF (r)
   "explodes rules out if they contain features with multiple values (e.g., has 2 MODS)"
@@ -590,16 +591,20 @@
     (match-with-subtyping (make-into-constit pattern) (make-into-constit value))))
 
 (defun check-type-match (val pat)
-  "check-type-match imposes stronger constraints than the parser unification, as we wnat strict
+  "check-type-match imposes stronger constraints than the parser unification, as we want strict
      inclusion of the val in the pattern, and not just non-null intersection"
-  (let ((pattypes (find-typelist pat))
-	(valtypes (find-typelist val)))
-    (if (or (null pattypes)
-	    (null valtypes)
-	    (intersection pattypes valtypes))
-	    
-	T
-	(find-subtype-match valtypes pattypes))))
+  (multiple-value-bind
+	(pattypes exclusion)
+      (find-typelist pat)
+    (let ((valtypes (find-typelist val)))
+      (if (null exclusion)
+	  (or (null pattypes)
+	      (null valtypes)
+	      (intersection pattypes valtypes)
+	      (find-subtype-match valtypes pattypes))
+	  ;; exclusion just succeed for now and let the unifier do the work
+	  T)
+    )))
 
 (defun find-typelist (term)
   (cond ((symbolp term) (list term))
@@ -609,7 +614,7 @@
 	     term))
 	((var-p term)
 	 (if (var-values term)
-	     (find-typelist (var-values term))
+	     (values (find-typelist (var-values term)) (var-non-empty term))
 	     nil))))
 
 (defun find-subtype-match (vals pats)

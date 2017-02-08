@@ -2,9 +2,9 @@
 
 # This is pretty much a direct translation of Hello.java into Python.
 
-from bioagents_trips.trips_module import TripsModule
-from bioagents_trips.kqml_performative import KQMLPerformative
-from bioagents_trips.kqml_list import KQMLList
+from TripsModule import TripsModule
+from KQML import KQMLPerformative
+from KQML import KQMLList
 
 class Hello(TripsModule):
     """ Hello TRIPS module - replies to hello requests with hello tells.
@@ -40,5 +40,5 @@ class Hello(TripsModule):
 
 if __name__ == "__main__":
     import sys
-    Hello(sys.argv[1:]).start()
+    Hello(sys.argv[1:]).run()
 

@@ -2,6 +2,7 @@ package handlers;
 
 import java.util.List;
 
+import utilities.KQMLUtilities;
 import TRIPS.KQML.KQMLList;
 import TRIPS.KQML.KQMLObject;
 import TRIPS.KQML.KQMLPerformative;
@@ -83,7 +84,7 @@ public abstract class MessageHandler {
     	reportContent.add(content);
     	reportContent.add(":context");
     	if (context != null)
-    		reportContent.add(context);
+    		reportContent.add(KQMLUtilities.removedDuplicates((KQMLList)context));
     	else
     		reportContent.add(new KQMLList());
     	

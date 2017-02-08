@@ -34,3 +34,5 @@
 (defun run ()
   (dfc:run-component :dummy)
   )
+
+(defvar *replyCounter* 0)

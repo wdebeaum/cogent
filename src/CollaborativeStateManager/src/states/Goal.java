@@ -1,28 +1,40 @@
 package states;
 
+import handlers.IDHandler;
+import handlers.ReferenceHandler;
+
 import java.util.*;
 
 import extractors.TermExtractor;
 import TRIPS.KQML.KQMLList;
+import TRIPS.KQML.KQMLString;
+import TRIPS.KQML.KQMLToken;
 
 public class Goal {
 
 	Goal parent;
 	List<Goal> childGoals;
 	KQMLList term;
+	String id;
 	boolean accepted;
 	boolean failed;
 	boolean completed;
+	boolean rejected;
 	boolean systemTookInitiative;
 	List<KQMLList> failureMessages;
+	boolean initiativeSpecified;
+	boolean specifiedSystemInitiative;
+	KQMLList additionalContext;
+	KQMLList originalContext;
 	
-	public Goal(KQMLList term)
+	
+	public Goal(KQMLList term, KQMLList context)
 	{
-		this(term, null);
+		this(term, null, context);
 		
 	}
 	
-	public Goal(KQMLList term, Goal parent)
+	public Goal(KQMLList term, Goal parent, KQMLList context)
 	{
 		this.term = term;
 		this.parent = parent;
@@ -30,20 +42,64 @@ public class Goal {
 		failed = false;
 		completed = false;
 		systemTookInitiative = false;
+		initiativeSpecified = false;
+		specifiedSystemInitiative = false;
 		childGoals = new LinkedList<Goal>();
 		failureMessages = new ArrayList<KQMLList>();
+		additionalContext = new KQMLList();
+		originalContext = new KQMLList();
+		originalContext.addAll(context);
+		rejected = false;
+		if (term.getKeywordArg(":ID") == null)
+			id = IDHandler.getNewID();
+		else
+			id = term.getKeywordArg(":ID").stringValue();
+	}
+	
+	public Goal(Goal toCopy)
+	{
+		String variableName = IDHandler.getNewID();
+		// Take the old term but replace the variable name
+		this.term = new KQMLList();
+        this.term.addAll(toCopy.term);
+		term.set(1, new KQMLToken(variableName));
+		this.parent = toCopy.parent;
+		accepted = toCopy.accepted;
+		failed = toCopy.failed;
+		completed = toCopy.completed;
+		systemTookInitiative = toCopy.systemTookInitiative;
+		initiativeSpecified = toCopy.initiativeSpecified;
+		specifiedSystemInitiative = toCopy.specifiedSystemInitiative;
+		childGoals = new LinkedList<Goal>(toCopy.childGoals);
+		failureMessages = new ArrayList<KQMLList>(toCopy.failureMessages);
+		additionalContext = new KQMLList(toCopy.additionalContext);
+		originalContext = new KQMLList();
+		originalContext.addAll(toCopy.originalContext);
+		rejected = false;
+		id = IDHandler.getNewID();
 	}
 	
 	public Goal(String variableName, KQMLList context, Goal parent)
 	{
-		this(TermExtractor.extractTerm(variableName, context),parent);
+		this(TermExtractor.extractTerm(variableName, context),parent, context);
+		if (context != null)
+			originalContext.addAll(context);
 	}
 	
 	public Goal(String variableName, KQMLList context)
 	{
 		this(variableName,context,null);
 	}
+
+	public void addContext(KQMLList context)
+	{
+		originalContext.addAll(context);
+	}
 	
+	public KQMLList getOriginalContext()
+	{
+		return originalContext;
+	}
 	
 	public KQMLList getKQMLTerm()
 	{
@@ -58,6 +114,36 @@ public class Goal {
 	public void setAccepted()
 	{
 		accepted = true;
+	}
+	
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(String id)
+	{
+		this.id = id;
+	}
+
+	public void setInitiativeAgent(String agentSymbol, KQMLList context)
+	{
+		initiativeSpecified = true;
+		
+		KQMLList agentTerm = TermExtractor.extractTerm(agentSymbol, (KQMLList)context);
+		if (agentTerm.getKeywordArg(":REFERS-TO") != null &&
+				agentTerm.getKeywordArg(":REFERS-TO").stringValue().equalsIgnoreCase("ONT::SYS"))
+			specifiedSystemInitiative = true;
+		else
+			specifiedSystemInitiative = false;
+		
+		setArgument(":AGENT", agentSymbol);
+		additionalContext.add(TermExtractor.extractTerm(agentSymbol, context));
+		
+	}
+	
+	public void resetInitiative()
+	{
+		initiativeSpecified = false;
 	}
 
 	public boolean isFailed() {
@@ -86,7 +172,18 @@ public class Goal {
 		this.parent = newParent;
 	}
 	
-    public KQMLList adoptContent(String goalType, String subgoalOf)
+	public void setArgument(String argument, String value)
+	{
+		term.removeKeywordArg(argument);
+		term.add(argument);
+		term.add(value);
+	}
+	
+    public boolean isInitiativeSpecified() {
+		return initiativeSpecified;
+	}
+
+	public KQMLList adoptContent(String goalType, String subgoalOf)
     {
     	KQMLList adopt = new KQMLList();
     	
@@ -129,6 +226,11 @@ public class Goal {
 
 	public void setCompleted(boolean completed) {
 		this.completed = completed;
+	}
+	
+	public KQMLList getAdditionalContext()
+	{
+		return additionalContext;
 	}
 	
 }

@@ -141,6 +141,11 @@ public class OntologyReader {
 		return result;
 	}
 	
+	public List<String> getParentGoals(String goalType)
+	{
+		return goals.get(goalType);
+	}
+	
 	public void readEventOntologyFromFile(String filename)
 	{
 		InputStream in = null;
@@ -190,4 +195,8 @@ public class OntologyReader {
 		return models.contains(term);
 	}
 	
+	public boolean isRootGoal(String goalType)
+	{
+		return getRootGoals().contains(goalType);
+	}
 }

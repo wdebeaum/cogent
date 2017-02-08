@@ -69,7 +69,11 @@
 	 (rootLF (find-lf root lfs))
 	 (input (find-arg-in-act act :words))
 	 (uttnum (find-arg-in-act act :uttnum))
-	 (roles (extract-roles-from-arglist (cdddr rootLF) (second rootLF)))
+	 ;;(roles (extract-roles-from-arglist (cdddr rootLF) (second rootLF)))
+	 (roles (mapcan #'(lambda (x) (extract-roles-from-arglist (cdddr x) (second x))) lfs))
+	 ;(recursive-roles (mapcan #'(lambda (x) (list (list (car x) (second x) (add-ancestors (car x) roles))) ) roles))
+	 (recursive-roles (mapcan #'(lambda (x) (list (list (car x) (second x) (cons (third x) (add-ancestors (third x) roles (list (car x) (third x)))))) ) roles))
+	 (merged-recursive-roles (remove-duplicates (mapcan #'(lambda (x) (list (merge-role-list (car x) recursive-roles))) recursive-roles) :test #'equal))
 	 )
     (setq *im-utt-count* (+ *im-utt-count* 1))
     (log-msg `(LOG-SPEECHACT :input ,input :lf ,lfs :uttnum ,uttnum) *im-utt-count*)
@@ -81,7 +85,7 @@
 			   :speechactId sa-id
 			  ;; :root root
 			   :lf-ids (mapcar #'second lfs)
-			   :referring-expressions (build-referent-structures-from-terms terms roles)
+			   :referring-expressions (build-referent-structures-from-terms terms merged-recursive-roles)
 			   :input input
 			   :index *im-utt-count*
 			   :uttnum uttnum)
@@ -91,11 +95,47 @@
 (defun extract-roles-from-arglist (lf var)
   "finds the grammatical roles LSUBJ, DOBJ, IOBJ in an LF - returns an assoc list"
   (when lf
-    (if (member (car lf) '(:AGENT :agent1 :AFFECTED :affected1 :EXPERIENCER :NEUTRAL :neutral1 :FORMAL :formal1 :affected-result
-			   :figure :figure1 :ground :ground1))
+    (if (member (car lf) *core-roles*)  
 	(list* (list (second  lf) (car lf) var)
 	       (extract-roles-from-arglist (cddr lf) var))
 	(extract-roles-from-arglist (cddr lf) var))))
+
+#|
+(defun add-ancestors (id role-list)
+  (let* ((parent (third (assoc id role-list)))
+	 )
+    (if (null parent)
+	NIL
+        (cons parent (add-ancestors parent role-list))
+	)
+  )
+)
+|#
+
+(defun add-ancestors (id role-list visited-list) ; check visited-list because some ancestor links create a loop (e.g., A --MOD--> B --FIGURE--> A)
+  (let* ((sublist (remove-if-not #'(lambda (x) (eq (car x) id)) role-list))
+	 (parents (mapcar #'(lambda (x) (third x) ) sublist))
+	 (parents-not-visited (remove-if #'(lambda (x) (member x visited-list)) parents))
+	 )
+    (if (null parents-not-visited)
+	'()
+      (remove-duplicates (append parents-not-visited
+				 (mapcan #'(lambda(x) (add-ancestors x role-list (append visited-list parents-not-visited))) parents-not-visited)))
+    )
+  )
+)
+
+
+(defun merge-role-list (id role-list)
+  (let* (
+	 (sublist (remove-if-not #'(lambda (x) (eq (car x) id)) role-list))
+	 (merged-roles (mapcar #'(lambda (x) (list (second x) (third x))) sublist))
+	 )
+    (cons id merged-roles)
+  )
+)
+
+
 
 (defun refine-vague-relations (lfs)
   "tries to refine assoc-with relations"

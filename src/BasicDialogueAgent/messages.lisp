@@ -2,7 +2,7 @@
 ;;;; messages.lisp for PlowAgent
 ;;;;
 ;;;;
-;;;; Time-stamp: <Wed Jul 20 15:25:37 CDT 2016 lgalescu>
+;;;; Time-stamp: <Tue Jan 17 09:23:51 EST 2017 jallen>
 ;;;;
 
 (in-package :dagent)
@@ -68,11 +68,26 @@
    :subscribe t)
 
 (defcomponent-handler
-  '(tell &key :content (execution-status . *))
+  '(tell &key :content (disable-alarms . *))
+     #'(lambda (msg args)
+           (declare (ignore msg))
+	 (setq dagent::*using-alarms* nil))
+   :subscribe t)
+
+(defcomponent-handler
+  '(tell &key :content (enable-alarms . *))
+     #'(lambda (msg args)
+           (declare (ignore msg))
+	 (setq dagent::*using-alarms* t))
+   :subscribe t)
+
+(defcomponent-handler
+  '(tell &key :content (report . *))
+
      #'(lambda (msg args)
 	 (declare (ignore msg))
-	 (BA-message-handler msg)
-      )
+	 (handle-input-message  msg))
+      
     :subscribe t)
 
 (defcomponent-handler

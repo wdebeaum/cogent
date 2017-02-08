@@ -42,7 +42,7 @@
  )
 
 (define-type ONT::CAUSE-Interact
- :wordnet-sense-keys ("interact%2:41:00" "collide%2:35:01")
+ :wordnet-sense-keys ("interact%2:41:00")
  :comment "an AGENT causes some interaction with another agent"
  :parent ONT::CAUSE-EFFECT
  :sem (F::Situation (F::Trajectory -))
@@ -54,6 +54,7 @@
 
 (define-type ONT::agent-interaction
  :parent ONT::event-of-action
+  :wordnet-sense-keys ("interaction%1:04:00")
  :comment "events that involve the interaction of two or more agents"
  :arguments ((:ESSENTIAL ONT::Agent ((? atp F::phys-obj F::abstr-obj) (F::intentional +)))
 	     (:essential ONT::agent1 ((? cau3 F::Abstr-obj f::phys-obj) (F::intentional +)))
@@ -61,7 +62,7 @@
  )
 
 (define-type ONT::Communication
- :wordnet-sense-keys ("put_across%2:32:00" "pass_along%2:32:00" "pass%2:32:01" "pass_on%2:32:00" "communicate%2:32:01" "intercommunicate%2:32:00" "communicate%2:32:00" "communication%1:03:00")
+ :wordnet-sense-keys ("put_across%2:32:00" "pass_along%2:32:00" "pass%2:32:01" "pass_on%2:32:00" "communicate%2:32:01" "intercommunicate%2:32:00" "communicate%2:32:00" "communication%1:03:00" )
  :parent ONT::agent-interaction
  :comment "activity that involves transfer of information between agents"
  :sem (F::Situation (F::Cause F::agentive) (F::Trajectory -));  (F::Aspect F::bounded) (F::Time-span F::extended))
@@ -152,7 +153,7 @@
  :parent ONT::EVENT-OF-causation
  :sem (F::Situation (F::Cause (? c F::Force -)) (F::Aspect F::Dynamic))
  :comment "events of motion through some space (physical or abstract). Even though many motion verbs express simply undergoing motion, all these verbs allow to possibiliity of an AGENT"
- :arguments ((:REQUIRED ONT::affected ((? th1 f::phys-obj f::abstr-obj f::situation f::time)))
+ :arguments ((:REQUIRED ONT::affected ((? th1 f::phys-obj f::abstr-obj f::situation f::time) (F::mobility F::movable)))
              (:OPTIONAL ONT::Source)
              (:OPTIONAL ont::result)
 	     (:OPTIONAL ONT::agent ((? causetype F::phys-obj F::situation F::abstr-obj)))
@@ -328,7 +329,7 @@
  :parent ONT::cogitation
  :arguments ((:REQUIRED ONT::Formal ((? th4 f::phys-obj f::abstr-obj f::situation))) ;;Ground
              (:ESSENTIAL ONT::Agent  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
-	     (:optional ont::effect (f::situation))
+	     
              )
  )
 
@@ -426,8 +427,7 @@
  :parent ONT::directive
  :comment "the generic directive act"
  :sem (F::Situation (F::Cause F::Agentive))
- :arguments ((:ESSENTIAL ONT::effect ((? t f::situation)))
-             )
+ 
  )
 
 
@@ -453,7 +453,7 @@
  ;;; (?type (information F_Information-content)))
  :arguments ((:ESSENTIAL ONT::formal)
 ;             (:OPTIONAL ONT::associated-information)
-	     (:optional ont::effect ((? ef F::Situation f::abstr-obj)))
+
              )
  )
 
@@ -473,7 +473,7 @@
 ;;; I conjoined Experiencer-subj with Experiencer-obj
 ;;; swift 01/12/01 -- changed aspect feature f_static to F_Stage-Level to allow progressive
 (define-type ONT::Experiencer-emotion
- :wordnet-sense-keys ("like%2:37:05" "experience%2:37:00" "feel%2:37:00" "feeling%1:03:00")
+ :wordnet-sense-keys ("like%2:37:05" "experience%2:37:00" "feel%2:37:00")
  :parent ONT::event-of-experience
  :sem (F::Situation (:required (F::Cause F::Mental))(:default (F::Aspect F::Stage-Level)))
  :arguments (
@@ -515,7 +515,7 @@
  )
 
 (define-type ONT::touch
-    :wordnet-sense-keys ("touch%2:35:00")
+    :wordnet-sense-keys ("touch%2:35:00" "touch%1:04:00")
     :parent ONT::event-of-causation
     )
 
@@ -529,6 +529,7 @@
 (define-type ONT::Co-motion
  :parent ont::motion
  :arguments ((:essential ont::neutral)   ;; the object with which the motion is relative to
+	     (:essential ONT::AFFECTED ((? ttype f::phys-obj f::abstr-obj)))  ; exclude situation, e.g., "the dog chase the cat barking": "cat barking" should not be a nominalization that is chased 
              )
  )
 
@@ -553,6 +554,7 @@
  :wordnet-sense-keys ("put%2:35:00" "set%2:35:00" "place%2:35:00" "pose%2:35:02" "position%2:35:00" "lay%2:35:01" "interpose%2:38:01")
  :parent ont::event-of-causation
  :arguments ((:ESSENTIAL ONT::agent)
+	     (:ESSENTIAL ONT::AFFECTED (F::Phys-obj (F::mobility f::movable)))
 	     ;;(:OPTIONAL ONT::Spatial-Loc (F::Phys-obj (F::spatial-abstraction F::Any-spatial-abstraction))
              ;; (:implements goal))
              )
@@ -649,7 +651,6 @@
  :arguments (
 ;	     (:ESSENTIAL ONT::Cost ((? cst f::phys-obj f::abstr-obj))) ; too restrictive (f::abstr-obj (f::scale f::money-scale)))
 	     (:ESSENTIAL ONT::EXTENT ((? cst f::phys-obj f::abstr-obj))) ; too restrictive (f::abstr-obj (f::scale f::money-scale)))
-	     ;;(:optional ont::effect (f::situation))
 	     (:REQUIRED ONT::FORMAL ((? th8 F::Phys-obj F::Abstr-obj F::situation)))
              )
  )
@@ -907,7 +908,7 @@
              (:ESSENTIAL ONT::Formal)
              ;;; Evidence
              (:OPTIONAL ONT::Source)
-	     (:OPTIONAL ONT::Effect (f::situation)) ;; jr 20120806 adding for gloss-owl "X intend Y to Z"
+	    
              )
  )
 
@@ -973,7 +974,6 @@
  :parent ONT::cause-effect
  :arguments ((:OPTIONAL ONT::neutral ((? agt f::abstr-obj f::situation))))
 ;;((:OPTIONAL ONT::Instrument (F::Phys-obj (F::intentional -)))
-;	     (:REQUIRED ONT::effect (F::Situation))
 ;	     (:REQUIRED ONT::Formal ((? obj F::PHYS-OBJ F::ABSTR-OBJ)))
 ;	     (:OPTIONAL ONT::Cause)
 ;	     (:REQUIRED ONT::agent ((? ag f::abstr-obj F::phys-obj) (F::intentional +)) (:implements cause))
@@ -1014,6 +1014,7 @@
 		)
  )
 
+#| ; merged into COMPLETE
 (define-type ONT::succeed
  :wordnet-sense-keys ("hold_one's_own%2:42:00" "succeed%2:41:00" "excel%2:42:00")
  :parent ONT::acting
@@ -1024,7 +1025,7 @@
 	     ;;(:REQUIRED ONT::agent ((? ag f::abstr-obj F::phys-obj) (F::intentional +)) (:implements cause))
               )
  )
-
+|#
 
 ;; tend
 (define-type ONT::be-inclined

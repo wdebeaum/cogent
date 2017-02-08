@@ -626,7 +626,7 @@
 
 
 (define-type ONT::person
-    :wordnet-sense-keys ("person%1:03:00" "individual%1:03:00" "someone%1:03:00" "somebody%1:03:00" "mortal%1:03:00" "soul%1:03:00")
+    :wordnet-sense-keys ("person%1:03:00" "individual%1:03:00" "someone%1:03:00" "somebody%1:03:00" "mortal%1:03:00" "soul%1:03:00" "witch%1:18:01")
     :parent ONT::mammal ;; umls
     :sem (F::Phys-obj (F::form F::solid-object)
 		      (F::spatial-abstraction F::spatial-point)
@@ -1060,6 +1060,8 @@
 (define-type ont::internal-enclosure
     :wordnet-sense-keys ("room%1:06:00")
     :parent ONT::general-structure
+    :sem (F::Phys-obj (F::origin F::Artifact)(F::trajectory -)
+		      (F::mobility f::fixed) (f::container +))
     )
 
 ;; door, window
@@ -1134,6 +1136,7 @@
     )
 
 (define-type ONT::loc-as-point
+    :wordnet-sense-keys ("point%1:15:00")
     :parent ONT::location
     )
 
@@ -1369,11 +1372,6 @@
 		)
     )
 
-(define-type ONT::POINT
-    :parent ONT::LOCATION
-    :wordnet-sense-keys ("point%1:15:00")
-    :sem (F::Phys-obj (F::spatial-abstraction F::spatial-point))
-    )
 
 ;;; > REPRESENTATIONS
 
@@ -1427,7 +1425,7 @@
 ;; items in this class don't stand for something, but they can contain representations
 ;; e.g. page, book, display
 (define-type ONT::info-medium
-    :wordnet-sense-keys ("written_communication%1:10:00")
+    :wordnet-sense-keys ("written_communication%1:10:00" "speech%1:10:01")
     :parent ONT::info-holder
     :sem (F::Phys-obj (F::information F::data)) ;; why (f::container -) here?
     )
@@ -1765,7 +1763,7 @@
 ;; walk up, down the stairs
 (define-type ONT::STAIRS
     :wordnet-sense-keys ("stairway%1:06:00" "staircase%1:06:00")
-    :parent ONT::route
+    :parent ONT::general-structure
     )
 
 ;; laser
@@ -2016,6 +2014,11 @@
     :sem (f::Phys-obj (F::Origin F::Artifact))
     )
 
+(define-type ONT::washing
+    :parent ONT::attire
+    :wordnet-sense-keys ("laundry%1:06:01")
+    )
+
 ;; boudreaux takes samples of environmental materials, fossils, etc.
 (define-type ONT::geo-SAMPLE
     :parent ONT::natural-object
@@ -2159,7 +2162,7 @@
 		      ))
 
 (define-type ONT::container
-    :wordnet-sense-keys ("container%1:06:00::" "cupboard%1:06:00" "closet%1:06:03" "drawer%1:06:00")
+    :wordnet-sense-keys ("container%1:06:00")
     :parent ONT::MANUFACTURED-OBJECT
     :sem (F::Phys-obj (F::container +) (F::form F::solid-object) (F::origin F::artifact) (f::object-function f::container-object))
     :arguments ((:OPTIONAL ONT::CONTENTS)
@@ -2264,13 +2267,20 @@
     :wordnet-sense-keys ("sink%1:06:00")
     )
 
-(define-type ont::cabinet
+(define-type ont::storage-furnishings
     :parent ont::furnishings
+    :wordnet-sense-keys ("wardrobe%1:06:00")
+    :sem (F::Phys-obj (F::origin F::Artifact)(F::trajectory -)
+		      (F::mobility f::fixed) (f::container +))
+    )
+
+(define-type ont::cabinet
+    :parent ont::storage-furnishings
     :wordnet-sense-keys ("cabinet%1:06:00" "cabinet%1:06:02")
     )
 
 (define-type ont::cupboard
-    :parent ont::furnishings
+    :parent ont::storage-furnishings
     :wordnet-sense-keys ("cupboard%1:06:00")
     )
 

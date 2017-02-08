@@ -816,6 +816,24 @@
 	       ONT::RESULT optional)
 	))
 
+      (AGENT-AFFECTED-source-optional-TEMPL
+       (ARGUMENTS
+	(LSUBJ (% W::NP) ONT::agent)
+	(LOBJ (% W::NP) ONT::affected)
+	(LCOMP (:parameter xp (:default (% W::ADVBL (W::lf (% ?p (w::class (? x ont::source-reln))))))
+			   )
+	       ONT::source optional)
+	))
+
+	(AGENT-AFFECTED-source-TEMPL
+	 (ARGUMENTS
+	  (LSUBJ (% W::NP) ONT::agent)
+	  (LOBJ (% W::NP) ONT::affected)
+	  (LCOMP (:parameter xp (:default (% W::ADVBL (W::lf (% ?p (w::class (? x ont::source-reln))))))
+			     )
+		 ONT::source)
+	  ))
+
       (AGENT-AFFECTED-loc-optional-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::agent)
@@ -887,6 +905,17 @@
 	(LOBJ (:parameter xp (:default (% W::PRED (W::arg ?subjvar))) (:required (W::filled -)
 					;(W::argument ?lsubj)
 					 (W::argument (% W::np (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var ?lsubjvar)))
+										(w::arg ?subjvar) (W::gap ?gap))) ONT::FORMAL)
+	))
+
+       (experiencer-PRED-xp-TEMPL
+       (ARGUMENTS
+	(LSUBJ (% W::NP (W::var ?subjvar) (W::sem ?lsubjsem) (W::lex ?lsubjlex)) ONT::experiencer)
+    ;;;;;(argument ?lsubj)
+    ;;;;; the arg of the pred will be the subject of the verb
+	(LOBJ (:parameter xp (:default (% W::PRED (W::arg ?subjvar))) (:required (W::filled -)
+					;(W::argument ?lsubj)
+					 (W::argument (% W::np (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var ?lsubjvar)))
 										(W::gap ?gap))) ONT::FORMAL)
 	))
 
@@ -894,8 +923,8 @@
        (ARGUMENTS
 	(LSUBJ (% W::NP (W::var ?subjvar) (W::lex ?lsubjlex)) ONT::AFFECTED)
        ;;;;; the arg of the pred will be the subject of the verb
-	(LOBJ (:parameter xp (:default (% W::PRED (W::arg ?subjvar))) (:required(W::filled -) (W::argument ?lsubj) 
-										(W::gap ?gap))) ONT::RESULT)
+	(LOBJ (:parameter xp (:default (% W::PRED (W::arg ?subjvar))) (:required (W::filled -) (W::argument ?lsubj) 
+										 (W::gap ?gap))) ONT::FORMAL)
 	))
 
 
@@ -904,9 +933,9 @@
 	(LSUBJ (% W::NP (W::var ?subjvar) (W::lex ?lsubjlex)) ONT::agent)
     ;;;;; the arg of the pred will be the subject of the verb
 	(LOBJ (:parameter xp (:default (% W::PRED (W::arg ?subjvar))) 
-			  (:required (W::filled -) 
+			  (:required (W::filled -) ;;(w::argument ?lsubj)
 				     (W::argument (% W::np (W::sem ?lsubjsem) (W::lex ?lsubjlex)
-						     (W::var ?lsubjvar))) 
+						     (W::var ?subjvar))) 
 				     (W::gap ?gap))) ONT::RESULT)
 	))
       
@@ -1229,13 +1258,7 @@
 	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::from)))) ONT::SOURCE optional)
 	))
 
-      (AGENT-AFFECTED-SOURCE-OPTIONAL-TEMPL
-       (ARGUMENTS
-	(LSUBJ (% W::NP) ONT::AGENT)
-	(LOBJ (% W::NP) ONT::AFFECTED)
-	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::from)))) ONT::SOURCE OPTIONAL)
-	))
-
+      
  (affected-AFFECTED-SOURCE-OPTIONAL-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::affected)
@@ -1276,14 +1299,7 @@
 	(LCOMP (:parameter xp (:default (% W::pp (W::ptype (? pt w::to))))) ONT::FORMAL)
 	))
       
-      (AGENT-affected-SOURCE-TEMPL
-       (ARGUMENTS
-	(LSUBJ (% W::NP) ONT::AGENT)
-	(LOBJ (% W::NP) ONT::affected)
-	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::from)))) ONT::SOURCE)
-	))
-      
-      (AGENT-result-CO-AGENT-OPTIONAL-TEMPL
+            (AGENT-result-CO-AGENT-OPTIONAL-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::AGENT)
 	(LIOBJ (% W::NP) ONT::result)
@@ -1352,8 +1368,15 @@
       (AGENT-GOAL-affected-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::AGENT)
-	(LOBJ (% W::NP) ONT::result)
+	(LOBJ (% W::NP) ONT::affected-result)
 	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::with)))) ONT::affected OPTIONAL)
+	))
+
+      (AGENT-SOURCE-affected-optional-TEMPL
+       (ARGUMENTS
+	(LSUBJ (% W::NP) ONT::AGENT)
+	(LOBJ (% W::NP) ONT::affected-result)
+	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::of)))) ONT::affected OPTIONAL)
 	))
       
 
@@ -2323,7 +2346,9 @@
     ))
   
   (quan-mass-templ   ;; e.g., much (water), most of the water, most of the truck
-   (SYNTAX (W::MASS W::MASS) (W::QOF (% W::PP (W::PTYPE W::OF) (W::AGR W::3S))));;(W::MASS W::MASS))))
+   (SYNTAX (W::MASS W::MASS)  (W::status w::SM)
+	   (W::QOF (% W::PP (W::PTYPE W::OF) (W::AGR W::3S)))
+	  )
    (ARGUMENTS
     ))
 
@@ -2346,7 +2371,7 @@
   (quan-than-comp  ;; e.g., more than five, more than that
    (SYNTAX (W::QCOMP (% W::PP (W::PTYPE W::THAN) (W::GAP -)))
 			;;(W::SEM ($ F::ABSTR-OBJ (F::INFORMATION F::DATA)))))
-  	   (W::QOF (% W::PP (W::PTYPE W::OF) (W::AGR ?agr1) (W::MASS ?m)))
+  	   (W::QOF (% W::PP (W::PTYPE W::OF) (W::AGR ?agr1) (W::MASS ?m))) 
    ))
   
   (quan-cardinality-templ
@@ -3664,6 +3689,7 @@
   (compar-than-templ 
    (SYNTAX (w::compar-op +) (w::ground-oblig -))
    (arguments
+    (ARGUMENT (% W::NUMBER) ONT::FIGURE) 
     (subcat (% w::PP (w::ptype w::than)) ont::ground)))
 
   

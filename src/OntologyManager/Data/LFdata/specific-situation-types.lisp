@@ -350,11 +350,7 @@
  :parent ONT::MOVE
  )
 
-;; tilt,lean
-(define-type ONT::leaning
-    :comment "The state of being in a position of leaning (against something)"
- :parent ONT::be-at-loc
- )
+
 
 ;; pan
 (define-type ONT::pan
@@ -388,7 +384,7 @@
  )
 
 ;; haul, lug
-(define-type ONT::haul
+(define-type ONT::CAUSE-MOVE
   :parent ONT::MOVE
  )
 
@@ -777,10 +773,21 @@
 
 ; hit, strike
 (define-type ONT::HITTING
- :wordnet-sense-keys ("collide_with%2:35:00" "hit%2:35:01" "hit%2:35:03" "impinge_on%2:35:00" "run_into%2:35:01" "strike%2:35:01" )
+ :wordnet-sense-keys ("hit%2:35:03" "strike%2:35:01" )
+ :comment "an agent comes into contact with force with another object, typically harming the other object"
  :parent ONT::MOTION
  :sem (F::SITUATION (F::Trajectory -))
- :arguments ((:OPTIONAL ONT::FORMAL1 ((? o F::Phys-obj f::abstr-obj)))   ;; I added a restriction -- situations, times, etc, don't make much sense here, i think  JFA 1/10
+ :arguments ((:required ONT::affected (F::Phys-obj))
+             )
+ )
+
+(define-type ONT::COLLIDE
+ :wordnet-sense-keys ("collide_with%2:35:00" "run_into%2:35:01" "strike%2:35:01" "collide%2:35:01"  "collide%2:35:00" "crash%2:38:02" "crash%2:38:01")
+ :comment "two objects comes into contact with force with another, typically both being negatively affected - also supports the plural subject that cincludes both objects"
+ :parent ONT::MOTION
+ :sem (F::SITUATION (F::Trajectory -))
+ :arguments ((:required ONT::affected (F::Phys-obj))
+	     (:optional ONT::affected1 (F::Phys-obj))
              )
  )
 
@@ -863,7 +870,7 @@
  		)
 
 (define-type ONT::die
- :wordnet-sense-keys ("demise%1:28:00" "dying%1:28:00" "death%1:28:00" "death%1:26:01" "destruction%1:26:00" "end%1:26:00" "last%1:28:01" "death%1:28:01" "death%1:26:00" "death%1:19:00" "die%2:30:00" "decease%2:30:00" "perish%2:30:00" "go%2:30:00" "exit%2:30:00" "pass_away%2:30:00" "expire%2:30:00" "pass%2:30:11" "kick_the_bucket%2:30:00" "cash_in_one's_chips%2:30:00" "buy_the_farm%2:30:00" "conk%2:30:00" "give-up_the_ghost%2:30:00" "drop_dead%2:30:00" "pop_off%2:30:00" "choke%2:30:01" "croak%2:30:00" "snuff_it%2:30:00" "die%2:30:02"  "death%1:11:00" "decease%1:11:00" "expiry%1:11:00")
+ :wordnet-sense-keys ("demise%1:28:00" "dying%1:28:00" "death%1:28:00" "death%1:26:01" "destruction%1:26:00" "last%1:28:01" "death%1:28:01" "death%1:26:00" "death%1:19:00" "die%2:30:00" "die%2:30:02"  "death%1:11:00" "decease%1:11:00" "expiry%1:11:00")
  :parent ONT::life-process
   :sem (f::situation (:default (f::aspect f::dynamic)))
  		)
@@ -930,7 +937,7 @@
  :parent ONT::LOCATED-MOVE-STATE
  :sem (F::SITUATION (F::Aspect F::Unbounded) (F::Cause F::Force) (F::Time-span F::Extended))
  :arguments ((:REQUIRED ONT::affected (F::Phys-obj (F::Mobility F::Movable)))
-	     (:optional ont::effect ((? ef f::abstr-obj f::situation f::phys-obj)))
+	     
              )
  )
 
@@ -954,8 +961,7 @@
   :parent ONT::change
   :arguments ((:REQUIRED ONT::affected ((? oc F::Phys-obj F::Abstr-obj f::situation)) (:implements affected))
 	      ;;(:OPTIONAL ONT::agent ((? ag f::abstr-obj F::phys-obj)(F::intentional +)) (:implements cause))
-	      (:required ont::effect (F::Situation (F::Aspect (? asp F::Dynamic F::Stage-level))))
-	     ;; (:required ont::affected)
+	      
 	      (:required ont::agent((? cs f::phys-obj f::abstr-obj f::situation)))
 	      )
   )
@@ -1020,6 +1026,7 @@
   :parent ONT::object-change
   )
 
+#|
 ;;; My own top frame for situation changes
 (define-type ONT::Situation-Change
  :wordnet-sense-keys ("go%2:42:03" "go%2:42:12")
@@ -1031,6 +1038,7 @@
              ;;(:OPTIONAL ONT::agent ((? agt f::phys-obj f::abstr-obj) (f::intentional +)) (:implements cause))
 	     (:required ont::effect (F::Situation (F::Aspect (? asp F::Dynamic F::Stage-level)))))
  )
+|#
 
 (define-type ONT::Stop
     :wordnet-sense-keys ("lay_off%2:42:00" "quit%2:42:04" "give_up%2:42:00" "cease%2:42:00" "stop%2:42:00" "discontinue%2:42:00" "cease%2:42:13" "terminate%2:42:00"  "terminate%2:30:01" "finish%2:42:00" "stop%2:42:13" "end%2:42:00" "run_out%2:42:00" "expire%2:42:00" "blow_out%2:43:00" "bog_down%2:38:01" "break%2:42:04" "get_off%2:41:00" "halt%2:38:01" "stop%2:38:01" "abort%2:29:00" "terminate%2:30:01")
@@ -1261,14 +1269,17 @@
 
 ;;; Complete takes an action that requires an intentional agent
 (define-type ONT::Complete
- :wordnet-sense-keys ("complete%2:30:02" "finish%2:30:02" "carry_to_term%2:29:00")
- :parent ONT::SITUATION-CHANGE
+ :wordnet-sense-keys ("complete%2:30:02" "finish%2:30:02" "carry_to_term%2:29:00" "hold_one's_own%2:42:00" "succeed%2:41:00" "excel%2:42:00")
+; :parent ONT::SITUATION-CHANGE
+ :parent ONT::ACTING
  :sem (F::Situation (F::Cause F::agentive))
+ :arguments ((:essential ont::formal))
  )
 
 (define-type ONT::progress
  :wordnet-sense-keys ("go%2:30:02" "progress%2:30:00"  "progress%2:38:00"  "progress%2:30:01")
- :parent ONT::SITUATION-CHANGE
+; :parent ONT::SITUATION-CHANGE
+ :parent ONT::ACTIVITY-ONGOING
  :comment "A situation continues to develop"
  :sem (F::Situation (F::Cause F::agentive))
  )
@@ -1296,12 +1307,12 @@
 
 ;; kill, destroy
 (define-type ont::destroy
- :wordnet-sense-keys ("destroy%2:35:00" "destroy%2:36:00" "destroy%2:35:01" "down%2:38:00")
+ :wordnet-sense-keys ("destroy%2:35:00" "destroy%2:36:00" "down%2:38:00")
   :parent ont::change-state
    )
 
 (define-type ont::kill
-    :wordnet-sense-keys ("kill%2:35:00" "kill%2:35:01" "kill%2:35:02")
+    :wordnet-sense-keys ("kill%2:35:00" "kill%2:35:01" "kill%2:35:02" "destroy%2:35:01")
     :comment "killing a living being"
     ;;:definitions ((cause-effect :agent (R :agent) :formal (ont::die :affected (R :affected))))
     :arguments ((:ESSENTIAL ONT::affected (F::phys-obj (F::origin F::living))))
@@ -1829,7 +1840,7 @@
  :wordnet-sense-keys ("savour%2:37:00" "savor%2:37:00" "relish%2:37:00" "bask%2:37:13" "enjoy%2:37:00" "appreciate%2:37:00" "like%2:37:04" "love%2:37:00")
  :parent ONT::experiencer-emotion
  :arguments ((:REQUIRED ONT::Formal ((? t f::phys-obj f::abstr-obj f::situation f::time)))
-             (:ESSENTIAL ONT::neutral ((? s  f::phys-obj f::abstr-obj) (F::intentional +)))
+             (:ESSENTIAL ONT::neutral) ;((? s  f::phys-obj f::abstr-obj) (F::intentional +)))
 	     (:optional ONT::neutral1)
              )
  )
@@ -2223,7 +2234,7 @@
 ;;  something that encodes a message
 (define-type ONT::encodes-message
     :comment "some artifact conveys some message"
-    :wordnet-sense-keys ("read%2:42:00" "go%2:42:02")
+    :wordnet-sense-keys ("read%2:42:00" "go%2:42:02" "represent%2:36:01")
     :arguments ((:REQUIRED ONT::neutral ((? n  F::Phys-obj f::abstr-obj) (f::information f::information-content)))
 		(:OPTIONAL ONT::neutral1 ((? n1 F::Phys-obj f::abstr-obj))))
     :parent ONT::EVENT-OF-STATE
@@ -2264,10 +2275,10 @@
 (define-type ONT::calc-add
  :parent ONT::calculation
  :wordnet-sense-keys ("add%2:31:00")
- :arguments ((:REQUIRED ONT::Formal (F::ABSTR-OBJ) (F::TYPE ONT::MATHEMATICAL-TERM))
-	     (:OPTIONAL ONT::formal1)
-             )
- )
+ :arguments ((:REQUIRED ONT::Formal (F::ABSTR-OBJ (F::TYPE ONT::MATHEMATICAL-TERM)))
+	     (:OPTIONAL ONT::formal1  (F::ABSTR-OBJ (F::TYPE ONT::MATHEMATICAL-TERM)))
+	     
+	     ))
 
 (define-type ONT::calc-subtract
     :wordnet-sense-keys ("subtract%2:31:00")
@@ -2513,7 +2524,7 @@
  )
 
 (define-type ONT::EXECUTE
-  :wordnet-sense-keys ("take%2:41:04" "fulfil%2:36:00" "fulfill%2:36:00" "action%2:36:00" "carry_out%2:36:00" "execute%2:36:00" "accomplish%2:36:00" "carry_through%2:36:00" "perform%2:36:00" "execute%2:36:01" "do%2:36:01" "do%2:41:01" "play%2:36:05""conduct%2:41:00")
+  :wordnet-sense-keys ("fulfil%2:36:00" "fulfill%2:36:00" "action%2:36:00" "carry_out%2:36:00" "execute%2:36:00" "accomplish%2:36:00" "carry_through%2:36:00" "perform%2:36:00" "execute%2:36:01" "do%2:36:01" "do%2:41:01" "play%2:36:05""conduct%2:41:00" "commit%2:41:00" "commit%2:41:01")
  :parent ONT::cause-effect
  :sem (F::Situation (F::Aspect F::Dynamic))
  :arguments ( ;; run the script/program
@@ -2528,7 +2539,7 @@
     )
 
 ;; take a shower (for asma)
-(define-type ont::take
+(define-type ont::take-execute
     :wordnet-sense-keys ("take%2:41:04")
     :parent ont::execute
     :arguments ((:ESSENTIAL ONT::Formal ((? t F::situation)))
@@ -2616,7 +2627,7 @@
  )
 
 
-;; abandon, desert, leave behind
+;; abandon, desert, leave behnid
 (define-type ONT::leave-behind
  :wordnet-sense-keys ("leave%2:31:05" "leave%2:30:03" "leave_behind%2:38:00" "abandon%2:31:01" "abandon%2:40:01")
  :parent ONT::intentionally-act
@@ -3336,7 +3347,7 @@
 
 ;; for configure, arrange X (into Y) e.g. he arranged them into groups of three
 (define-type ONT::arranging
- :wordnet-sense-keys ("set_up%2:35:00" "arrange%2:35:00" "reorient%2:30:00" "put%2:35:05" "arrangement%1:09:00" "organization%1:09:00" "organisation%1:09:00" "system%1:09:02" "put_aside%2:35:00" "address%2:32:02")
+ :wordnet-sense-keys ("set_up%2:35:00" "arrange%2:35:00" "reorient%2:30:00" "put%2:35:05" "arrangement%1:09:00" "organization%1:09:00" "organisation%1:09:00" "system%1:09:02" "put_aside%2:35:00" "address%2:32:02" "hairdressing%1:04:00")
  :parent ONT::control-manage
  :sem (F::SITUATION (F::Cause F::agentive) (F::Trajectory -))
  :arguments ((:REQUIRED ONT::Agent  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
@@ -3620,6 +3631,12 @@
              )
  )
 
+;; tilt,lean
+(define-type ONT::leaning
+    :comment "The state of being in a position of leaning (against something)"
+ :parent ONT::be-at-loc
+ )
+
 ;; manipulate, influence
 (define-type ONT::manipulate
  :wordnet-sense-keys ("operate%2:35:00" "control%2:35:00")
@@ -3791,7 +3808,6 @@
              )
  )
 
-
 (define-type ONT::Record
  :wordnet-sense-keys ("maintain%2:32:04" "keep%2:32:00" "take%1:04:00")
  :parent ONT::event-of-action
@@ -3913,7 +3929,7 @@
 
 ;; clean (up), tidy (up)
 (define-type ONT::clean
- :wordnet-sense-keys ("clean%2:35:00" "make_clean%2:35:00" "wash%1:04:01")
+ :wordnet-sense-keys ("clean%2:35:00" "make_clean%2:35:00" "wash%1:04:01" "dental_care%1:04:00")
  :parent ONT::change-state-action
  :sem (F::Situation (F::Cause F::Agentive) (F::Trajectory -))
  )
@@ -4654,7 +4670,7 @@
  )
 
 ;; angina
-(define-type ont::angina-symp
+(define-type ont::angina-disease
  :wordnet-sense-keys ("angina%1:26:00")
  :parent ont::medical-symptom
  )
@@ -4748,7 +4764,7 @@
 
 ;; flu
 (define-type ONT::flu
- :parent ONT::disease
+ :parent ONT::breathing-disorder
  :wordnet-sense-keys ("flu%1:26:00" "influenza%1:26:00" "grippe%1:26:00")
  )
 
@@ -4779,7 +4795,7 @@
 
 ; for pneuomnia
 (define-type ONT::pneumonia
- :parent ONT::disease
+ :parent ONT::breathing-disorder
  :wordnet-sense-keys ("pneumonia%1:26:00")
  )
 

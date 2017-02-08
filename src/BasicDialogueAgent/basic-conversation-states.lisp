@@ -18,6 +18,8 @@
 	     (segment
 	       :trigger '((ONT::SPEECHACT ?!sa (? a ONT::ANSWER ONT::EVALUATE ONT::SA_EVALUATE ONT::FRAGMENT ONT::ACCEPT))
 			  (ONT::F ?!x (:* ONT::GOOD (? w W::OKAY w::good)))
+			  (ont::eval (find-attr :result nil ; to avoid competing with -user-response1>
+						:feature PROPOSAL-ON-TABLE))
 			  -ok1>
 			  (next))
 	       :start-state 'segmentend

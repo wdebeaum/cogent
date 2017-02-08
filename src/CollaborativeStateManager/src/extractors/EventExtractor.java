@@ -6,6 +6,7 @@ import TRIPS.KQML.KQMLObject;
 
 public class EventExtractor {
 
+	String what;
 	String id;
 	KQMLList eventContext;
 	KQMLList relnEventContext;
@@ -25,6 +26,7 @@ public class EventExtractor {
 	public void apply(KQMLList context)
 	{
 		originalContext = context;
+		what = IDHandler.getNewID();
 		id = IDHandler.getNewID();
 		for (KQMLObject term : context)
 		{
@@ -56,7 +58,12 @@ public class EventExtractor {
 		return eventIDs;
 	}
 	
-	public String getID()
+	public String getWhat()
+	{
+		return what;
+	}
+	
+	public String getId()
 	{
 		return id;
 	}

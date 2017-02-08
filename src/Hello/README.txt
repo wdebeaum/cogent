@@ -1,6 +1,6 @@
 Hello - examples of a simple TRIPS module/component in different languages
 William de Beaumont
-2015-11-12
+2017-02-08
 
 This directory contains a very simple TRIPS module/component that replies to
 requests of the form:
@@ -50,9 +50,7 @@ Perl
 
 Python
 	Makefile-python
-	Hello.py	Note that this uses pure-Python bioagents_trips.
-	Hello-jython.py	Note that this uses Java's TripsModule implementation
-			via Jython.
+	Hello.py
 
 Ruby
 	Makefile-ruby
@@ -84,10 +82,10 @@ what you might want it to. It first tries to install everything (which won't
 work, because the different languages all try to write the same file, "Hello"),
 and then tries to build the Scala-langauge module only.
 
-For languages other than Python, Scala, and Lisp, it may also be necessary to
+For languages other than Scala and Lisp, it may also be necessary to
 build and install the KQML and TripsModule libraries in the same
-language-specific way in order to make Hello work. For Python (Jython) and
-Scala, use the Java versions of those libraries.
+language-specific way in order to make Hello work. For Scala, use the Java
+versions of those libraries.
 
 
 Running the modules:

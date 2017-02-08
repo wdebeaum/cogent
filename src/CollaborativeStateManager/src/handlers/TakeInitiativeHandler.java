@@ -52,15 +52,24 @@ public class TakeInitiativeHandler extends MessageHandler {
 			if (((KQMLList)lfTerm).get(1).stringValue().equalsIgnoreCase(goalWhat))
 			{
 				goalLF = (KQMLList)lfTerm;
-				goalPlanner.addGoal(new Goal(goalLF));
+				goalPlanner.addGoal(new Goal(goalLF,(KQMLList)context));
 			}
 		}
 
+		Goal goal = null;
 		// Not in context, check the planner
 		if (goalLF == null && goalPlanner.hasGoal(goalWhat))
 		{
 			System.out.println("Searching goalplanner for variable: " + goalWhat);
-			goalLF = goalPlanner.getGoal(goalWhat).getKQMLTerm();
+			goal = goalPlanner.getGoal(goalWhat);
+			goalLF = goal.getKQMLTerm();
+		}
+		
+		if (goalLF == null && goalPlanner.hasGoalById(goalWhat))
+		{
+			System.out.println("Searching goalplanner for variable by ID: " + goalWhat);
+			goal = goalPlanner.getGoalById(goalWhat);
+			goalLF = goal.getKQMLTerm();
 		}
 		
 		// Not in context or planner, return error
@@ -70,109 +79,107 @@ public class TakeInitiativeHandler extends MessageHandler {
 			return missingGoalToModify(goalWhat, context);
 		}
 		
-		Goal goal = null;
+		
 		if (goalPlanner.hasGoal(goalWhat))
 			goal = goalPlanner.getGoal(goalWhat);
 		
 		if (goal.isCompleted())
 		{
-			return takeInitiativeContent("NO", goalWhat, context);
+			return takeInitiativeContent("MAYBE", goalWhat, context);
 		}
 		System.out.println("Goal " + goal.getVariableName() + " not completed");
 		
-		String goalType = goalLF.getKeywordArg(":INSTANCE-OF").stringValue();
-		System.out.println("Goal type: *" + goalType + "*");
+		
+		// Choosing based on specified agent
 		KQMLList takeInitContent = null;
-		String goalTypeUpper = goalType.toUpperCase();
-		if (goalPlanner.getPrivateGoal() != null && goalPlanner.getPrivateGoal().getVariableName().equalsIgnoreCase(goalWhat))
-			takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-		else if (goalTypeUpper.contains("IDENTIFY") || 
-				goalTypeUpper.contains("EVALUATE") || goalTypeUpper.contains("QUERY"))
-			takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-		else if (goalTypeUpper.contains("CREATE"))
-		{
-			KQMLObject affectedResultObject = goalLF.getKeywordArg(":AFFECTED-RESULT");
-			if (affectedResultObject != null)
-			{
-				String affectedResult = affectedResultObject.stringValue();
-				KQMLList affectedResultTerm = TermExtractor.extractTerm(affectedResult,
-						(KQMLList)context);
-				// Can't be found in context
-				if (affectedResultTerm == null)
-				{
-					KQMLList reference = referenceHandler.getReference(affectedResult);
-					if (reference == null)
-					{
-						System.out.println("Couldn't find affected result " + affectedResult + " in context or goal hierarchy");
-						takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-					}
-					else
-					{
-						affectedResultTerm = reference;
-					}
-					
-				}
-				
-				String affectedResultType = "";
-				if (affectedResultTerm != null)
-					affectedResultType = affectedResultTerm.getKeywordArg(":INSTANCE-OF").stringValue();
-				
-				// "Let's build a *model*."
-				if (affectedResultType.contains("REPRESENTATION"))
-					takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-				else if (ontologyReader.isKnownModel(affectedResultType))
-					takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-				else
-					takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-			}
-			takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-		}
-		else if (goalTypeUpper.contains("EVENTS-IN-MODEL"))
-		{
-			takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-		}
-		else
-		{
-			KQMLObject agentObject = goalLF.getKeywordArg(":AGENT");
+		KQMLObject agentObject = goalLF.getKeywordArg(":AGENT");
 
-			if (agentObject != null)
+		if (agentObject != null)
+		{
+			String agent = agentObject.stringValue();
+			KQMLList agentTerm = TermExtractor.extractTerm(agent, (KQMLList)context);
+			KQMLObject agentEquals = agentTerm.getKeywordArg(":REFERS-TO");
+			if (agentEquals != null)
 			{
-				String agent = agentObject.stringValue();
-				KQMLList agentTerm = TermExtractor.extractTerm(agent, (KQMLList)context);
-				KQMLObject agentEquals = agentTerm.getKeywordArg(":REFERS-TO");
-				if (agentEquals != null)
-				{
-					// The user gave the system a command
-					if (agentEquals.stringValue().equalsIgnoreCase("ONT::SYS"))
-						takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-					// The user said "we" or "us" - continue with previous initiative
-					else if (agentEquals.stringValue().equalsIgnoreCase("ONT::US"))
-					{
-						if (goalPlanner.isGlobalSystemInitiative())
-							takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-						else
-							takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-					}
-					else if (agentEquals.stringValue().equalsIgnoreCase("ONT::USER"))
-					{
-						if (goalPlanner.isGlobalSystemInitiative())
-							takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-						else
-							takeInitContent = takeInitiativeContent("NO", goalWhat, context);
-					}
-						
-					
-				}
+				// The user gave the system a command
+				if (agentEquals.stringValue().equalsIgnoreCase("ONT::SYS"))
+					takeInitContent = takeInitiativeContent("YES", goalWhat, context);
+				else if (agentEquals.stringValue().equalsIgnoreCase("ONT::USER"))
+					takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
+				
+				// If the user said "we" or "us" - continue with previous initiative after trying other
+				// methods to figure it out
+				
 			}
-			
 		}
+		
 		if (takeInitContent == null)
 		{
-			if (goalPlanner.isGlobalSystemInitiative())
+			String goalType = goalLF.getKeywordArg(":INSTANCE-OF").stringValue();
+			System.out.println("Goal type: *" + goalType + "*");
+			
+			String goalTypeUpper = goalType.toUpperCase();
+			if (goalPlanner.getPrivateGoal() != null && goalPlanner.getPrivateGoal().getVariableName().equalsIgnoreCase(goalWhat))
 				takeInitContent = takeInitiativeContent("YES", goalWhat, context);
-			else
-				takeInitContent = takeInitiativeContent("NO", goalWhat, context);
+			else if (goalTypeUpper.contains("IDENTIFY") || 
+					goalTypeUpper.contains("EVALUATE") || goalTypeUpper.contains("QUERY"))
+				takeInitContent = takeInitiativeContent("YES", goalWhat, context);
+			else if (goalTypeUpper.contains("CREATE"))
+			{
+				KQMLObject affectedResultObject = goalLF.getKeywordArg(":AFFECTED-RESULT");
+				if (affectedResultObject != null)
+				{
+					String affectedResult = affectedResultObject.stringValue();
+					KQMLList affectedResultTerm = TermExtractor.extractTerm(affectedResult,
+							(KQMLList)context);
+					// Can't be found in context
+					if (affectedResultTerm == null)
+					{
+						KQMLList reference = referenceHandler.getReference(affectedResult);
+						if (reference == null)
+						{
+							System.out.println("Couldn't find affected result " + affectedResult + " in context or goal hierarchy");
+							takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
+						}
+						else
+						{
+							affectedResultTerm = reference;
+						}
+						
+					}
+					
+					String affectedResultType = "";
+					if (affectedResultTerm != null)
+						affectedResultType = affectedResultTerm.getKeywordArg(":INSTANCE-OF").stringValue();
+					
+					// "Let's build a *model*."
+					if (affectedResultType.contains("REPRESENTATION"))
+						takeInitContent = takeInitiativeContent("NO", goalWhat, context);
+					else if (ontologyReader.isKnownModel(affectedResultType))
+						//takeInitContent = takeInitiativeContent("YES", goalWhat, context);
+						takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
+					else
+						takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
+				}
+				takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
+			}
+			else if (goalTypeUpper.contains("EVENTS-IN-MODEL"))
+			{
+				// Events give the system initiatve to update world/model
+				takeInitContent = takeInitiativeContent("YES", goalWhat, context);
+			}
 		}
+
+		// Choosing based on default
+		if (takeInitContent == null)
+			takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
+//		if (takeInitContent == null)
+//		{
+//			if (goalPlanner.isGlobalSystemInitiative())
+//				takeInitContent = takeInitiativeContent("YES", goalWhat, context);
+//			else
+//				takeInitContent = takeInitiativeContent("NO", goalWhat, context);
+//		}
 		
 		return takeInitContent;
 		
@@ -187,12 +194,18 @@ public class TakeInitiativeHandler extends MessageHandler {
     	if (result.equalsIgnoreCase("YES"))
     	{
     		goalPlanner.setGlobalSystemInitiative(true);
-    		goalPlanner.getGoal(goal).setSystemTookInitiative(true);
+    		if (goalPlanner.hasGoal(goal))
+    			goalPlanner.getGoal(goal).setSystemTookInitiative(true);
+    		else if (goalPlanner.hasGoalById(goal))
+    			goalPlanner.getGoalById(goal).setSystemTookInitiative(true);
     	}
     	else
     	{
     		goalPlanner.setGlobalSystemInitiative(false);
-    		goalPlanner.getGoal(goal).setSystemTookInitiative(false);
+    		if (goalPlanner.hasGoal(goal))
+    			goalPlanner.getGoal(goal).setSystemTookInitiative(false);
+    		else if (goalPlanner.hasGoalById(goal))
+    			goalPlanner.getGoalById(goal).setSystemTookInitiative(false);
     	}
     	initContent.add(":goal");
     	initContent.add(goal);

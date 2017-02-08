@@ -79,6 +79,8 @@ public class CollaborativeStateManager extends StandardTripsModule  {
     //    End by calling ready() to tell the facilitator that the module
     //    is ready to receive messages.
     //
+    
+    
 
     /**
      * StandardTripsModule initialization method.
@@ -91,13 +93,13 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 	// Perform standard initializations
 	super.init();
 	handleParameters();
-
-	goalPlanner = new GoalPlanner();
+	referenceHandler = new ReferenceHandler();
+	goalPlanner = new GoalPlanner(referenceHandler);
 	ontologyReader = new OntologyReader();
 	ontologyReader.readEventOntologyFromFile(DATA_DIRECTORY + File.separator + "events");
 	ontologyReader.readGoalOntologyFromFile(DATA_DIRECTORY + File.separator + "goals");
 	ontologyReader.readModelOntologyFromFile(DATA_DIRECTORY + File.separator + "models");
-	referenceHandler = new ReferenceHandler();
+	
 	// Subscriptions
 	try {
 	    KQMLPerformative perf =
@@ -399,7 +401,7 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 	private void resetSystem()
 	{
 		
-		goalPlanner = new GoalPlanner();
+		goalPlanner = new GoalPlanner(referenceHandler);
 	}
     
 	
@@ -416,6 +418,8 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 			dispatcher.shutdown();
 		}
 	}
+	
+	
 	
 	private void shutdown()
 	{

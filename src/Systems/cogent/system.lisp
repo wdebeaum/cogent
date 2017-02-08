@@ -21,6 +21,11 @@
   (:dfc-component       :dummy		   #!TRIPS"src;Dummy;")
   )
 
+;; add WebParser to the system when we have its source directory
+(when (probe-file #!TRIPS"src;WebParser")
+  (nconc (assoc :cogent trips::*trips-systems*)
+	 (list '(:dfc-component :webparser #!TRIPS"src;WebParser;"))))
+
 ;; Now load the system
 (trips:load-trips-system)
 

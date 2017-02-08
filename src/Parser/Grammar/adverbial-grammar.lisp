@@ -487,8 +487,9 @@
 		(ellipsis -)
 		))
 
-     (advbl (ATYPE POST) (ARGUMENT (% S (sem ?sem))) (GAP -)
+     (advbl (ATYPE POST) (ARGUMENT (% S (sem ?sem) (subjvar ?subjvar))) (GAP -)
       ;;(subjvar ?subjvar)   ;Not sure why this was here - maybe for purpose clauses. Leaving it in causes many parses to fail as the SUBJVAR in the new VP is wrecked
+     ;; the SUBJVAR is required in the argument to be able to pass in the subject for things like "the dog walked barking".
       (ARG ?v) (VAR ?mod)
       (role ?advrole) 
       )
@@ -946,7 +947,7 @@
       (add-to-conjunct (val (MODS ?advbv)) (old ?con) (new ?newc))
      
       )
-
+#||
     ;;   more/as/so ADJP than/as/that 
     ;;   e.g., more sensitive than that
     ((ADJP (LF (% PROP (CLASS ?lf) (VAR ?v) (CONSTRAINT ?newc) (sem ?sem)))
@@ -985,7 +986,7 @@
      ;;(np (var ?vnp))
      (add-to-conjunct (val (& (figure ?arg) (ground ?vg) (?sc-map ?vsc))) (old ?con) (new ?newc))
      )
-
+||#
     
 
     ;;  as ADJ as-PP
@@ -1084,7 +1085,9 @@
      (S (var ?vs))
      (add-to-conjunct (val (ground ?vs)) (old ?con) (new ?newc))
      )
-||#
+     ||#
+
+     #|
     ;; TEST: red enough
     ((ADJP (LF (% PROP (CLASS ?c) (VAR ?v) (CONSTRAINT ?newc) (sem ?sem)))
            (val ?val) (agr ?agr) (mass ?mass) (var ?v) (ARG ?arg) (gap ?gap)
@@ -1102,6 +1105,7 @@
      (add-to-conjunct (val (MODS ?advbv)) (old ?con) (new ?newc))
      
      )
+|#
 
     ;;  ADV modification
     ;; TEST: very quickly 
@@ -1207,6 +1211,20 @@
 		      ))
      )
 
+    ;; TEST: more than five (trucks)
+    ((number (agr ?agr) (VAR ?v) (MASS ?mn) (lf ?lf) (sem ?sem) (premod +) ;;(val ?val)
+	     (nobarespec +) ; this can't be a specifier -- that goes through the cardinality rules
+	     (restr (& (mods (% *PRO* (status ont::F) (class ?lfa) (var ?v1) 
+				(constraint (& (FIGURE ?v) 
+					       (GROUND (% *PRO* (status ont::indefinite) (var *) (class ont::number) (constraint (& (value ?val)))))))))))
+	     )
+     -advbl-bare-number-pre-than>
+     (adv (VAR ?v1) (argument (% number)) (Mass ?m) (lf ?lfa))
+     (word (lex w::than))
+     (head (number (VAR ?v) (lf ?lf) (lex ?l) (agr ?agr) (MASS ?mn) (sem ?sem) (val ?val) (premod -)
+		      ))
+     )
+    
     ;; TEST: eight or so
     ((number (agr ?agr) (VAR ?v) (MASS ?mn) (lf ?lf) (sem ?sem) (premod +) ;;(val ?val)
 	     (nobarespec +) ; this can't be a specifier -- that goes through the cardinality rules
@@ -1396,7 +1414,7 @@
       ;; TEST: Barking, the dog chased the cat.
    ;; TEST: The dog chased the cat barking.
    ((advbl (arg ?arg) (sem ($ f::abstr-obj (f::information -) (f::intentional -)))
-     (argument (% S (sem ($ f::situation (f::aspect f::dynamic))))) 
+     (argument (% S (sem ($ f::situation (f::aspect f::dynamic))) (subjvar ?!subjvar) (subj ?!subj))) 
      (sort pred) (gap -) (atype (? atp pre post))
      (role ONT::MANNER) (var **)
      (LF (% PROP (CLASS ONT::IMPLICIT-OVERLAP) (VAR **) 
@@ -1406,8 +1424,10 @@
     -vp-ing-advbl> .98
     (head (vp (vform ing) (var ?v) (gap -) (aux -) (advbl-necessary -)
 	   (constraint ?con)  (transform ?transform) (class ?class)
-	   (subj (% np (sem ?subjsem)))
-	   (subjvar (% *PRO* (VAR *) (gap -) (sem ?subjsem)))
+	   (subj (% np (sem ?subjsem) (gap -)))
+	   ;(subjvar (% *PRO* (VAR *) (gap -) (sem ?subjsem)))
+	   (subjvar ?!subjvar)
+	   (subj ?!subj)
 	   ))
     )
 #||   I don't think we can distinguish RESULT well from temporal overlap
@@ -1450,7 +1470,7 @@
        (LF (% PROP (var *) (CLASS ONT::EXCLUSIVE) 
 	        (Constraint (& (FIGURE ?arg) (GROUND ?v)))))
       (ATYPE w::post) (focus ?v)
-      (ARGUMENT (% (? x W::VP W::S)))
+      (ARGUMENT (% (? x W::VP W::S) (subjvar ?subjv)))
       (SEM ?sem))
      -myself-as-advbl> .98
      (head (np  (var ?v) (REFL +) (PRO +)
@@ -1464,7 +1484,7 @@
 	        (Constraint (& (FIGURE ?arg) (GROUND ?v)))))
       (ATYPE (? xx w::post w::pre w::pre-vp)) (focus ?v)
       (lex ?hlex) (headcat ?hcat)
-      (ARGUMENT (% (? x W::VP W::S)))
+      (ARGUMENT (% (? x W::VP W::S) (subjvar ?subjv)))
       (SEM ?sem))
      -by-myself-as-advbl> .98
      (word (lex by))
@@ -1477,8 +1497,9 @@
        (LF (% PROP (var *) (CLASS ONT::EXCLUSIVE) 
 	        (Constraint (& (FIGURE ?arg) (GROUND ?v)))))
       (ATYPE (? xx w::post w::pre w::pre-vp)) (focus ?v)
-      (lex ?hlex) (headcat ?hcat)
-      (ARGUMENT (% (? x W::VP W::S)))
+      (lex ?hlex) (headcat ?hcat) 
+      
+      (ARGUMENT (% (? x W::VP W::S) (subjvar ?subjv)))
       (SEM ?sem))
      -all-by-myself-as-advbl> .98
      (word (lex all))
