@@ -102,3 +102,13 @@ Then in another window run the Lisp parts:
 cd $TRIPS_BASE/src/Systems/cogent/
 sbcl --load test --eval '(run)'
 ```
+
+## Customization ##
+
+The Cogent system includes components for language understanding and interpretation, the **Collaborative Problem Solving Agent** (CPSA), as well as other components that are typically part of a TRIPS-based dialogue system (e.g., a Chat component). However, it doesn't include a **Behavioral Agent** (BA) -- the component responsible for domain-specific problem solving. This component is crucial, in that it is the one that encodes the domain behaviors, thereby enabling the system to DO something. [This Google document](https://docs.google.com/document/d/1pz5QT2VW4YPyY7VsP1kibhlUTUZE8f9ZpQXEvDxGrg0/edit) describes the messages that the BA needs to subscribe to and the replies it can send back to the CPSA.
+
+Cogent also lacks a **Generation** component (hence the suggestion above to use the `-showgen` option, so that a user can at least see some internal representation of what the system would "say"). Minimally, this component only needs to subscribe to and act on `GENERATE` requests (also described in the Google document referenced above). This component is, of course, needed for the system to be able to communicate back to the user. Typically, this communication is carried out using natural language. However, this is not a requirement -- it is entirely possible that the system could communicate using a different modality, or use a mix of modalities.
+
+For guidance on how to create new TRIPS components, look inside the [src/Hello](src/Hello) folder, which includes examples in several popular programming languages.
+
+Depending on the domain, one may also need to add lexicon, domain-specific ontology, ontology mappings, etc.; these kinds of customizations are beyond the scope of this README file.
