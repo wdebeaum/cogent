@@ -6,7 +6,7 @@
  :words (
   (w::cardiac
   (senses
-   ((LF-PARENT ONT::body-part-val)
+   ((lf-parent ont::cardiac)
     (TEMPL central-adj-templ)
     (meta-data :origin cardiac :entry-date 20090408 :change-date nil :comments nil)
     )

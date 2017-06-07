@@ -316,7 +316,7 @@
 	    (>= (agenda-item-score e) threshold)
 	    ;; e is empty (should not happen but does very rarely), reset the top
 	    (progn 
-	      (format t "~%~% TOP BUCKET WAS EMPTY -- RESETTING~%~%")
+	      (trace-msg 2 "~%~% TOP BUCKET WAS EMPTY -- RESETTING~%~%")
 	      (setf (top-bucket *chart*) (find-new-top-bucket (top-bucket *chart*)))
 	      (if (> (top-bucket *chart*) 0) (agenda-item-pending threshold))
 	      )))))
@@ -505,8 +505,9 @@
 
 
 (defun normalize (x)
-  "reduces a number to two decimal point precision"
-  (coerce (/ (round x .0001) 10000) 'short-float))
+  x)
+#||  "reduces a number to two decimal point precision"
+  (coerce (/ (round x .0001) 10000) 'short-float))||#
 
 (defvar *wn-wsd-enabled* nil)   ;; turns on WSD to WN sense
 
@@ -517,7 +518,7 @@
 	)
     (when (and (var-p sem) (consp lf)) ;;(not (member (third lf) '(W::BE W::HAVE W::BEING W::HAVING))))
 	  
-      (if *wn-wsd-enabled*   ;; here we try to guess the best sense from WN
+      (if (and *wn-wsd-enabled* (member 'wn sense-info))  ;; here we try to guess the best sense from WN
 	  (let ((sense
 		 (multiple-value-bind (core non-core)
 		     (get-wordnet-sense-keys word (list (constit-cat c)))
@@ -530,7 +531,6 @@
 		     (or (caar (intersection (cadr core) best-matches :test #'equal))
 			 (caar best-matches))))))
 		(if sense
-		     
 		    (set-kr-type sem (append sense-info (list (list 'WN (list sense)))))
 		    (set-kr-type sem sense-info)))
 	  (set-kr-type sem sense-info)))

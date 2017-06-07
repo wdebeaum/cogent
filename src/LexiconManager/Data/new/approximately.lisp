@@ -6,7 +6,7 @@
  :words (
   (W::APPROXIMATELY
    (SENSES
-    ((LF-PARENT ONT::precision-val)
+    ((lf-parent ont::not-precise-val)
      (LF-FORM W::APPROXIMATE)
      (TEMPL NUMBER-OPERATOR-TEMPL)
      )

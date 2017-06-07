@@ -7,7 +7,7 @@
  :words (
    ((W::mutant)
     (SENSES
-     ((LF-PARENT ONT::MUTANT)
+     ((lf-parent ont::strange)
       (templ CENTRAL-ADJ-TEMPL)
       (example "mutant EGFR")
       )))))

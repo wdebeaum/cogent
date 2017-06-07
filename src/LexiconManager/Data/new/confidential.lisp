@@ -8,7 +8,7 @@
    (wordfeats (W::morph (:FORMS (-LY))))
    (SENSES
     ((meta-data :origin chf :entry-date 20070809 :change-date nil :comments nil)
-     (LF-PARENT ONT::safety-val)
+     (lf-parent ont::secret-val)
      )
     )
    )

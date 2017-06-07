@@ -1,6 +1,6 @@
 ;;;;
-;;;; W::NEXT
-;;;;
+;;;; w::next
+;;;; 
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :tags (:base500)
@@ -14,8 +14,8 @@
 ;     (SEM (F::GRADABILITY F::-))
 ;     (example "he is next to the church")
 ;     )
-    (;(LF-PARENT ONT::SEQUENCE-VAL)
-     (LF-PARENT ONT::SEQUENCE-VAL-NEXT)
+    (;(lf-parent ont::sequence-val)
+     (lf-parent ont::sequence-val-next)
      (example "let's meet next monday")
      (meta-data :origin calo-ontology :entry-date 20060419 :change-date nil :wn ("next%5:00:00:succeeding(a):00") :comments nil)
      )
@@ -27,7 +27,6 @@
     :pos W::adv :templ DISC-PRE-TEMPL
  :tags (:base500)
  :words (
-;;;; Start moved words	    
   (W::NEXT
    (SENSES
     ((EXAMPLE "Next send a truck to Abyss" "do it next")

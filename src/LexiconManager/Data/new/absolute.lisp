@@ -7,7 +7,7 @@
    (W::absolute
    (SENSES
     (
-     (LF-PARENT ONT::STATUS-val)
+     (lf-parent ont::not-relative-val)
      )
     )
    )

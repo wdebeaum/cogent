@@ -9,7 +9,7 @@
    (SENSES
     ((meta-data :origin calo-ontology :entry-date 20060125 :change-date nil :wn ("irresponsible%3:00:00") :comments caloy3)
      (EXAMPLE "He is an irresponsible person")
-     (LF-PARENT ONT::responsibility-VAL)
+     (lf-parent ont::not-responsible-val)
      (TEMPL central-adj-TEMPL)
      (SEM (F::GRADABILITY F::+))
      )

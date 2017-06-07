@@ -1,5 +1,6 @@
 package handlers;
 
+import TRIPS.CollaborativeStateManager.CollaborativeStateManager;
 import TRIPS.KQML.KQMLList;
 import TRIPS.KQML.KQMLToken;
 import TRIPS.KQML.KQMLObject;
@@ -11,7 +12,7 @@ import extractors.OntologyReader;
 import plans.GoalPlanner;
 import states.Goal;
 
-public class QueryCSMHandler extends MessageHandler {
+public class QueryCSMHandler extends MessageHandler implements Runnable {
 
 	KQMLList innerContent;
 	GoalPlanner goalPlanner;
@@ -20,12 +21,17 @@ public class QueryCSMHandler extends MessageHandler {
 	
 	
 	public QueryCSMHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
-			GoalPlanner goalPlanner, OntologyReader ontologyReader) {
-		super(msg, content,referenceHandler);
+			GoalPlanner goalPlanner, OntologyReader ontologyReader, CollaborativeStateManager csm) {
+		super(msg, content,referenceHandler,csm);
 		this.goalPlanner = goalPlanner;
 		this.ontologyReader = ontologyReader;
 		
 		// TODO Auto-generated constructor stub
+	}
+	
+	public void run()
+	{
+		
 	}
 	
 	@Override

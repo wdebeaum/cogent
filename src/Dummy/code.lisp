@@ -6,6 +6,8 @@
 (defvar *last-query-what* nil)  ;; we need this to generate ANSWER messages
 (defvar *last-query-in-context* nil)  ;; we need this to generate ANSWER messages
 (defvar *last-active-goal*)
+(defvar *id-to-what-table* (make-hash-table))
+(defvar *id-to-act-table* (make-hash-table))
 (defun process-reply (msg args result)
   (let ((reply-with (find-arg-in-act msg :reply-with))
 	(sender (find-arg-in-act msg :sender)))
@@ -24,9 +26,12 @@
 	  (case (car content)
 	    ((adopt assertion)
 	     (let* ((head (find-lf-in-context-tmp context (find-arg-in-act content :what)))
+                    (id (find-arg-in-act content :id))
 		    (headtype (find-arg head :instance-of))
 		    (content-as (find-arg-in-act content :as)))
 	       (format t "~% Evaluating ~S with headtype ~S" content headtype)
+	       (setf (gethash id *id-to-what-table*) head)
+	       (setf (gethash id *id-to-act-table*) content)
 	       ;(format t "~% content-as ~S" content-as)
 	       (case headtype
 		 (ont::cause-effect
@@ -73,12 +78,15 @@
 		
 		 (otherwise
 		  (list 'report :content (list 'acceptable :what content) :context context)
+		  ;(list 'report :content (list 'unacceptable :type 'NO-GOOD :what content) :context context)
 		   )
 	       )))
 	    ((ask-wh ask-if)
 	     (setq *last-query-id* (util::find-arg-in-act content :query))
 	     (setq *last-query-what* (util::find-arg-in-act content :what))
 	     (setq *last-query-in-context* (util::find-arg-in-act (util::find-arg-in-act content :as) :goal))
+	     (setf (gethash (find-arg-in-act content :id) *id-to-what-table*) *last-query-what*)
+	     (setf (gethash (find-arg-in-act content :id) *id-to-act-table*) content)
 	     (list 'report :content (list 'acceptable :what content) :context context)
 	     )
 	    (answer ;; currently we always like answers
@@ -108,20 +116,42 @@
     (let* 
 	(;(target (find-arg-in-act active-goal :what))
 	 (target active-goal)
-	 (act (find-lf-in-context context target))
+         (target-what (gethash target *id-to-what-table*))
+	 (act (find-lf-in-context-tmp context target-what))
 	 (condition-id (find-arg act :content))
 	 (condition (find-lf-in-context context condition-id))
 	 (action (find-arg condition :action))
 	 (result (find-arg condition :result))
 	 )
       (format t "~%condition is ~S" condition)
+      (format t "~%content is ~S" (gethash target *id-to-act-table*))
+      (if (null
+            (case (first (gethash target *id-to-act-table*))
+	      (assertion
+	       (reply-to-message msg
+	
+			   `(REPORT :content (EXECUTION-STATUS :goal ,target :status ONT::DONE)
+				    :context ,context)
+						   
+	  		   ))
+	      ((ask-if ask-wh) ;; This should be the up-to-date answer (but still dumb)
+	       (reply-to-message msg
+	
+				 `(REPORT :content (ANSWER :value ONT::FALSE :what ,(gethash target *id-to-what-table*)
+							   :to ,target :justification BA-QUERY-111)
+				    :context ((ONT::RELN BA-QUERY-111 :INSTANCE-OF ONT::SIMULATION :QUERY (SATISFIES-PATTERN p1) :ANSWER (SUCCESS :content (:satisfies-rate 0.0 :num-sim 10))))
+						    )
+						   
+			   ))
+              (otherwise NIL) 
+            ))
       (case (find-arg act :instance-of)
 	(ont::evaluate
 	 (reply-to-message msg
 	
 			   `(REPORT :content (SOLUTION :what E2  :goal ,target :justification R02)
 				    :context ,(cons `(RELN E2 :INSTANCE-OF ONT::INCREASE :AGENT ,action :RESULT ,result)
-						   context))
+						    context))
 						   
 			   ))
 
@@ -146,15 +176,15 @@
 						   (RELN RA1 :INSTANCE-OF ONT::ACTIVATE :AGENT MUT1 :AFFECTED PK01))))
 	      )
 
-	      (ont::medication
-	       (reply-to-message msg
-				 `(REPORT 
-				   :content (FAILURE :what F1 :as (SUBGOAL :of ,target))
-				   :context ,(cons `(A F1 :instance-of ONT::LOOK-UP :neutral ,(second obj))
-						   context))))
-	      (otherwise 
-	       (reply-to-message msg
-				 `(REPORT :content (WAIT)))))))
+	     (ont::medication
+	      (reply-to-message msg
+				`(REPORT 
+				  :content (FAILURE :what F1 :as (SUBGOAL :of ,target))
+				  :context ,(cons `(A F1 :instance-of ONT::LOOK-UP :neutral ,(second obj))
+						  context))))
+	     (otherwise 
+	      (reply-to-message msg
+				`(REPORT :content (WAIT)))))))
 
 	(ont::query-model
 	 (reply-to-message msg
@@ -170,12 +200,18 @@
 				 `(REPORT :content (WAIT))))))
   
 	  
-	))
+	)))
 
        
       
 (defun find-lf-in-context (context id)
   (find id context :key #'cadr))
+
+(defun find-lf-in-context-tmp (context id)  ; id not used
+  (find-if #'(lambda (x) (member (find-arg x :instance-of)
+				 '(ONT::CREATE ONT::PUT-B6-ON-THE-TABLE ONT::Please-put-B7-on-B6 ONT::PUT
+				   ONT::EXECUTE)))
+		 context))
 
 (defun restart-dummy nil
   (setq *replyCounter* 0))

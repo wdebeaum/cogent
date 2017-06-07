@@ -24,7 +24,7 @@
     (W::alert
    (SENSES
     ((meta-data :origin cardiac :entry-date 20080828 :change-date nil :comments nil)
-     (LF-PARENT ONT::body-property-VAL)
+     (lf-parent ont::alert-val)
      (example "he is alert")
      )
     )

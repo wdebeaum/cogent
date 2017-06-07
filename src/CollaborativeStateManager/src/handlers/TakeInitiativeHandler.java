@@ -1,5 +1,6 @@
 package handlers;
 
+import TRIPS.CollaborativeStateManager.CollaborativeStateManager;
 import TRIPS.KQML.*;
 
 import java.util.*;
@@ -15,9 +16,9 @@ public class TakeInitiativeHandler extends MessageHandler {
 	private OntologyReader ontologyReader;
 	
 	public TakeInitiativeHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
-			GoalPlanner goalPlanner, OntologyReader ontologyReader)
+			GoalPlanner goalPlanner, OntologyReader ontologyReader, CollaborativeStateManager csm)
 	{
-		super(msg,content,referenceHandler);
+		super(msg,content,referenceHandler, csm);
 		this.goalPlanner = goalPlanner;
 		this.ontologyReader = ontologyReader;
 	}

@@ -7,7 +7,7 @@
    (W::spicy
     (wordfeats (W::MORPH (:FORMS (-LY -ER))))
    (SENSES
-    ((LF-PARENT ONT::taste-val)
+    ((lf-parent ont::spicy-val)
      (meta-data :origin caloy3 :entry-date 20070330 :change-date nil :comments y3-test-data)
      )
     )

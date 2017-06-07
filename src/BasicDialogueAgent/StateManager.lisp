@@ -302,6 +302,7 @@
 
 (defun restart-dagent nil
   (mapcar #'reset-user (mapcar #'cdr *users*))
+  (setq *interpretable-utt* nil)
   (send-status 'OK)
   )
 
@@ -994,6 +995,10 @@
 	       (nop t)   ; don't do anything (fortriggers)
 	       (continue
 		(cache-response-for-processing '((continue :arg dummy))))
+	       (clear-pending-speech-acts
+		(clear-pending-speech-acts  uttnum channel)
+		(setq *interpretable-utt* nil)		
+		)
 	       (true (clear-pending-speech-acts  uttnum channel))
 	       (next (release-pending-speech-act))
 	       (otherwise
@@ -1071,9 +1076,9 @@
   (setf (user-time-of-last-user-interaction user) (get-time-of-day))
   (let ((expanded-msg (expand-args msg)))
     (Format t "~%~%==========================~% System generating: ~S ~%========================~%" expanded-msg)
-    ;;  we clear any remaining input as we generate
-;    (clear-pending-speech-acts uttnum channel)
-    (setq *interpretable-utt* t)
+    ;;  we clear any remaining input as we generate  ;;; we don't because it might just be responding with an "ok" and we want to process the next speech act
+;    (clear-pending-speech-acts uttnum channel)  
+;    (setq *interpretable-utt* t)
     (send-msg `(REQUEST :content ,(cons 'GENERATE expanded-msg)))))
 
 (defun expand-args (msg)
@@ -1178,7 +1183,7 @@
 	  )
       (progn
 	(when (not *silent-failures*) 
-	  (send-reply (pick-one '("can you rephrase that" "I didn't understand. Can you rephrase" "Sorry I didn't catch that. Can you rephrase")) 
+	  (send-reply (pick-one '("Can you rephrase that?" "I didn't understand that. Can you rephrase?" "Sorry, I didn't catch that. Can you rephrase?")) 
 		      channel)
 	  (update-prior-failures user)
 	  (reask-question user channel uttnum))
@@ -1234,7 +1239,7 @@
 	     (invoke-state (transition-destination transition) nil user nil uttnum))
 	    (trace-msg 3 "Wizard choice ~S not understood for patient ~S"  choice channel))))
     (uninterpretable
-     (send-reply "I didn't understand. Can you rephrase" channel))
+     (send-reply "I didn't understand. Can you rephrase?" channel))
     (wrong-question
      (trace-msg 3 "Wizard indicated wrong question. Trying others ....")
      (try-other-questions lfs words hyps context channel state segment-id user uttnum))

@@ -13,10 +13,12 @@
      (meta-data :origin calo :entry-date 20040507 :change-date nil :comments calo-y1variants)
      )
     ((LF-PARENT ONT::UP)
-     (TEMPL BINARY-CONSTRAINT-S-or-NP-TEMPL)
+     (TEMPL BINARY-CONSTRAINT-NP-TEMPL)
      (meta-data :origin plot :entry-date 20080609 :change-date nil :comments nil)
      (example "let's practice up to here" "all the way up to my shins")
      )
+
+    
 ;; 3/2011 removing sit-val role for event-time-rel
 ;    ((LF-PARENT ONT::event-time-rel)
 ;     (example "practice up to this step")
@@ -27,6 +29,7 @@
    )
 ))
 
+#|
 (define-words :pos W::ADV
  :words (
     ((W::up w::from)
@@ -58,31 +61,51 @@
     )
    )   
 ))
+|#
 
 (define-words :pos W::ADV
  :tags (:base500)
  :words (
   (W::UP
    (SENSES
-    ((LF-PARENT ONT::DIRECTION)
+    ((LF-PARENT ONT::DIRECTION-UP-GROUND)
      (example "the swelling is moving up his leg")
-     (TEMPL BINARY-CONSTRAINT-S-TEMPL)
+     (TEMPL BINARY-CONSTRAINT-NP-TEMPL)
      )
-    ((LF-PARENT ONT::DIRECTION)
+    ((LF-PARENT ONT::DIRECTION-UP)
      (example "pan the camera UP")
      (TEMPL PARTICLE-TEMPL)
      )
     
-    ((LF-PARENT ONT::SCALE-RELATION)
-     (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
+   ((LF-PARENT ONT::DIRECTION-UP)
+     (TEMPL PREDICATIVE-ONLY-ADJ-TEMPL)
      (example "his weight / the temperature is up (X)")
      (SYNTAX (W::ALLOW-DELETED-COMP +) (w::degree-adv +))
      (meta-data :origin cardiac :entry-date 20080428 :change-date nil :comments nil)
+     )
+
+    ((LF-PARENT ONT::COMPLETELY)
+     (TEMPL PARTICLE-MANNER-TEMPL)
+     (meta-data :origin plot :entry-date 20080609 :change-date nil :comments nil)
+     (example "let's practice up to here" "all the way up to my shins")
      )
     )
    )
 ))
 
+(define-words :pos W::adj
+ :tags (:base500)
+ :words (
+  (w::up
+  (senses
+   ((LF-PARENT ONT::in-working-order-val)
+    (TEMPL central-adj-templ)
+    )
+   )
+)
+))
+
+#|
 (define-words :pos W::ADV
  :words (
   ((W::up w::of)
@@ -108,4 +131,5 @@
     )
    )
 ))
+|#
 

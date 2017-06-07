@@ -10,7 +10,7 @@
    (SENSES
     ((meta-data :origin plow :entry-date 20060530 :change-date nil :wn ("exclusive%5:00:00:unshared:00" "exclusive%3:00:00" "exclusive%5:00:00:concentrated:00") :comments pq)
      (example "an exclusive resort")
-     (LF-PARENT ONT::status-val)
+     (lf-parent ont::private)
      )
     )
    )

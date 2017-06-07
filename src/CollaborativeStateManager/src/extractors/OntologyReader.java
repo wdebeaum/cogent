@@ -4,16 +4,22 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.*;
 
+import states.ActType;
+
 public class OntologyReader {
 
 	private HashMap<String,String> events; // Event type -> parent
 	private HashMap<String,ArrayList<String>> goals;
+	private ArrayList<String> goalOrdering;
+	private HashMap<String,ArrayList<String>> actGoalSuggestionMapping;
 	private HashSet<String> models;
 	
 	public OntologyReader()
 	{
 		events = new HashMap<String, String>();
 		goals = new HashMap<String, ArrayList<String>>();
+		actGoalSuggestionMapping = new HashMap<String, ArrayList<String>>();
+		goalOrdering = new ArrayList<String>();
 		models = new HashSet<String>();
 	}
 	
@@ -43,8 +49,14 @@ public class OntologyReader {
 				    	
 				    	for (String parent : parents.split(","))
 				    	{
-				    		if (parent.trim().length() > 0)
+				    		if (parent.trim().length() > 0 && parent.charAt(0) != '@')
 				    			parentList.add(parent.toUpperCase().trim());
+				    		else if (parent.trim().length() > 0)
+				    		{
+				    			if (!actGoalSuggestionMapping.containsKey(parent))
+				    				actGoalSuggestionMapping.put(parent,new ArrayList<String>());
+				    			actGoalSuggestionMapping.get(parent).add(goal);
+				    		}
 				    	}
 				    	
 				    	if (parentList.size() == 0)
@@ -144,6 +156,13 @@ public class OntologyReader {
 	public List<String> getParentGoals(String goalType)
 	{
 		return goals.get(goalType);
+	}
+	
+	public List<String> getParentGoalsOfActType(ActType actType)
+	{
+		String actTypeString = "@" + actType.toString();
+		
+		return actGoalSuggestionMapping.get(actTypeString);
 	}
 	
 	public void readEventOntologyFromFile(String filename)

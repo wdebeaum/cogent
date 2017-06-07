@@ -9,13 +9,13 @@
    (SENSES
     ((meta-data :origin cardiac :entry-date 20090129  :change-date nil :wn ("pleasant%3:00:00") :comments weather :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT))     
      (example "an agreeable book")
-     (LF-PARENT ONT::pleasant-VAL)
+     (lf-parent ont::not-pleasing-val)
      (SEM (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
      (TEMPL central-adj-templ)
      )
  ((meta-data :origin cardiac :entry-date 20090129  :change-date nil :wn ("pleasant%3:00:00") :comments weather :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT)) 
      (EXAMPLE "a porch agreeable for reading??")
-     (LF-PARENT ONT::pleasant-VAL)
+     (lf-parent ont::not-pleasing-val)
      (SEM (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
      ;; this is a sense that allows for implicit/indirect senses of "for"
      ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"
@@ -24,7 +24,7 @@
      )
     ((meta-data :origin cardiac :entry-date 20090129  :change-date nil :wn ("pleasant%3:00:00") :comments weather :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT))     
      (EXAMPLE "a solution good for him")
-     (LF-PARENT ONT::pleasant-VAL)
+     (lf-parent ont::not-pleasing-val)
      (SEM (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
      ;; this is another indirect sense of "for"
      ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"

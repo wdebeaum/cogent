@@ -1,6 +1,6 @@
 ;;;;
-;;;; W::IN
-;;;;
+;;;; w::IN
+;;;; 
 
 (define-words :pos W::n :templ COUNT-PRED-TEMPL
  :tags (:base500)
@@ -74,7 +74,7 @@
  :words (
    ((W::IN W::PAIN)
    (SENSES
-    ((LF-PARENT ONT::physical-symptom-val)
+    ((LF-PARENT ONT::pained-val)
      (TEMPL postpositive-adj-templ)
      )
     )
@@ -85,7 +85,7 @@
  :words (
    ((W::IN W::touch)
    (SENSES
-    ((LF-PARENT ONT::social-interaction-val)
+    ((LF-PARENT ONT::in-touch-val)
      (TEMPL central-adj-templ)
      )
     )
@@ -97,7 +97,7 @@
   ((W::in W::place)
    (SENSES
     ((EXAMPLE "that's in place [for him]")
-     (LF-PARENT ONT::AVAILABILITY-VAL)
+     (lf-parent ont::available)
      (TEMPL CENTRAL-ADJ-XP-TEMPL (XP (% W::PP (W::PTYPE W::FOR))))
      (SYNTAX (W::atype W::predicative-only))
      )
@@ -111,7 +111,7 @@
    (SENSES
     ((EXAMPLE "he is in position")
      (meta-data :origin trips :entry-date 20070503 :change-date nil :comments nil :wn ("ready%3:00:00"))
-     (LF-PARENT ONT::AVAILABILITY-VAL)
+     (LF-PARENT ONT::AVAILABLE)
      (TEMPL CENTRAL-ADJ-XP-TEMPL)
      (SYNTAX (W::atype W::predicative-only))
      )
@@ -307,7 +307,7 @@
 	      ((lf-parent ont::manner)
 	       (meta-data :origin bee :entry-date 20040407 :change-date 20080417 :comments (test-s36 test-s37)) 
 	       (example "in general" "in particular" "in short" "in series" "in parallel" "in full" "in earnest" "the room is done in green")
-	       ;; a restriction to ADJP with no arguments
+	       ;; a restriction of ADJP with no argument
 	       (templ binary-constraint-S-templ (xp (% w::ADJP (w::var ?var) (w::sem ?sem) (w::set-modifier -))))
 	       (preference 0.93)
 	       )
@@ -416,10 +416,9 @@
  :words (
   (W::IN
    (SENSES
-    ;; takes an event ont::of
     ((LF-PARENT ONT::situated-in)
      (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
-     (example "in that case" "in that event" "in the meeting" "in that price range")
+     (example "in that event" "in the meeting")
      )
     #||((LF-PARENT ONT::time-deadline-rel)
      (TEMPL BINARY-CONSTRAINT-adj-postpos-TEMPL)
@@ -427,7 +426,7 @@
      (example "the device placed in five minutes")
      (preference .98)
      )
-     ;; like within
+    ;; like within
     ((LF-PARENT ONT::scale-relation)
      (meta-data :origin calo :entry-date 20040423 :change-date nil :comments calo-y1v5)
      (example "is there a computer in that price range")
@@ -437,8 +436,6 @@
      )||#
     ;;;;;need specific constraints that we're lacking now
     ((LF-PARENT ONT::TIME-span-rel)
-     ;; for :vals (time-val) that are f::time
-    ; (TEMPL BINARY-CONSTRAINT-S-OR-NP-TIME-VAL-TEMPL)
      (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
      (example "he ran the race in June" "in the middle of the night")
      )
@@ -447,7 +444,7 @@
      (TEMPL BINARY-CONSTRAINT-S-TEMPL)
      )
     #||((LF-PARENT ONT::TIME-deadline-rel)
-     (TEMPL BINARY-CONSTRAINT-S-TEstimeMPL)
+     (TEMPL BINARY-CONSTRAINT-S-TEMPL)
      (example "he will run in 5 minutes")
      )||#
     ;; takes a phys-obj ont::of
@@ -460,7 +457,6 @@
      (TEMPL BINARY-CONSTRAINT-val-STATE-NP-TEMPL)
      (meta-data :origin beetle2 :entry-date 20080506 :change-date nil :comments pilot3)
      (example "terminals are in the same state")
-     ;; lowering this to .95 to prevent it from coming up first on "he built a house in 2 days"
      (preference 0.95) ;; don't choose if other options are available
      )||#	      
     ((LF-PARENT ONT::direction)

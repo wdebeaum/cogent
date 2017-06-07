@@ -6,7 +6,7 @@
  :words (
 	(W::excruciatingly
 	  (SENSES
-	   ((LF-PARENT ONT::severity-val)
+    ((lf-parent ont::severe-val)
 	    (TEMPL ADJ-OPERATOR-TEMPL)	    
 	    (example "his ankles are excruciatingly swollen")
 	    (SEM (f::gradability +) (f::orientation -) (f::intensity f::hi))

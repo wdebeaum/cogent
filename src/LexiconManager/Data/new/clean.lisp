@@ -1,6 +1,6 @@
 ;;;;
-;;;; W::clean
-;;;;
+;;;; w::asian
+;;;; 
 
 (define-words :pos W::v :templ AGENT-affected-XP-TEMPL
  :words (
@@ -10,7 +10,7 @@
      (LF-PARENT ONT::remove-parts)
      ;;(TEMPL agent-affected-source-templ (xp (% w::pp (w::ptype (? ptp w::from w::off))))) ; like clear
      (TEMPL agent-affected-xp-templ)
-     (PREFERENCE 0.96)
+     (PREFERENCE 0.96) 
      )||#
     ((LF-PARENT ONT::clean)
      (SEM (F::Aspect F::bounded) (F::Time-span F::extended))
@@ -21,7 +21,7 @@
    )
 ))
 
-(define-words :pos W::v :templ AGENT-affected-XP-TEMPL
+#||(define-words :pos W::v :templ AGENT-affected-XP-TEMPL
  :words (
  ((W::clean (w::up))
    (SENSES
@@ -32,7 +32,7 @@
      )
     )
    )
-))
+))||#
 
 (define-words :pos W::v :templ AGENT-affected-XP-TEMPL
  :words (
@@ -51,7 +51,7 @@
    (wordfeats (W::morph (:FORMS (-LY))))
    (SENSES
     ((meta-data :origin calo-ontology :entry-date 20060117 :change-date nil :wn ("clean%3:00:01") :comments caloy3)
-     (LF-PARENT ONT::cleanliness-val)
+     (lf-parent ont::clean-val)
      (example "are the rooms clean")
      )
     )

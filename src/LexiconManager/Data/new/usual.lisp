@@ -10,7 +10,7 @@
    (SENSES
     ((meta-data :origin calo :entry-date 20031223 :change-date 20090731 :wn ("usual%5:00:00:familiar:00" "usual%3:00:00") :comments html-purchasing-corpus)
      (EXAMPLE "The usual suspects")
-     (LF-PARENT ONT::COMMON)
+     (lf-parent ont::typical-val)
      )
     )
    )

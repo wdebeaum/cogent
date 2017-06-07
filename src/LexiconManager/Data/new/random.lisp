@@ -21,7 +21,7 @@
    (wordfeats (W::comp-op -) (w::morph (:forms (-ly))))
    (SENSES
     ((meta-data :origin monroe :entry-date 20031223 :change-date nil :wn ("random%3:00:00" "random%5:00:00:unselected:00") :comments s7)
-     (LF-PARENT ONT::SEQUENCE-VAL)
+     (lf-parent ont::random-val)
      )
     )
    )

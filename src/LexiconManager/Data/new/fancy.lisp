@@ -1,5 +1,5 @@
 ;;;;
-;;;; W::fancy
+;;;; w::fancy
 ;;;;
 
 (define-words :pos W::V :templ agent-theme-xp-templ
@@ -16,12 +16,11 @@
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :words (
-;   )
    (W::fancy
    (SENSES
     ((meta-data :origin calo :entry-date 20041122 :change-date nil :wn ("fancy%3:00:00") :comments caloy2)
      (EXAMPLE "I don't need anything fancy")
-     (LF-PARENT ONT::specialness-val)
+     (lf-parent ont::not-plain-val)
      )
     )
    )

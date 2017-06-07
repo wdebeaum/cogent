@@ -1,12 +1,22 @@
 (in-package :om)
 
 (define-type ont::acting
- :wordnet-sense-keys ("do%2:29:09" "behave%2:29:00" "act%2:29:00" "act%1:03:00" "deed%1:03:00" "human_action%1:03:00" "human_activity%1:03:00" "activity%1:04:00")
     :parent ont::event-of-action
     :comment "abstract event of doing something: behave, activity, ..."
     :arguments ((:required ont::agent  ((? cz F::Phys-obj f::abstr-obj f::situation)))
 		(:optional ONT::NOROLE)
 		))
+
+(define-type ont::ACTIVITY-EVENT
+ :wordnet-sense-keys ("activity%1:04:00" "action%1:04:02" "act%1:03:00" "act%2:41:00" "act%2:41:07")
+    :parent ont::event-of-action
+    :arguments ((:required ont::FORMAL)
+		))
+
+(define-type ont::ABILITY-STATE
+ :wordnet-sense-keys ("ability%1:07:00" "ability%1:09:00")
+    :parent ont::event-of-state
+    :arguments ((:essential ont::FORMAL)))
 
 #|
 (define-type ont::act
@@ -26,8 +36,9 @@
  :arguments ((:ESSENTIAL ONT::agent ((? oc F::Phys-obj F::Abstr-obj F::Situation)))
 	     (:optional ont::affected ((? aff F::SITUATION F::ABSTR-OBJ F::Phys-obj)))
 	     (:optional ont::result ((? res1 F::SITUATION F::ABSTR-OBJ)))
-	     (:optional ont::formal ((? res2 F::SITUATION F::ABSTR-OBJ))) ;; here for now while we decide the FORMAL/RESULT issue
-	     )
+	     (:optional ont::formal ((? res2 F::SITUATION F::ABSTR-OBJ)
+				     (F::type (? ftype ONT::SITUATION-ROOT ONT::PROPERTY-VAL));; ONT::POSITION-RELN)) ;; here for now while we decide the FORMAL/RESULT issue
+				     )))
  )
 
 (define-type ONT::inhibit-effect
@@ -62,7 +73,8 @@
  )
 
 (define-type ONT::Communication
- :wordnet-sense-keys ("put_across%2:32:00" "pass_along%2:32:00" "pass%2:32:01" "pass_on%2:32:00" "communicate%2:32:01" "intercommunicate%2:32:00" "communicate%2:32:00" "communication%1:03:00" )
+ :wordnet-sense-keys ("put_across%2:32:00" "pass_along%2:32:00" "pass%2:32:01" "pass_on%2:32:00" "communicate%2:32:01" "intercommunicate%2:32:00" "communicate%2:32:00" "communication%1:10:01" 
+"communication%1:24:00")
  :parent ONT::agent-interaction
  :comment "activity that involves transfer of information between agents"
  :sem (F::Situation (F::Cause F::agentive) (F::Trajectory -));  (F::Aspect F::bounded) (F::Time-span F::extended))
@@ -96,8 +108,8 @@
   :parent ONT::representative
   )
 
-(define-type ONT::lie
-  :wordnet-sense-keys ("lie%2:32:00")
+(define-type ONT::misinform
+  :wordnet-sense-keys ("misinform%2:32:00")
     :parent ONT::representative
     )
 
@@ -553,10 +565,10 @@
 (define-type ONT::put
  :wordnet-sense-keys ("put%2:35:00" "set%2:35:00" "place%2:35:00" "pose%2:35:02" "position%2:35:00" "lay%2:35:01" "interpose%2:38:01")
  :parent ont::event-of-causation
+ :sem (F::Situation (F::trajectory +))
  :arguments ((:ESSENTIAL ONT::agent)
 	     (:ESSENTIAL ONT::AFFECTED (F::Phys-obj (F::mobility f::movable)))
-	     ;;(:OPTIONAL ONT::Spatial-Loc (F::Phys-obj (F::spatial-abstraction F::Any-spatial-abstraction))
-             ;; (:implements goal))
+	     
              )
  )
 
@@ -593,7 +605,7 @@
 ;; enter,  ingress
 (define-type ONT::ENTERING
  :wordnet-sense-keys ("enter%2:38:00" "come_in%2:38:02" "get_into%2:38:00" "get_in%2:38:01" "go_into%2:38:00" "go_in%2:38:00" "move_into%2:38:00" "enter%2:36:00")
- :parent ont::motion
+ :parent ont::event-of-action ;ont::motion
  :arguments ((:REQUIRED ONT::affected ((? ttype f::phys-obj)))
 	     (:ESSENTIAL ont::result (F::phys-obj (F::spatial-abstraction (? sa F::spatial-region))
 					       (F::object-function (? of f::spatial-object f::building))))
@@ -604,7 +616,7 @@
 ;; poke, prod, ...
 (define-type ONT::Penetrate
  :wordnet-sense-keys ( "stab%2:35:02" "penetrate%2:35:00")
- :parent ont::entering
+ :parent ont::event-of-causation ;ont::entering
  :arguments ((:REQUIRED ONT::agent ((? ttype f::phys-obj)))
 	     (:ESSENTIAL ONT::affected (F::phys-obj (F::spatial-abstraction (? sa F::spatial-region))
 					       (F::object-function (? of f::spatial-object f::building))))
@@ -641,7 +653,8 @@
              )
  )
 
-(define-type ONT::Appearance
+(define-type ONT::perceptual-Appearance
+    :wordnet-sense-keys ("appearance%1:07:00" "facial_expression%1:10:00" "countenance%1:07:00" "countenance%1:08:00")
  :parent ONT::PERCEPTION
  )
 
@@ -860,7 +873,7 @@
 
 ;;; predicates of comparison, e.g. equals, resembles
 (define-type ONT::OBJECT-COMPARE
-  :wordnet-sense-keys ("resemble%2:42:00")
+  :wordnet-sense-keys ("resemble%2:42:00" "match%2:42:00" "coordinate%2:30:01")
  :parent ONT::event-of-state
  :sem (F::Situation (F::Trajectory -))
  :arguments ((:REQUIRED ONT::NEUTRAL ((? oc F::Phys-obj F::Abstr-obj F::Situation F::time F::proposition)))
@@ -946,7 +959,7 @@
  )
 
 (define-type ont::control-manage
- :wordnet-sense-keys ("control%2:41:00" "command%2:41:00" "discharge%2:33:01" "direct%2:41:00" )
+ :wordnet-sense-keys ("control%2:41:00" "control%1:04:00""command%2:41:00" "discharge%2:33:01" "direct%2:41:00" )
  :comment "an agent controls another object, typically by some manipulation (physical, adding a substance,...)"
  :parent ont::event-of-causation
  :arguments ((:REQUIRED ont::affected ((? th9 f::situation F::PHYS-OBJ F::ABSTR-OBJ)))

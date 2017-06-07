@@ -7,7 +7,7 @@
    (W::triple
    (SENSES
     ((meta-data :origin cardiac :entry-date 20090129 :change-date nil :wn ("triple%5:00:01:multiple:00") :comments LM-vocab)
-      (LF-PARENT ONT::Size-Val)
+      (LF-PARENT ONT::n-tuple-Val)
      )
     )
    )
@@ -21,7 +21,8 @@
    (LF-PARENT ONT::triple)
    (example "triple the budget [to 3K]")
    (SEM (F::Cause F::Agentive) (F::Aspect F::bounded) (F::Time-span F::atomic))
-   (TEMPL AGENT-affected-RESULT-OPTIONAL-TEMPL (xp (% W::PP (W::ptype W::to))))
+   ;(TEMPL AGENT-affected-RESULT-OPTIONAL-TEMPL (xp (% W::PP (W::ptype W::to))))
+   (TEMPL AGENT-AFFECTED-XP-TEMPL)
    )
   ((meta-data :origin step :entry-date 20080626 :change-date 20090504 :comments nil)
    (LF-PARENT ONT::triple)

@@ -7,7 +7,7 @@
    (w::modern
    (SENSES
     ((meta-data :origin windenergy :entry-date 20080521 :change-date nil :comments nil)
-     (LF-PARENT ONT::modernity-val)
+     (lf-parent ont::modern-val)
      (example "modern art")
      )
     )

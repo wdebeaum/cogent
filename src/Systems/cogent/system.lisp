@@ -151,7 +151,7 @@
 
 ;; domain preferences
 (load "domain-sense-preferences")
-;(load "domain-words.lisp")
+(load "domain-words.lisp")
 
 ;;  DM settings
 (setq dagent::*silent-failures* nil)  ;; don't ignore utterance failure

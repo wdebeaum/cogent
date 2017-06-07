@@ -9,7 +9,7 @@
    (SENSES
     ((meta-data :origin calo :entry-date 20031223 :change-date nil :wn ("tight%3:00:01") :comments html-purchasing-corpus)
      (EXAMPLE "a tight fit")
-     (LF-PARENT ONT::BINDING-VAL)
+     (lf-parent ont::not-loose-val)
      )
     )
    )

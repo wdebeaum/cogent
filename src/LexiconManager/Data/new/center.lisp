@@ -28,9 +28,9 @@
 ;     (example "center on Atlanta")
 ;     (preference 0.98)
 ;     )
-    ((LF-PARENT ONT::arranging)
+    ((LF-PARENT ONT::cause-make-things)
      (SEM (F::Aspect F::bounded) (F::Time-span F::Atomic))
-     (TEMPL AGENT-THEME-XP-TEMPL)
+     (TEMPL AGENT-affected-XP-TEMPL)
      (meta-data :origin task-learning :entry-date 20050923 :change-date 20090507 :comments nil)
      (example "center the image within the window")
      )
@@ -43,7 +43,7 @@
  :words (
    (w::center
      (senses
-      ((lf-parent ont::location-val)
+      ((lf-parent ont::middle-location-val)
        (meta-data :origin step :entry-date 20080705 :change-date nil :comments step5)
        )
       ))

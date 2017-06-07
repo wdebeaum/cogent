@@ -6,7 +6,7 @@
  :words (
    (W::hardy
    (SENSES
-    ((LF-PARENT ONT::substantial-property-val)
+    ((lf-parent ont::robust-val)
      (meta-data :origin caloy3 :entry-date 20070330 :change-date 20090915 :comments y3-test-data)
      )
     )

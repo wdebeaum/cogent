@@ -1,6 +1,6 @@
 ;;;;
-;;;; W::on
-;;;;
+;;;; w::on
+;;;; 
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :words (
@@ -8,7 +8,7 @@
    (SENSES
     ((meta-data :origin plow :entry-date 20060629 :change-date 20090818 :wn ("on_time%5:00:00:punctual:00") :comments pq)
      (example "flights with on time arrival")
-     (LF-PARENT ONT::temporal)
+     (LF-PARENT ONT::scheduled-time-modifier)
      )
     )
    )
@@ -20,7 +20,7 @@
    (SENSES
     ((meta-data :origin plow :entry-date 20060530 :change-date nil :comments pq0404)
      (example "on site laundry facilities")
-     (LF-PARENT ONT::location-val)
+     (LF-PARENT ONT::on-site-val)
      )
     )
    )
@@ -32,7 +32,7 @@
    (SENSES
     ((example "use what you have on hand")
      (meta-data :origin monroe :entry-date 20031217 :change-date nil :wn ("on_hand%5:00:00:available:00") :comments s15)
-     (LF-PARENT ONT::availability-val)
+     (lf-parent ont::available)
      (SEM (F::GRADABILITY F::-))
      (TEMPL postpositive-adj-templ)
      )
@@ -64,12 +64,12 @@
   :templ CENTRAL-ADJ-TEMPL
  :tags (:base500)
  :words (
-;            ))    
 	  (w::on
 	   (senses
 	    (;(lf-parent ont::artifact-property-val)
-	     (lf-parent ont::active)
-	     (templ central-adj-templ) ; predicative-only-adj-templ)
+	     (lf-parent ont::active-on)
+	     ;(templ central-adj-templ)
+	     (templ predicative-only-adj-templ)
 	     (Example "The switch is on -- predicative only, because 'the on switch' is not at all the same;  The off position/state")
 	     (meta-data :origin bee :entry-date 20040408 :change-date nil :wn ("on%3:00:00") :comments test-s)
 	     )
@@ -80,7 +80,7 @@
  :words (
   ((W::ON W::PURPOSE)
    (SENSES
-    ((LF-PARENT ONT::INTENTIONALITY-val)
+    ((LF-PARENT ONT::intentional-val)
      (TEMPL PRED-S-POST-templ)
      )
     )

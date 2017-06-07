@@ -1,6 +1,6 @@
 ;;;;
 ;;;; w::out
-;;;;
+;;;; 
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :tags (:base500)
@@ -12,27 +12,29 @@
      (LF-PARENT ONT::NOT-IN-WORKING-ORDER-val)
      (example "the bridge is out")
      (templ predicative-only-adj-templ)
-     )
-    ((meta-data :origin trips :entry-date 20080328 :change-date 20081028 :comments nil)
-     (LF-PARENT ONT::enough-val)
-     ;; MD: this is marked as predicative-only because you cannot say "the out sugar", and otherwise it creates ambiguities with "out" as a particle
-     (TEMPL predicative-adj-optional-xp-TEMPL (XP (% W::PP (W::Ptype W::of))))
+     )))
+
+   ((w::out w::of)
+    (senses
+    ((LF-PARENT ONT::inadequate)
+     (preference .98)
+     (TEMPL  predicative-adj-req-xp-templ (xp (% w::np )))
      (example "out of sugar" "out of breath" "out of time")
-     )
-    )
-   )
-))
+     ))
+    )))
 
 (define-words :pos W::ADV
  :words (
   ((W::OUT W::OF)
    (SENSES
-    (;(LF-PARENT ONT::source-as-containment)
-     (LF-PARENT ONT::OUTSIDE)
-     (example "it is out of the bag")
-     (TEMPL BINARY-CONSTRAINT-S-TEMPL)
+    ((LF-PARENT ONT::OUTSIDE)
+     (example "it is out of the bag") 
+     (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
      )
-    ((LF-PARENT ONT::situated-out)
+   
+    ((LF-PARENT ONT::original-material)
+     (example "make it out of stone")
+     ;;(preference .98)  let semantic restrictions discourage this when appropriate
      (meta-data :origin calo-ontology :entry-date 20060126 :change-date nil :comments caloy3)
      (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
      )
@@ -46,7 +48,7 @@
   (W::OUT
    (SENSES
     ((LF-PARENT ONT::direction)
-     (TEMPL PRED-S-POST-TEMPL)
+     (TEMPL PARTICLE-TEMPL)
      )  
     )
    )
@@ -80,7 +82,7 @@
    ((w::out w::of w::breath)
    (senses
    ((meta-data :origin chf :entry-date 20071227 :change-date nil :comments nil)
-   (lf-parent ont::physical-symptom-val)
+   (lf-parent ont::breathless-val)
    (templ less-adj-templ)
    (example "he is out of breath")
    )))
@@ -90,7 +92,7 @@
  :words (
    ((W::out w::of w::whack)
    (SENSES
-    ((LF-PARENT ONT::not-in-working-order-val)
+    ((LF-PARENT ONT::defective-val)
      (meta-data :origin cardiac :entry-date 20080508 :change-date nil :comments LM-vocab)
      )
     )
@@ -101,7 +103,7 @@
  :words (
    ((W::out w::of w::kilter)
    (SENSES
-    ((LF-PARENT ONT::not-in-working-order-val)
+    ((LF-PARENT ONT::defective-val)
      (meta-data :origin cardiac :entry-date 20080508 :change-date nil :comments LM-vocab)
      )
     )

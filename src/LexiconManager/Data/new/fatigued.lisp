@@ -8,7 +8,7 @@
     (W::fatigued
    (SENSES
     ((meta-data :origin cardiac :entry-date 20090422 :change-date nil :comments nil :wn ("tired%3:00:00"))
-     (LF-PARENT ont::physical-symptom-val)
+     (lf-parent ont::fatigued-val)
      (templ central-adj-templ)
      )
     )

@@ -31,6 +31,7 @@ public class GoalPlanner {
 	private boolean overrideSystemInitiativeValue = false;
 	private Goal underDiscussion;
 	private ReferenceHandler referenceHandler;
+	public boolean hasAcceptedGoal = false;
 	
 	public GoalPlanner(ReferenceHandler referenceHandler)
 	{
@@ -45,13 +46,17 @@ public class GoalPlanner {
 		this.referenceHandler = referenceHandler;
 	}
 	
-	public boolean addGoal(Goal goal, String parentVariableName)
+	public synchronized boolean addGoal(Goal goal, String parentVariableName)
 	{
+
 		if (goal == null)
 		{
 			System.out.println("Tried to add a null goal");
 			return false;
 		}
+		
+		System.out.println("Adding goal with id " + goal.getId() + 
+				" and varname " + goal.getVariableName());
 		
 		if (hasGoal(goal.getVariableName()))
 		{
@@ -329,6 +334,9 @@ public class GoalPlanner {
 	// Sets the goal to the first subgoal
 	public Goal startOver()
 	{
+		if (activeGoal == null)
+			return null;
+		
 		while (activeGoal.getParent() != null && activeGoal.getParent().getParent() != null)
 		{
 			activeGoal = activeGoal.getParent();
@@ -392,11 +400,11 @@ public class GoalPlanner {
 		return (activeGoal != null);
 	}
 	
-	public Goal getActiveGoal() {
+	public synchronized Goal getActiveGoal() {
 		return activeGoal;
 	}
 
-	public boolean setActiveGoal(Goal goal) {
+	public synchronized boolean setActiveGoal(Goal goal) {
 		boolean succeeded = false;
 		
 		if (hasGoalById(goal.getId()) || hasGoal(goal.getVariableName()))
@@ -415,10 +423,13 @@ public class GoalPlanner {
 	}
 	
 	// Adds the goal from context if not already present
-	public boolean setActiveGoal(String goal, KQMLList context)
+	public synchronized boolean setActiveGoal(String goal, KQMLList context)
 	{
 		if (hasGoal(goal))
+		{
+			System.out.println("Active goal now: " + goal);
 			return setActiveGoal(getGoal(goal));
+		}
 		else
 		{
 			KQMLList goalTerm = TermExtractor.extractTerm(goal, context);
@@ -473,7 +484,7 @@ public class GoalPlanner {
 		return parent;
 	}
 	
-	public void setCompleted(Goal goal)
+	public synchronized void setCompleted(Goal goal)
 	{
 		goal.setCompleted(true);
 		System.out.println("Completed goal " + goal.getVariableName());
@@ -582,8 +593,15 @@ public class GoalPlanner {
 		
 		KQMLObject asObject = act.getKeywordArg(":AS");
 		String type = "GOAL";
+		
+		// Check if it's an assertion
+		if (act.get(0).stringValue().equalsIgnoreCase("ASSERTION"))
+		{
+			type = "ASSERTION";
+			System.out.println("This is an assertion");
+		}
 		String parent = null;
-		if (asObject != null)
+		if (asObject != null && !type.equalsIgnoreCase("ASSERTION"))
 		{
 			KQMLList asList = (KQMLList)asObject;
 			type = asList.get(0).stringValue();
@@ -610,7 +628,7 @@ public class GoalPlanner {
 				newGoal.setId(goalIdObject.stringValue());
 			addGoal(newGoal);
 		}
-		else if (type.equalsIgnoreCase("SUBGOAL"))
+		else if (type.equalsIgnoreCase("SUBGOAL") || type.equalsIgnoreCase("ASSERTION"))
 		{
 			newGoal = new Goal(goalLF,getGoal(parent),context);
 			if (goalIdObject != null)
@@ -670,6 +688,17 @@ public class GoalPlanner {
 			newGoal.setAccepted();
 			setActiveGoal(newGoal);
 			System.out.println("Active goal now: " + goalName);
+		}
+		else if (cpsa.equals("PROPOSE"))
+		{
+			if (newGoal == null)
+			{
+				System.out.println("No goal proposed.");
+				return false;
+			}
+			System.out.println("Proposed goal has: ");
+			System.out.println("ID: " + newGoal.getId());
+			System.out.println("What: " + newGoal.getVariableName());
 		}
 		return true;
 	}

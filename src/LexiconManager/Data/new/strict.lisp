@@ -9,7 +9,7 @@
    (SENSES
     ((meta-data :origin calo :entry-date 20031223 :change-date nil :wn ("strict%5:00:00:exact:00") :comments html-purchasing-corpus)
      (EXAMPLE "strict guidelines")
-     (LF-PARENT ONT::BINDING-VAL)
+     (lf-parent ont::demanding-val)
      )
     )
    )

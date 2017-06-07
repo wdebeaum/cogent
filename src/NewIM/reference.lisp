@@ -5,9 +5,85 @@
 
 (defun Do-discourse-reference (index)
   (let ((refs (find-possible-antecedents-in-act index)))
-    (mapcar #'(lambda (ref) (install-hyp-in-referent ref (car (referent-ref-hyps ref)))) refs)
-   ;; (sort-referents-by-level-of-focus index)
+	
+    ;;(trace-msg 2 "~% possible referents are ~S" refs)
+    ;; because we are destructively eliminating candidates in the structures, we don't need to return anything
+    (eliminate-unlikely-referents refs)
+    (install-referents refs)
+    
     (set-processing-status index 'reference)))
+
+(defun eliminate-unlikely-referents (orig-refs)
+  "this imposes various heuristics and constraints to reduce the set of possible referents"
+  
+  (let* 
+      ;; first eliminate same sentence antecedents that occur after the referring expression, unless there are no other possibilities
+      ((refs (remove-invalid-referents orig-refs))
+       (newrefs (mapcar #'(lambda (rr)
+			    (let ((reduced-refs (remove-if #'(lambda (x) (member 'post (ref-hyp-score x)))
+							   (referent-ref-hyps rr))))
+			      (if reduced-refs
+				  (setf (referent-ref-hyps rr) reduced-refs))))
+			refs)))
+       ;; other filters here
+       )
+    )
+
+(defun remove-invalid-referents (refs)
+  (remove-if #'(lambda (x) (not (referent-p x))) refs))
+
+
+(defun install-referents (orig-refs)
+  ;; here we should pick referents while imposes reflexivity constraints on the answers
+  ;; we basically assign referents sequentially through the list, eliminating use of that referent by any
+  ;;    later terms that would violate reflexivity constraints
+ 
+  (let* ((refs (remove-invalid-referents orig-refs))
+	 (first-choices (remove-if #'null
+				   (mapcar #'(lambda (ref) (if (car (referent-ref-hyps ref))
+							       (list (car (referent-ref-hyps ref))
+								     (get-role-events (referent-role ref)))))
+				refs)))
+	 (violation-found (check-reflexivity-constraints first-choices)))
+    (if violation-found (trace-msg 1 "~%reflexivity violation found is ~S" violation-found))
+    (if (null violation-found)
+	(mapcar #'(lambda (x)
+		    (install-hyp-in-referent x (car (referent-ref-hyps x))))
+		refs)
+	;; otherwise, the violation-found is the second referent that violates the reflexivity constraint.
+	(let* ((offending-id (ref-hyp-id  violation-found))
+	       (offending-referent (find-if #'(lambda (x) (eq (referent-id x) offending-id)) refs)))
+	  (trace-msg 1 "~% Removing first choice for ~S due to reflexivity constraints" offending-id)
+	  (if (referent-p offending-referent)
+	      (progn
+		(setf (referent-ref-hyps offending-referent)
+		      (cdr (referent-ref-hyps offending-referent)))
+	    
+		;; now try again
+		(install-referents refs)
+		)
+	      ;;  Bad error here, report and just abandon installing referents
+	      (progn
+		(format t "WARNING: couldn't find affending referent: ~S" offending-id)
+		nil))))))
+  
+(defun check-reflexivity-constraints (choices)
+  "check possible solutions for violations of reflexivity: the choices are of form (<REH-HYP> <list of events that this is a direct role of>)"
+  (when choices
+    (let* ((first (caar choices))
+	   (first-events (cadar choices))
+	   (coref (ref-hyp-coref first))
+	   (first-conflict
+	    (find-if #'(lambda (x)
+			 (and (eq coref (ref-hyp-coref (car x)))
+			      (intersection first-events (cadr x))))
+		     (cdr choices))))
+      (if first-conflict
+	  (progn
+	    ;;(format t "~% reflexivity violation found for ~S in choices  ~S" (car choices) (cdr choices))
+	    (car first-conflict)
+	    )
+	  (check-reflexivity-constraints (cdr choices))))))
 
 (defun add-reference-info-in-lfs (lfs)
   "adds the REF and COREF slots to the LF based on the REFERENT record"
@@ -113,8 +189,8 @@
 (defun classify-num (lf)
   (case (first lf) 
     ((ont::the-set ont::indef-set ont::pro-set) 'set)
-    ((ont::the ont::a ont::pro ont::F) 'individual)
-    ((ont::bare ont::kind) 'kind)
+    ((ont::the ont::a ont::pro ont::F ont::bare) 'individual)
+    ((ont::kind) 'kind)
     (otherwise 'other)))
 
 (defun read-sem (x)
@@ -168,7 +244,8 @@
 (defun install-hyp-in-referent (ref hyp)
   "We have picked a HYP and now update the discourse state to reflect this"
   (if hyp
-      (let* ((id (referent-id ref)))	    
+      (let* ((id (referent-id ref))
+	     (lf (referent-lf ref)))
 	(setf (referent-refers-to ref) (ref-hyp-refers-to hyp))
 	
 	(if (and (or (ref-hyp-refers-to hyp) ;; if the ID's differ, this was a real anaphoric reference and we make it concrete
@@ -178,10 +255,18 @@
 	(setf (referent-coref ref) (ref-hyp-coref hyp))
 	(if (ref-hyp-lf-type hyp)
 	    (setf (referent-lf-type ref) (simplify-lf-type (ref-hyp-lf-type hyp) (referent-lf ref))))
+	(if (and (referent-lf-type ref)
+		 (not (eq (referent-lf-type ref) (simplify-generic-type (third lf)))))
+	    (setq lf (cons (car lf) (cons (cadr lf) (cons (referent-lf-type ref)
+							       (cdddr lf))))))
+	(if (ref-hyp-sem hyp)
+	    (setf (referent-sem ref) (ref-hyp-sem hyp)))
 	;; add to the LF
 	(let* ((ref-exprs (if (referent-refers-to ref) (list :refers-to (referent-refers-to ref))
 			      (if (referent-coref ref) (list :coref (referent-coref ref)))))
-	       (newlf (if ref-exprs (append (referent-lf ref) ref-exprs))))
+	       (newlf (if ref-exprs
+			  (append lf ref-exprs)
+			  lf)))
 	  (when newlf
 	    (setf (referent-lf ref) newlf)
 	    (storeLF newlf (referent-start ref) (referent-end ref) :replace t)))
@@ -374,7 +459,7 @@
 							;;	       'ONT::MALE-PERSON 'ont::female-person)))
 			     3
 			     role)
-		 ;;   backoff strategy for gendered pronouns - just look for people
+		 ;;   backoff strategy for gendered pronouns - just look for people of unknown gender
 		 (if (member (cadr lf-type) '(ONT::MALE-PERSON ONT::FEMALE-PERSON))
 		     (let ((opposite-type (if (eq (cadr lf-type) 'ONT::MALE-PERSON)
 					      'ONT::FEMALE-PERSON 'ONT::MALE-PERSON)))
@@ -465,12 +550,71 @@
 (defun resolve-pro-fn (lf lf-type sem access num index fn count role)
   "Personal pronouns should refer to a concrete object matching the criteria in the recent history.
     We check in the current utter1ance for possible referents that come before the pro form"
-  (let ((ans (or (find-possible-referents-in-current-sentence lf-type sem (second lf) access num index role fn)  ; need for "She talked with *her* friend
-		 (search-for-possible-refs lf-type (second lf) sem access num (- index 1) count fn)))) 
+  (let* ((id (second lf)))
+    (multiple-value-bind
+	  (possible-hyps id-order)
+	(find-possible-referents-in-current-sentence lf-type sem (second lf) access num index role fn)
+      (let* ((current-sentence-hyps
+	      (tag-order-in-sentence id id-order
+				     (mapcar #'(lambda (x) 
+						 (score-and-build-hyp id lf-type x sem))
+					     possible-hyps)))
+		       
+	     (prior-sentence-hyps 
+	      (remove-duplicate-ref-hyps
+	       (tag-as-prior-sentence (mapcar #'(lambda (x) 
+						  (score-and-build-hyp (second lf) lf-type x sem))
+					      (search-for-possible-refs lf-type (second lf) sem access num (- index 1) count fn))))))
+	(append current-sentence-hyps prior-sentence-hyps)))))
+  
+(defun tag-order-in-sentence (id id-order refs)
+  "this tags each ref as to whether it preceeds or succeeds the id in the sentence"
+  (multiple-value-bind 
+	(prior post)
+      (split-list-at-id id id-order)
+    (mapcar #'(lambda (x)
+		(if (member (ref-hyp-coref x) prior)
+		    (setf (ref-hyp-score x)
+			  (list* :history-posn 0 :order 'prior
+				(ref-hyp-score x)))
+		    (setf (ref-hyp-score x)
+			  (list* :history-posn 0 :order 'post
+				(ref-hyp-score x)))))
+	    refs)
+    refs))
 
-	(mapcar #'(lambda (a) (bind-to-referent lf lf-type a)) ans)))
+(defun split-list-at-id (id ll)
+  (when ll
+    (if (eq id (car ll))
+	(values nil (cdr ll))
+	(multiple-value-bind
+	      (prior post)
+	    (split-list-at-id id (cdr ll))
+	  (values (cons (car ll) prior) post)))))
 
+(defun remove-duplicate-ref-hyps (ref-hyps)
+  (when ref-hyps
+    (let ((corefs (mapcar #'(lambda (x)
+			      (ref-hyp-coref x))
+			  (cdr ref-hyps))))
+      (if (member (ref-hyp-coref (car ref-hyps)) corefs)
+	  (remove-rest (cdr ref-hyps) (cdr corefs))
+	  (cons (car ref-hyps) (remove-rest (cdr ref-hyps) (cdr corefs)))))))
 
+(defun remove-rest (ref-hyps corefs)
+  (when ref-hyps
+    (if (member (ref-hyp-coref (car ref-hyps)) corefs)
+	(remove-rest (cdr ref-hyps) (cdr corefs))
+	(cons (car ref-hyps) (remove-rest (cdr ref-hyps) (cdr corefs))))))
+      
+
+(defun tag-as-prior-sentence (refs)
+  (mapcar #'(lambda (x)
+	       (setf (ref-hyp-score x)
+			  (list* :history-posn 1
+				(ref-hyp-score x))))
+	  refs)
+  refs)
 
 (defun resolve-this-that (lf sem index)
   "this and that allow reference to visually focussed objects as well as discourse concrete and abstract"
@@ -527,7 +671,7 @@
 	 (progressive-search-for-possible-refs lf-type sem id (cdr access) num index range fn))))
 
 (defun search-for-possible-refs (lf-type id sem access num index range fn)
-  (remove-if-not fn (find-most-salient lf-type id sem access num index range)))
+  (remove-if-not fn (find-most-salient-relaxed lf-type id sem access num index range)))
 
 (defun sort-by-access (results access)
   results)
@@ -601,20 +745,22 @@
     ))
      
 (defun standard-definite-reference (id index lf lf-type sem speaker addressee &optional name)
-  (let* ((proform (find-arg-in-act lf :proform))
-	 (possibles (find-most-salient lf-type id sem (if ;(and proform (member proform '(ont::this ont::that ont::these ont::those)))
-						      (and proform (member proform '(W::this W::that W::these W::those)))
-						      '(visible-focus concrete event abstract)
-						      (if (eq proform 'w::one)
-							  '(concrete abstract kind) ; kind is also for BARE
-							  '(concrete wh-term event abstract kind)))
-				       (list (classify-num lf) 'kind)
-				       (- index 1) (if proform 3 200) name))
-	 (ans (filter-by-fastmatch-subsumes id (mapcar #'referent-id possibles))))
+  ;; currently only handled reduced definites e.g., "the dog" not "the happy dog" as we don't have a sophisticated matchings capability yet
+  (when (not (intersection lf '(:mod :agent :affected :neutral :formal)))
+    (let* ((proform (find-arg-in-act lf :proform))
+	   (possibles (find-most-salient-relaxed lf-type id sem 
+					       (if (and proform (member proform '(W::this W::that W::these W::those)))
+						   '(visible-focus concrete event abstract)
+						   (if (eq proform 'w::one)
+						       '(concrete abstract kind) ; kind is also for BARE
+						       '(concrete wh-term event abstract kind)))
+					       (list (classify-num lf) 'kind)
+					       (- index 1) (if proform 3 200) name))
+	 (ans possibles)) ;;  I can't remember why I did this -- (filter-by-fastmatch-subsumes id (mapcar #'referent-id possibles))))
     (if ans
-	(mapcar #'(lambda (a) (bind-to-referent lf lf-type a)) 
-		(mapcar #'get-referential-info ans))
-	)))
+	(mapcar #'(lambda (a) (score-and-build-hyp id lf-type a sem)) 
+		ans) ;;(mapcar #'get-referential-info ans))
+	))))
 
 (defun remove-null-impro (id lf lfs)
   "If we have a functional referent with a null impro (e.g., the author) - then we remove this
@@ -718,10 +864,37 @@
 	(id (second lf))
 	)
     (make-ref-hyp  :id id
-		   :lf-type (or (om::more-specific (referent-lf-type ante) lf-type) lf-type (referent-lf-type ante))
+		   :lf-type (or (om::more-specific (referent-lf-type ante) lf-type) (referent-lf-type ante) lf-type)
 		   :refers-to (referent-refers-to ante)
 		   :coref (or (referent-coref ante) (referent-id ante)))
     ))
+
+(defun score-and-build-hyp (id lf-type ante sem)
+  "Build a new coreferent structure that refers to ANTE"
+  (multiple-value-bind
+	(newsem score)
+      (score-sem id ante sem)
+    (make-ref-hyp  :id id
+		   :lf-type (or (om::more-specific (referent-lf-type ante) (simplify-generic-type lf-type)) lf-type (referent-lf-type ante))
+		   :refers-to (referent-refers-to ante)
+		   :coref (or (referent-coref ante) (referent-id ante))
+		   :sem (if (and (var-p newsem) (arrayp (var-values newsem)))
+			    (cons '$ (build-list-from-sem-array (var-values newsem))))
+		   :score score
+		   )))
+
+(defun score-sem (id ante sem)
+  (let ((oldflex (flexible-semantic-matching *chart*)))
+    (setf (flexible-semantic-matching *chart*) t)
+    (let* ((semarray (read-expression sem))
+	   (refsem (read-expression (referent-sem ante))))
+      (multiple-value-bind (result bindings score)
+	  (unify-sem-structures semarray refsem)
+
+	(setf (flexible-semantic-matching *chart*) oldflex)
+	(values result (list :sem-score score))
+	))))
+     
 
 (defun recordable-referent (lf)
   "we only keep things in the system utterances that we think will be useful"
@@ -740,6 +913,23 @@
 				 (cddr expr))))
     (if equality
 	(third (car equality)))))
+
+(defun find-most-salient-relaxed (lf-type id sem access-requirement num index limit &optional name)
+ (let ((lf-type-simp (simplify-generic-type lf-type)))
+  (or  (find-most-salient lf-type-simp id sem access-requirement num index limit  name)
+       (if (not (eq lf-type-simp 'ont::referential-sem))
+	   (if (member lf-type-simp '(ONT::MALE-PERSON ONT::FEMALE-PERSON))
+	       (let ((opposite-type (if (eq lf-type-simp 'ONT::MALE-PERSON)
+					'ONT::FEMALE-PERSON 'ONT::MALE-PERSON)))
+		 (remove-if-not
+		  #'(lambda (x) 
+		      (not (subtype-check (referent-lf-type x) opposite-type)))
+		  (find-most-salient (om::get-parent lf-type-simp) id sem access-requirement num index limit  name)))
+	       (if (not-too-abstract (om::get-parent lf-type-simp))
+		   (find-most-salient (om::get-parent lf-type-simp) id sem access-requirement num index limit  name)))))))
+
+(defun not-too-abstract (tt)
+  (not (member tt '(ont::SITUATION ont::ABSTRACT-OBJECT ONT::PHYS-OBJECT ONT::GROUP-OBJECT ONT::ANY-TIME-OBJECT))))
 
 (defun find-most-salient (lf-type id sem access-requirement num index limit &optional name)
   "Gathers up potential referents in preference order based on the parameters"
@@ -810,11 +1000,12 @@
 	;; right now we just remove the score and return the ordered list
 	(trace-msg 2 "~%Sorted refs are ~S" sorted-refs)
 	(let ((res (mapcar #'cdr sorted-refs)))
+			 
 	  res
 	  )))))
 
 (defun find-possible-referents-in-current-sentence (lf-type sem id access-requirement nums index role fn)
-  "returns the objects that meet the access requirement AND that precede the id in the sentence"
+  "returns the objects that meet the access requirement AND whether it precedes the id in the sentence"
   (let ((r (get-im-record index))
 	;(event-ids (cadr role))
 	(event-ids (get-referent-role role))
@@ -827,25 +1018,39 @@
 								(not (eq (referent-id x) id)) ;; can't refer to itself
 								(member (referent-accessibility x) access-requirement)
 								(or (null event-ids)
-								    (not (equal event-ids (get-referent-role (referent-role x)) ))) ;; can't be in the same event since it's not reflexive
+								    (null (intersection (get-referent-role-first-only role) (get-referent-role-first-only (referent-role x)) ))) ;; can't be arguments of the same event since it's not reflexive
 								(not (member (referent-id x) event-ids)) ;; it is not the event itself
 								(member (referent-num x) nums)
 								(subtype-check (referent-lf-type x) lf-type)))
-					     (truncate-expressions-at-id id (utt-record-referring-expressions r)))
+					     (utt-record-referring-expressions r))
 	       )
-	     (filtered-accessable-refs (remove-if-not fn accessable-refs)))
-	filtered-accessable-refs
+	     (filtered-accessable-refs (filter-and-reorder-based-on-sem (remove-if-not fn accessable-refs) sem)))
+	(values filtered-accessable-refs (mapcar #'referent-id (utt-record-referring-expressions r)))
     ))))
+
+(defun mark-and-build-hyps (id exprs)
+  "this gathers up all the possible referents up to the ID"
+  (mapcar #'(lambda (e) 
+	      (if (and exprs (not (eq (referent-id (car exprs)) id)))
+		  (bind-to-referent 
+      (cons (car exprs) (truncate-expressions-at-id id (cdr exprs))))))))
 
 (defun truncate-expressions-at-id (id exprs)
   "this gathers up all the possible referents up to the ID"
   (if (and exprs (not (eq (referent-id (car exprs)) id)))
       (cons (car exprs) (truncate-expressions-at-id id (cdr exprs)))))
 	  
-(defun get-referent-role (role)
-    (remove-duplicates (mapcan #'(lambda (x) (copy-list (cadr x))) role))
-)
 
+(defun get-referent-role (role)
+  (remove-duplicates (flatten (mapcar #'(lambda (x) (cadr x)) role)))
+  )
+
+(defun get-referent-role-first-only (role)
+  (remove-duplicates (mapcar #'(lambda (x) (caadr x)) role))
+  )
+
+(defun get-role-events (role)
+  (flatten (mapcar #'(lambda (x) (cadr x)) role)))
   
 #||
 (defun sort-refs (refs focus-id)

@@ -1,6 +1,6 @@
 ;;;;
 ;;;; w::south
-;;;;
+;;;; 
 
 (define-words :pos W::n :templ COUNT-PRED-TEMPL
  :tags (:base500)
@@ -16,15 +16,29 @@
    )
 ))
 
+#|
 (define-words :pos w::N 
  :words (
   ((w::south w::american)
-  (senses((LF-parent ONT::nationality-val) 
+  (senses((lf-parent ont::regional-identity-val)
 	    (templ count-pred-templ)
 	    (meta-data :origin calo-ontology :entry-date 20060128 :change-date nil :comments caloy3)
 	    ))
 )
 ))
+|#
+
+(define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
+ :words (
+   ((w::south w::american)
+   (SENSES
+    ((meta-data :origin adjective-reorganization :entry-date 20170403 :change-date nil :comments nil :wn nil)
+     (lf-parent ont::regional-identity-val)
+     )
+    )
+   )
+))
+
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :tags (:base500)

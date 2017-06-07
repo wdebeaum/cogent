@@ -9,25 +9,52 @@ import states.Elaboration;
 import states.Goal;
 import states.Query;
 import utilities.KQMLUtilities;
+import TRIPS.CollaborativeStateManager.CollaborativeStateManager;
 import TRIPS.KQML.KQMLList;
 import TRIPS.KQML.KQMLObject;
 import TRIPS.KQML.KQMLPerformative;
 import TRIPS.KQML.KQMLString;
 
-public class UpdateCSMHandler extends MessageHandler {
+
+public class UpdateCSMHandler extends MessageHandler implements Runnable {
 
 	KQMLList innerContent = null;
 	KQMLObject context;
 	String updateType;
-	GoalPlanner goalPlanner;
 	String activeGoal = null;
+	GoalPlanner goalPlanner;
+	KQMLObject replyWith;
 	
 	public UpdateCSMHandler(KQMLPerformative msg, KQMLList content, 
 			ReferenceHandler referenceHandler,
-			GoalPlanner goalPlanner) {
-		super(msg, content, referenceHandler);
+			GoalPlanner goalPlanner, CollaborativeStateManager csm) {
+		super(msg, content, referenceHandler, csm);
 		this.goalPlanner = goalPlanner;
 		// TODO Auto-generated constructor stub
+	}
+	
+	public void run()
+	{
+		
+		KQMLList responseContent = null;
+		try {
+			responseContent = process();
+		}
+		catch (RuntimeException re)
+		{
+			re.printStackTrace();
+			KQMLPerformative replyMessage = new KQMLPerformative("SORRY");
+			KQMLString comment = new KQMLString("Exception in CSM");
+			KQMLString text = new KQMLString(re.getMessage());
+			replyMessage.setParameter(":COMMENT", comment);
+			replyMessage.setParameter(":TEXT", text);
+			csm.sendReply(msg, replyMessage);
+		}
+		if (responseContent != null)
+		{
+			csm.sendContentViaPerformative("TELL", "DAGENT", responseContent, replyWith);
+		}
+		
 	}
 
 	@Override
@@ -66,8 +93,8 @@ public class UpdateCSMHandler extends MessageHandler {
 		case "initiative-taken-on-goal":
 			return handleInitiativeTakenOnGoal();
 		case "failed-on":
-			return handleFailedOn();
 		case "unacceptable":
+		case "failure":
 			return handleFailedOn();
 		case "solved":
 			return handleSolved();
@@ -425,6 +452,7 @@ public class UpdateCSMHandler extends MessageHandler {
 		if (asType.equalsIgnoreCase("MODIFICATION"))
 			goalName = ofSymbol;
 		System.out.println("Accepting goal: " + goalName);
+		
 		//TODO: Give better error message
 		
 		
@@ -432,14 +460,23 @@ public class UpdateCSMHandler extends MessageHandler {
 		{
 			Goal g = null;
 			if (goalPlanner.hasGoalById(id))
+			{
 				g = goalPlanner.getGoalById(id);
+				System.out.println("Found goal in planner by id " + id);
+			}
 			else if (goalPlanner.hasGoal(goalName))
+			{
 				g = goalPlanner.getGoal(goalName);
+				System.out.println("Found goal in planner by name " + goalName);
+			}
 			
 			if (g instanceof Action)
 			{
 				g.setAccepted();
+				goalPlanner.setActiveGoal(g);
+				System.out.println("G id: " + g.getId());
 				System.out.println("Action " + goalName + " accepted.");
+				System.out.println("Active goal now: " + goalName);
 			}
 			else if (g instanceof Elaboration)
 			{
@@ -478,6 +515,7 @@ public class UpdateCSMHandler extends MessageHandler {
 		}
 		else // Do we want to add this if we don't know of the goal?
 		{
+			System.out.println("Goal with ID " + id + "accepted without being known");
 			if (goalPlanner.createGoalFromAct("ACCEPT",acceptContent, (KQMLList)context))
 				System.out.println("Goal successfully created from act");
 			else
@@ -488,6 +526,8 @@ public class UpdateCSMHandler extends MessageHandler {
 		{
 			goalPlanner.createGoalFromAct("ACCEPT", (KQMLList)effectContent, (KQMLList)context);
 		}
+		
+		goalPlanner.hasAcceptedGoal = true;
 		
 		return null;
 	}

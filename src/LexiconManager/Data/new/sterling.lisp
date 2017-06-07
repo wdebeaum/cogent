@@ -7,7 +7,7 @@
    (W::sterling
     (SENSES
      ((meta-data :origin cardiac :entry-date 20080508 :change-date nil :comments LM-vocab)
-      (LF-PARENT ONT::specialness-val)
+      (lf-parent ont::superior-val)
       )
      )
     )

@@ -8,7 +8,7 @@
 	 (W::glutinous
 	   (SENSES
 	    (
-	     (LF-PARENT ONT::texture-val)
+      (lf-parent ont::sticky-val)
 	     (meta-data :origin foodkb :entry-date 20050811 :change-date nil :wn ("glutinous%5:00:00:adhesive:00") :comments nil)
 	     (SEM (F::GRADABILITY F::+))
 	     )

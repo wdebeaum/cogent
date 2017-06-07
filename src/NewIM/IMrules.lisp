@@ -114,6 +114,15 @@
       (ONT::PROPOSE :who *USER* :to *ME* :what ?!V8097 :as ONT::GOAL)
       )
 
+   ;; The blocks should/must be red
+     
+   ((ONT::SPEECHACT ?!V9120 ONT::SA_TELL :CONTENT ?!V8097)
+    (ONT::F ?!V8097 ONT::SITUATION-ROOT :modality (:* (? x ONT::SHOULD ONT::MUST) ?lex)  :force ?force)
+    -prop-modal-assertion>
+   (ONT::PROPOSE :who *USER* :to *ME* :what ?!V8097 :as ONT::MODIFICATION)
+   )
+     
+
      ;;  Enumerations
    ;; let's work on this first
      ;; Note: "first" attached is to "let"
@@ -172,7 +181,7 @@
     ;; basic inform acts  - default for tells if not other matches
    ((ONT::SPEECHACT ?x ONT::SA_TELL :CONTENT ?!c)
     (ONT::F ?!c ?type)
-     -inform>
+     -inform> .98   
     (ONT::TELL :who *USER* :to *ME* :what ?!c)
     )
 
@@ -193,7 +202,13 @@
       ((ONT::SPEECHACT ?!xx ONT::SA_REQUEST-COMMENT :CONTENT ?!v)
        -request-comment>
        (ONT::REQUEST-COMMENT :who *USER* :to *ME* :what ?!v))
-      
+
+   ;; how about you do it  -- if the argument is a sentence we make it a propose
+   ((ONT::SPEECHACT ?!xx ONT::SA_REQUEST-COMMENT :CONTENT ?!v)
+    (ONT::F ?!v ONT::EVENT-OF-ACTION)
+    -request-comment-as-propose>
+    (ONT::PROPOSE :who *USER* :to *ME* :what ?!v))
+   
       ;; e.g., Fill in the author field.   And the title field.
       ((ONT::SPEECHACT ?!xx ONT::SA_IDENTIFY :CONTENT ?!v :mods (?!m))
        (ONT::F ?!m ONT::CONJUNCT)
@@ -213,6 +228,7 @@
       ;; WH Questions 
       ;;   e.g. what is the budget
 
+      #|
       ; This rule might not fire any more.  "What is the budget?" is matched by -roleQ1-rev
       ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
        (ONT::WH-TERM ?!ff ?foc-type)
@@ -228,6 +244,7 @@
        -roleQ1-rev>
        (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!dd :aspect ?foc-type)
        )
+      |#
 
       ;;  What next?
       ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
@@ -238,14 +255,23 @@
        )
       
       ;; e.g., What budget are we using?
-      
+
+      #|
+      ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
+       (ONT::WH-TERM ?!ff ?!type :ASSOC-WITH ?a)
+       -standardQ>
+       (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!ff)
+       (ONT::THE ?!ff ?!type :suchthat ?!rr :ASSOC-WITH ?a)
+	)
+      |#
+
       ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
        (ONT::WH-TERM ?!ff ?!type)
        -standardQ>
-       (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!ff)
-       (ONT::THE ?!ff ?!type :suchthat ?!rr)
+       (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!ff :suchthat ?!rr)
 	)
-     
+      
+      
    ;; conditional questions: is ERK activated if we add Serafinabib?
 
      ((ONT::SPEECHACT ?!a ONT::SA_YN-QUESTION :CONTENT ?!rr)
@@ -292,7 +318,8 @@
       (ONT::ASK-IF :who *USER* :to *ME* :what ?!rr)
       )
         
-   
+   #||   ;; I think this is unmotivated given we have -inform>
+
       ;;==========================================
       ;; REPORTS 
       ;; REPORTS on states of existence e.g., "I'll be at the office soon", "The box is red"
@@ -302,7 +329,7 @@
       ((ONT::SPEECHACT ?!x ONT::SA_TELL :CONTENT ?!c)
        (ONT::F ?!c ONT::HAVE-PROPERTY)
        -report> 
-       (ONT::REPORT :who *USER* :to *ME* :what ?!c))
+       (ONT::REPORT :who *USER* :to *ME* :what ?!c))||#
      
    ;;  bare gerunds also appear as IDENTIFY e.g., "getting up"
     ((ONT::SPEECHACT ?a ONT::SA_IDENTIFY :CONTENT ?!vv)

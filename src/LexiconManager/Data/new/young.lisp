@@ -20,7 +20,7 @@
    (wordfeats (W::MORPH (:FORMS (-ER))))
    (SENSES
     ((meta-data :origin csli-ts :entry-date 20070320 :change-date nil :comments nil :wn nil)
-     (LF-PARENT ONT::AGE-VAL)
+     (lf-parent ont::young-val)
      )
     )
    )

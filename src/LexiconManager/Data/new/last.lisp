@@ -30,7 +30,7 @@
   (W::LAST
    (SENSES
     ((meta-data :origin trips :entry-date 20060824 :change-date nil :comments nil :wn ("last%5:00:00:closing:00" "last%3:00:00"))
-     (LF-PARENT ONT::SEQUENCE-VAL)
+     (lf-parent ont::last-val)
      (example "it was the last day they met")
      ;;(preference .95)
      )

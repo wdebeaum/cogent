@@ -9,19 +9,19 @@
    (SENSES
     ((meta-data :origin caloy2 :entry-date 20050418 :change-date 20061106 :wn ("suitable%5:00:00:appropriate:00") :comments projector-purchasing :comlex (ADJECTIVE))
      (example "a good book")
-     (LF-PARENT ONT::APPROPRIATENESS-VAL)
+     (lf-parent ont::appropriate-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::med))
      (TEMPL central-adj-templ)
      )
     ((meta-data :origin caloy2 :entry-date 20050418 :change-date 20061106 :wn ("suitable%5:00:00:appropriate:00") :comments projector-purchasing :comlex (ADJECTIVE))
      (example "a wall good for climbing")
-     (LF-PARENT ONT::APPROPRIATENESS-VAL)
+     (lf-parent ont::appropriate-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::med))
      (TEMPL adj-purpose-TEMPL)
      )
     ((meta-data :origin caloy2 :entry-date 20050418 :change-date 20061106 :wn ("suitable%5:00:00:appropriate:00") :comments projector-purchasing :comlex (ADJECTIVE))
      (EXAMPLE "a drug suitable for cancer")
-     (LF-PARENT ONT::APPROPRIATENESS-VAL)
+     (lf-parent ont::appropriate-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::med))
      ;; this is a sense that allows for implicit/indirect senses of "for"
      ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"
@@ -30,7 +30,7 @@
      )
     ((meta-data :origin caloy2 :entry-date 20050418 :change-date 20061106 :wn ("suitable%5:00:00:appropriate:00") :comments projector-purchasing :comlex (ADJECTIVE))
      (EXAMPLE "a solution good for him")
-     (LF-PARENT ONT::APPROPRIATENESS-VAL)
+     (lf-parent ont::appropriate-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::med))
      ;; this is another indirect sense of "for"
      ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"

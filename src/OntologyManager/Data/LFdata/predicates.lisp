@@ -110,6 +110,7 @@
 
 ;; out, over
 (define-type ONT::location-distance-modifier
+    :arguments ((:required ONT::FIGURE (F::SITUATION (F::TYPE ONT::EVENT-OF-ACTION))))
  :parent ONT::PREDICATE
  )
 
@@ -183,11 +184,11 @@
 
 (define-type ONT::PURPOSE
  :parent ONT::SITUATION-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation)) ;(F::type ont::event-of-action))) ; takes statives: This suffices for...
+ :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation (F::type ont::event-of-action))); maybe takes statives: This suffices for...
 ;;             (:REQUIRED ONT::VAL (F::Situation (F::aspect F::dynamic)))
 	     ;; purposes don't have to be dynamic -- e.g. to store something, to remember, etc.
 ;	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj) (F::scale (? !sc ont::duration-scale))))
-	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj) (F::scale -)))
+	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj) (f::type (? !t ONT::ORGANISM)) (F::scale -)))
 	     ;; a separate role because it will be lower priority
 ;	     (:required ont::obj-val (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
 	    ;; (:required ont::REASON (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
@@ -254,7 +255,7 @@
  :parent ONT::PREDICATE
  :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation (f::type ont::event-of-action)
 						   (f::aspect f::dynamic)))
-             (:REQUIRED ONT::GROUND (F::Phys-obj (F::origin F::artifact) (F::intentional -)))
+             (:REQUIRED ONT::GROUND (F::Phys-obj (F::origin F::artifact) (F::intentional -) (F::OBJECT-FUNCTION F::INSTRUMENT)))
              )
  )
 
@@ -362,19 +363,18 @@
 
 ;; in that event
 (define-type ONT::situated-in
- :parent ONT::SITUATION-MODIFIER
- :arguments (;(:ESSENTIAL ONT::OF (F::Situation))
-             ;(:REQUIRED ONT::val (F::situation))
-	     (:ESSENTIAL ONT::FIGURE (F::Situation))
-	     ;(:REQUIRED ONT::GROUND (F::situation))
-             (:REQUIRED ONT::GROUND ((? at F::abstr-obj F::situation) (F::type (? t ONT::SITUATION-ROOT ONT::DOMAIN ONT::SCALE)))) ; abstr-obj for ONT::DOMAIN/SCALE, e.g., "large in size"
+ :parent ONT::SITUATION-OBJECT-MODIFIER
+ :arguments ((:ESSENTIAL ONT::FIGURE ((? xxx F::Situation 
+					 F::PHYS-OBJ)))
+	   	     ;; SITUATED-IN shouldn't be used for scales!
+	     (:REQUIRED ONT::GROUND (F::situation (F::type (? t ONT::SITUATION-ROOT))))
              )
  )
 
 ;; out of the meeting
 (define-type ONT::situated-out
  :parent ONT::SITUATION-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation))
+ :arguments ((:ESSENTIAL ONT::FIGURE ((? xxx F::Situation F::PHYS-OBJ)))
              (:REQUIRED ONT::GROUND (F::situation))
              )
  )
@@ -505,4 +505,12 @@
   :arguments (;(:ESSENTIAL ONT::OF (F::SITUATION (f::type ont::event-of-change)))
 	      (:ESSENTIAL ONT::FIGURE (F::SITUATION (f::type ont::event-of-change) (F::trajectory -)))
 	      (:ESSENTIAL ONT::GROUND ((? gd F::SITUATION F::abstr-obj F::phys-obj)))
+  ))
+
+; rotate around/about this axis/origin, flip along this axis
+; invert the notes around G4 (musica)
+(define-type ONT::pivot
+  :parent ONT::PREDICATE
+  :arguments ((:ESSENTIAL ONT::FIGURE ((? fig F::SITUATION) (f::type (? t ONT::MOTION ONT::ROTATE))))
+	      (:ESSENTIAL ONT::GROUND ((? gd F::abstr-obj)))
   ))

@@ -1,6 +1,6 @@
 ;;;;
-;;;; W::VITAL
-;;;;
+;;;; w::vital
+;;;; 
 
 (define-words :pos W::n
  :words (

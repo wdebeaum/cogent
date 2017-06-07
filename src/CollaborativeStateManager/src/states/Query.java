@@ -37,6 +37,8 @@ public class Query extends Goal {
 		
 		if (queryObject != null)
 			querySymbol = queryObject.stringValue();
+		else
+			querySymbol = parent.getId();
 		
 		String what;
 		queryWhat = null;
@@ -48,7 +50,9 @@ public class Query extends Goal {
 	    	queryWhat = what;
 	    	queryType = null;
 	    	neutralTerm = TermExtractor.extractTerm(what,context);
-	    	KQMLObject neutralType = neutralTerm.getKeywordArg(":INSTANCE-OF");
+	    	KQMLObject neutralType = null;
+	    	if (neutralTerm != null)
+	    		neutralType = neutralTerm.getKeywordArg(":INSTANCE-OF");
 	    	if (neutralType != null)
 	    		queryType = neutralType.stringValue();
 	    	if (neutralTerm == null)
@@ -80,7 +84,7 @@ public class Query extends Goal {
 			toReturn.add(queryWhat);
 		}
 		
-		if (neutralTerm != null)
+		if (querySymbol != null)
 		{
 			toReturn.add(":QUERY");
 			toReturn.add(querySymbol);

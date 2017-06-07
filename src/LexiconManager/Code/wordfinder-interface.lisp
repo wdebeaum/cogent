@@ -76,9 +76,9 @@
 	  
 	  (dolist (this-lf lflist) 
 	    (when (not (member (list pos this-lf) senselist :test #'equal)) ;; skip duplicate senses
-	      ;; check for hidden names: tagged as N, not penn taged as NNS and starts with a capital  (not sure what problem this solved - isit obsolete?)
+	    #||  ;; check for hidden names: tagged as N, not penn taged as NNS and starts with a capital  (not sure what problem this solved - isit obsolete?)
 	      (if (and (eq pos 'w::n) (not (member 'w::nns penntag))
-		       (is-instance this-wf-entry)) (setq pos 'w::name))
+		       (is-instance this-wf-entry)) (setq pos 'w::name))||#
 	      (let* ((score (get-wf-score this-wf-entry))
 		     (feats (get-wf-feats this-wf-entry))
 		     (wf-word (get-wf-word this-wf-entry))
@@ -393,6 +393,7 @@
 (defun adjust-score-if-participle-adj (word score trips-sense-list)
 "reduce score if this adjective has the same form as a verb participle, e.g. placed, made
  to reduce competition with derivational grammar rules for e.g. reduced relative clauses"
+   (declare (ignore word))
  (when  (find 'w::v trips-sense-list :key #'second)
    (setq score .96)) ; only use adj if verb senses fail
   score)
@@ -419,13 +420,14 @@
     
 (defun make-unknown-word-entry (word pos score feats wid lflist trips-sense-list penn-tag tagged-ont-types domain-info)
   "make an underspecified lexical entry for the unknown word"
+    (declare (ignore tagged-ont-types))
   (print-debug  "~%MAKE-UNKNOWN-WORD-ENTRY: generating word entry for ~S with ~S and ~S ~%" word pos lflist)
   (let* ((lfform (if (listp word) (make-into-symbol word) word))
 	(lf (car lflist))
 	(pos (if (listp pos) (car pos) pos))
 	(penn-tag (reconcile-penntags-and-pos penn-tag pos))
 	(syntax-from-penn-tag (penn-tag-to-trips-syntax penn-tag))
-	 syntax sem maps roles wagr wmass res replica-entry fulllf)
+	 syntax sem maps roles wagr wmass res replica-entry)
      
     ;; assign underspecified syntactic and semantic features depending on part of speech
      (case pos
@@ -604,23 +606,43 @@
 	     (dolist (this-sense sense-defs)
 	       (setq maps (word-sense-definition-mappings this-sense))
 	       (setq roles (word-sense-definition-roles this-sense))
-	       (let* ((new-entry (make-word-sense-definition
-                   :name wid
-                   :pos pos
-                   :lf `(:* ,lf ,lfform)
-                   :sem sem
-                   :boost-word nil
-                   :pref (or score .99)
-                   :syntax syntax
-                   :kr-type domain-info
-		   :specialized (if domain-info t nil)
-		   :mappings maps
-		   :roles roles
-                   )))
-		 (push (make-lexicon-entry word new-entry) res)
-	       ))
+	       (if (consistent-features (word-sense-definition-syntax this-sense) syntax)
+		   (let* ((new-entry (make-word-sense-definition
+				      :name wid
+				      :pos pos
+				      :lf `(:* ,lf ,lfform)
+				      :sem sem
+				      :boost-word nil
+				      :pref (or score .99)
+				      :syntax (combine-syntax-features (word-sense-definition-syntax this-sense) syntax)
+				      :kr-type domain-info
+				      :specialized (if domain-info t nil)
+				      :mappings maps
+				      :roles roles
+				      )))
+		     (push (make-lexicon-entry word new-entry) res)
+		     )))
 	     res
 	     ))))
+
+(defun combine-syntax-features (newfeats defaultfeats)
+  "remove any default feats defines in newfeats"
+  (let ((defined-feats (mapcar #'car newfeats)))
+    (append newfeats (remove-if #'(lambda (x) (member (car x) defined-feats))
+				defaultfeats))))
+
+(defun consistent-features (feats1 feats2)
+  (if feats1
+      (let* ((feat (caar feats1))
+	     (val (cadar feats1))
+	     (feats2val (cadr (assoc feat feats2))))
+	(if (or (member feat '(W::morph))  ;; some features are exempted
+		(null feats2val)
+		(equal feats2val val))
+	    (consistent-features (cdr feats1) feats2)
+	    ))
+      T))
+	
 
 (defun ing-form (word)
   "T if word ends in ING"

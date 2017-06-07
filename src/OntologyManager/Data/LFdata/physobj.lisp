@@ -154,7 +154,8 @@
 (define-type ONT::GEO-OBJECT
     :wordnet-sense-keys ("location%1:03:00")
     :parent ONT::phys-OBJECT
-    :sem (F::Phys-obj (F::form F::geographical-object) (:default (F::object-function F::spatial-object)))
+    :sem (F::Phys-obj (F::form F::geographical-object))
+		      ;;(:default (F::object-function F::spatial-object)))
     )
 
 ;; a place in space
@@ -163,7 +164,7 @@
     :sem (F::Phys-obj (F::origin F::non-living)
 		      (F::Form F::Geographical-Object)
 ;		   (F::Object-Function F::Place)
-		      (F::Object-Function F::Spatial-object)
+		      ;;(F::Object-Function F::Spatial-object)
 		      )
     :arguments (;(:OPTIONAL ONT::OF ((? lof F::Phys-obj)))
 ; this needs to be less restrictive as long as it's used for "where" clauses, e.g. the party where he met her
@@ -321,9 +322,9 @@
     :parent ONT::man-made-structure
     :sem (F::Phys-obj (F::spatial-abstraction (? sa F::spatial-point F::spatial-region))
 		      (F::origin F::Artifact)(F::trajectory -)
-		      (f::object-function f::building)
+		      (f::object-function f::provides-service-open-closed)
 		      (F::mobility f::fixed) (f::container +))
-    )
+   ) 
 
 (define-type ONT::TOWER
   :wordnet-sense-keys ("tower%1:06:00")
@@ -526,10 +527,18 @@
     )
 
 (define-type ONT::MANUFACTURED-OBJECT
-    :wordnet-sense-keys ("instrumentation%1:06:00" "instrumentality%1:06:00" "device%1:06:00" "artifact%1:03:00" "artefact%1:03:00")
+    :wordnet-sense-keys ("instrumentation%1:06:00" "instrumentality%1:06:00" "artifact%1:03:00" "artefact%1:03:00")
     :parent ONT::PHYS-OBJECT
     :sem (F::Phys-obj (:required (F::origin F::artifact))(:default (F::Form F::solid-object)))
     )
+
+(define-type ONT::technology
+ :parent ONT::manufactured-object
+ :wordnet-sense-keys ("technology%1:04:00" "technology%1:06:00")
+ 
+ :arguments ((:essential ONT::FIGURE)
+	     )
+ )
 
 (define-type ONT::BLOCK
     :parent ONT::manufactured-object
@@ -626,7 +635,7 @@
 
 
 (define-type ONT::person
-    :wordnet-sense-keys ("person%1:03:00" "individual%1:03:00" "someone%1:03:00" "somebody%1:03:00" "mortal%1:03:00" "soul%1:03:00" "witch%1:18:01")
+    :wordnet-sense-keys ("person%1:03:00" "individual%1:03:00" "someone%1:03:00" "somebody%1:03:00" "mortal%1:03:00" "soul%1:03:00" "imaginary_being%1:18:00")
     :parent ONT::mammal ;; umls
     :sem (F::Phys-obj (F::form F::solid-object)
 		      (F::spatial-abstraction F::spatial-point)
@@ -922,42 +931,42 @@
 
 (define-type ONT::public-service-facility
     :parent ONT::facility
-    :sem (F::Phys-obj (F::object-function F::Building))
+   ;; :sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; lab, laboratory
 (define-type ONT::research-facility
     :parent ONT::facility
     :wordnet-sense-keys ("research_center%1:06:00" "lab%1:06:00" "laboratory%1:06:00" "research_lab%1:06:00" "research_laboratory%1:06:00" "science_lab%1:06:00" "science_laboratory%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; pool, gym
 (define-type ONT::athletic-facility
     :parent ONT::facility
     :wordnet-sense-keys ("athletic_facility%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; office
 (define-type ONT::business-facility
     :parent ONT::facility
     :wordnet-sense-keys ("office_building%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; store, shop
 (define-type ONT::commercial-facility
     :parent ONT::facility
     :wordnet-sense-keys ("shop%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; disco
 (define-type ONT::entertainment-establishment
     :parent ONT::commercial-facility
     :wordnet-sense-keys ("discotheque%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; cafe, etc.
@@ -982,27 +991,27 @@
 (define-type ONT::drinking-establishment
     :parent ONT::entertainment-establishment
     :wordnet-sense-keys ("barroom%1:06:00" "bar%1:06:00" "saloon%1:06:00" "ginmill%1:06:00" "taproom%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; warehouse
 (define-type ONT::storage-facility
     :parent ONT::facility
     :wordnet-sense-keys ("warehouse%1:06:00" "storage_warehouse%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; factory, plant
 (define-type ONT::production-facility
     :parent ONT::facility
     :wordnet-sense-keys ("factory%1:06:00" "manufacturing_plant%1:06:00" "manufactory%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 (define-type ONT::transportation-facility
     :parent ONT::facility
     :wordnet-sense-keys ("terminal%1:06:00" "terminus%1:06:01" "depot%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 (define-type ont::airport
@@ -1022,32 +1031,32 @@
 (define-type ONT::lodging
     :wordnet-sense-keys ("housing%1:06:00" "lodging%1:06:00" "living_accommodations%1:06:00")
     :parent ONT::facility
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 (define-type ONT::health-care-facility
     :parent ONT::facility
     :wordnet-sense-keys ("hospital%1:06:00" "hospital%1:14:00" "fire_department%1:14:00" "police_department%1:14:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 (define-type ONT::education-facility
     :parent ONT::facility
     :wordnet-sense-keys ("school%1:06:00" "university%1:06:00" "college%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+   ;; :sem (F::Phys-obj (F::object-function F::Building))
     )
 
 (define-type ONT::religious-facility
     :parent ONT::facility
     :wordnet-sense-keys ("place_of_worship%1:06:00" "house_of_prayer%1:06:00" "house_of_god%1:06:00" "house_of_worship%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 ;; hotel, inn, guesthouse
 (define-type ONT::accommodation
     :parent ONT::lodging
     :wordnet-sense-keys ("hotel%1:06:00")
-    :sem (F::Phys-obj (F::object-function F::Building))
+    ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
 (define-type ONT::bedandbreakfast
@@ -1179,6 +1188,16 @@
     :parent ONT::loc-as-defined-by-reln-to-ground
     )
 
+(define-type ONT::startpoint
+    :parent ONT::loc-wrt-ground-as-spatial-obj
+    :wordnet-sense-keys ("beginning%1:15:00" "beginning%1:09:00")
+    )
+
+(define-type ONT::endpoint
+    :parent ONT::loc-wrt-ground-as-spatial-obj
+    :wordnet-sense-keys ("end%1:15:00" "end%1:15:02")
+    )
+
 (define-type ONT::waypoint
     :parent ONT::loc-wrt-ground-as-spatial-obj
     )
@@ -1205,8 +1224,6 @@
     :parent ONT::loc-wrt-orientation
     :wordnet-sense-keys ("left%1:15:00")
     )
-
-
 
 (define-type ONT::setting
     :parent ONT::location
@@ -1308,6 +1325,7 @@
 ;;; These are the location that relate to well-formed physical objects - e.g. the top of smth
 (define-type ONT::object-dependent-location
     :wordnet-sense-keys ("region%1:15:00")
+    :COMMENT "these are locations defined relative to another object"
     :parent ONT::LOCATION
     :arguments ((:OPTIONAL ONT::FIGURE (F::PHYS-OBJ (F::Form F::object)))
 		)
@@ -1322,6 +1340,13 @@
     :wordnet-sense-keys ("bottom%1:15:00" "bottom%1:15:01")
     :parent ONT::object-dependent-location
     )
+
+#|
+(define-type ONT::END-LOCATION
+    :wordnet-sense-keys ("end%1:15:00" "end%1:15:02")
+    :parent ONT::object-dependent-location
+    )
+|#
 
 (define-type ONT::SIDE-LOCATION
     :wordnet-sense-keys ("side%1:15:02")
@@ -1357,6 +1382,7 @@
 		)
     )
 
+#|
 ;; middle of the road
 (define-type ONT::location-reln
     :parent ONT::LOCATION
@@ -1371,6 +1397,7 @@
     :arguments ((:OPTIONAL ONT::FIGURE (F::PHYS-OBJ (F::spatial-abstraction (? sa F::line F::strip))))
 		)
     )
+|#
 
 
 ;;; > REPRESENTATIONS
@@ -1389,6 +1416,7 @@
 ;;INFO-Holder needs much more work
 (define-type ONT::INFO-HOLDER
     :parent ONT::PHYS-REPRESENTATION
+    :arguments ((:optional ONT::formal))
     )
 
 ;; channel
@@ -1399,10 +1427,8 @@
 ;; items in this class "stand for" something, and have ont::of arguments
 (define-type ont::direct-representation
     :parent ONT::info-holder
-    :arguments (
-;		(:optional ONT::Associated-information)
-		)
     )
+    
 
 ;; items in this class represent comments on something, and have ont::of arguments
 (define-type ont::annotation
@@ -1418,7 +1444,7 @@
     :parent ONT::info-holder
     :wordnet-sense-keys ("document%1:06:00" "document%1:21:00")
     :arguments (
-;		(:optional ONT::Associated-information)
+;;		(:optional ONT::Associated-information)
 		)
     )
 
@@ -1454,18 +1480,13 @@
 
 (define-type ont::mail
     :parent ONT::direct-representation
-    :wordnet-sense-keys ("letter%1:10:00" "missive%1:10:00")
+    :wordnet-sense-keys ("letter%1:10:00" "missive%1:10:00" "mail%1:10:01" "mail%1:10:00")
     )
 
 ;; email, spam
 (define-type ont::email
     :wordnet-sense-keys ("electronic_mail%1:10:00" "e-mail%1:10:00" "email%1:10:00")
     :parent ONT::mail
-    )
-
-(define-type ONT::message
-    :parent ont::direct-representation
-
     )
 
 ;; copy, backup, cc, bcc
@@ -1862,31 +1883,31 @@
 (define-type ONT::projector
     :wordnet-sense-keys ("projector%1:06:00")
     :parent ONT::MACHINE
-    :sem (F::Phys-obj (F::mobility F::non-self-moving)(f::form f::object) (F::object-function F::instrument))
+    :sem (F::Phys-obj (F::mobility F::non-self-moving)(f::form f::object) 
+		      (F::object-function F::instrument))
     )
 
 (define-type ONT::computer
     :wordnet-sense-keys ("computer%1:06:00" "computing_machine%1:06:00" "computing_device%1:06:00" "data_processor%1:06:00" "electronic_computer%1:06:00" "information_processing_system%1:06:00")
     :parent ONT::MACHINE
-    :sem (F::Phys-obj (F::mobility F::non-self-moving)(f::form f::object) (F::object-function F::instrument))
-    )
+    :sem (F::Phys-obj (F::mobility F::non-self-moving)(f::form f::object) 
+		      (F::object-function (? xx F::provides-service-on-off f::provides-service-up-down))
+    )) 
 
 ;; powerbook, ibook
 (define-type ONT::computer-model
     :parent ONT::computer
-    :sem (F::Phys-obj (F::mobility F::non-self-moving)(F::object-function F::instrument))
     )
 
 ;; ibm, macintosh, dell
 (define-type ONT::computer-make
     :parent ONT::computer
-    :sem (F::Phys-obj (F::mobility F::non-self-moving)(F::object-function F::instrument))
     )
 
 ;; laptop, pc
 (define-type ONT::computer-type
     :parent ONT::computer
-    :sem (F::Phys-obj (F::mobility F::non-self-moving)(F::object-function F::instrument))
+    
     )
 
 ;; a physical arrangement of components, e.g. a stereo system
@@ -2208,7 +2229,7 @@
 (define-type ONT::tableware
     :wordnet-sense-keys ("tableware%1:06:00")
     :parent ONT::manufactured-object
-    :sem (F::Phys-obj (F::container +) (F::form F::solid-object) (F::origin F::artifact)(f::trajectory -) (f::object-function f::instrument))
+    :sem (F::Phys-obj (F::form F::solid-object) (F::origin F::artifact)(f::trajectory -))
     :arguments ((:OPTIONAL ONT::CONTENTS)
 		)
     )
@@ -2217,7 +2238,7 @@
 (define-type ONT::cutlery
     :wordnet-sense-keys ("cutlery%1:06:00")
     :parent ONT::tableware
-    :sem (F::Phys-obj (F::container +) (F::form F::solid-object) (F::origin F::artifact)(f::trajectory -) (f::object-function f::instrument))
+    :sem (F::Phys-obj (F::form F::solid-object) (F::origin F::artifact)(f::trajectory -) (f::object-function f::instrument))
     )
 
 
@@ -2229,16 +2250,19 @@
 
 (define-type ont::cup
     :parent ont::tableware
+    :sem (F::Phys-obj (F::container +))
     :wordnet-sense-keys ("cup%1:06:00")
     )
 
 (define-type ont::mug
     :parent ont::tableware
+    :sem (F::Phys-obj (F::container +))
     :wordnet-sense-keys ("mug%1:06:00")
     )
 
 (define-type ont::glass
     :parent ont::tableware
+    :sem (F::Phys-obj (F::container +))
     :wordnet-sense-keys ("glass%1:06:00")
     )
 
@@ -2520,6 +2544,7 @@
 (define-type ONT::SOUP
     :wordnet-sense-keys ("soup%1:13:00")
     :parent ONT::MEALS
+    :sem (f::phys-obj (F::form F::liquid))
     )
 
 (define-type ONT::CEREALS
@@ -2599,3 +2624,197 @@
     )
 ; <
 ; <
+
+
+;;;;;;;;;;;;;;;
+; the group-object hierarchy is a duplicate of group-object-abstr in abstract-object 
+;;;;;;;;;;;;;;;
+
+(define-type ont::group-object
+ :wordnet-sense-keys ("mathematical_group%1:09:00" "group%1:09:00" "chemical_group%1:27:00" "radical%1:27:00" "group%1:27:00" "group%1:03:00" "grouping%1:03:00")
+ ;:parent ont::abstract-object-nontemporal
+ :parent ont::phys-object
+;  :sem (F::Abstr-obj (f::group +)) ; group feature not defined for abstract objects
+  :arguments ((:OPTIONAL ONT::FIGURE)
+              )
+  )
+
+(define-type ONT::system
+  :wordnet-sense-keys ("system%1:06:00" "system%1:14:00")
+  :comment "An interconnected group of objects, abstract or physical"
+ :parent ONT::group-object
+ )
+
+(define-type ONT::formation
+ :parent ONT::group-object
+ )
+
+(define-type ONT::row-formation
+ :wordnet-sense-keys ("row%1:14:00" "row%1:17:00")
+ :parent ONT::formation
+ :arguments ((:OPTIONAL ONT::FIGURE (F::phys-obj))  ; to distinguish between steps as steps in a plan and steps in a staircase
+             )
+ )
+
+(define-type ONT::column-formation
+ :wordnet-sense-keys ("pile%1:14:00" "column%1:14:00" "column%1:25:02")
+ :parent ONT::formation
+ :arguments ((:OPTIONAL ONT::FIGURE (F::phys-obj))  ; to distinguish between steps as steps in a plan and steps in a staircase
+             )
+ )
+
+;; crowd, audience
+(define-type ont::social-group
+ :wordnet-sense-keys ("social_group%1:14:00")
+  :parent ont::group-object
+  ;:sem (F::Abstr-obj (F::information F::information-content) (f::intentional +) (F::Object-Function F::Occupation) (F::Container -))
+  :sem (F::phys-obj (f::intentional +) (F::Object-Function F::Occupation) (F::Container -))
+  :arguments ((:OPTIONAL ONT::FIGURE ((? lof f::phys-obj f::abstr-obj))))
+  )
+
+;; swift 20110928 crew defined for obtw demo
+(define-type ont::crew-phys
+    :parent ont::social-group
+    )
+
+(define-type ONT::organization
+ :wordnet-sense-keys ("organization%1:14:00" "organisation%1:14:00")
+ :parent ONT::social-group
+ )
+
+;; these subtypes came about because of generation issues
+;; commerce, finance, business, marketing
+(define-type ONT::enterprise
+ :parent ONT::organization
+ )
+
+;; institution
+(define-type ONT::institution
+ :parent ONT::organization
+ )
+
+;; an institution created for conduction business
+;; company
+(define-type ONT::company
+ :parent ONT::institution
+ )
+
+;; google, amazon, isp
+(define-type ONT::internet-organization
+ :parent ONT::organization
+ )
+
+;; bank
+(define-type ONT::financial-institution
+ :parent ONT::institution
+ )
+
+;; apple, ibm, hp
+(define-type ONT::electronics-company
+ :parent ONT::company
+ )
+
+;; officemax, officedepot
+(define-type ONT::office-supply-company
+ :parent ONT::company
+ )
+
+;; fetch, gnu
+(define-type ONT::software-company
+ :parent ONT::company
+ )
+
+;; court
+(define-type ONT::legal-organization
+ :parent ONT::organization
+ )
+
+;; market
+(define-type ONT::financial-organization
+ :parent ONT::organization
+ )
+
+;; government, gsa, darpa
+(define-type ONT::federal-organization
+ :wordnet-sense-keys ("government%1:14:00" "authorities%1:14:00" "regime%1:14:00")
+ :parent ONT::organization
+ )
+
+;; ieee
+(define-type ONT::professional-organization
+ :parent ONT::organization
+ )
+
+;; ansi
+(define-type ONT::regulatory-organization
+ :parent ONT::organization
+ )
+
+(define-type ONT::airline
+ :parent ONT::enterprise
+ )
+
+;; affiliate, partner, subsidiary
+(define-type ONT::affiliate
+ :parent ONT::company
+ )
+
+;; affiliate, partner, subsidiary
+(define-type ONT::supplier
+ :parent ONT::company
+ )
+
+;; sri
+(define-type ONT::research-institution
+ :parent ONT::company
+ )
+
+;; university, college
+(define-type ONT::academic-institution
+    :parent ONT::research-institution
+ )
+
+;; fedex, ups
+(define-type ONT::shipping-company
+ :parent ONT::company
+ )
+
+(define-type ONT::military-group
+ :wordnet-sense-keys ("military_unit%1:14:00" "military_force%1:14:00" "military_group%1:14:00" "force%1:14:01")
+ :parent ONT::social-group
+ )
+
+(define-type ONT::collection
+ :wordnet-sense-keys ("collection%1:14:00" "aggregation%1:14:00" "accumulation%1:14:00" "assemblage%1:14:01")
+ :parent ONT::group-object
+ )
+
+(define-type ONT::sequence
+ :wordnet-sense-keys ("ordering%1:14:00" "order%1:14:00" "ordination%1:14:00")
+ :parent ONT::group-object
+ )
+
+(define-type ONT::linear-grouping
+ :wordnet-sense-keys ("line%1:14:01")
+ :parent ONT::sequence
+ )
+
+(define-type ONT::combination
+ :wordnet-sense-keys ("combination%1:14:00")
+ :parent ONT::group-object
+ )
+
+;; layer (of ozone, chocolate), sheet (of ice, paper), slice
+(define-type ont::sheet
+;  :parent ont::non-measure-ordered-domain
+  :parent ONT::GROUP-OBJECT
+  )
+
+;; a number/amount/quantity of X
+(define-type ONT::QUANTITY
+ :wordnet-sense-keys ("measure%1:03:00" "quantity%1:03:00" "amount%1:03:00")
+; :parent ONT::DOMAIN-PROPERTY
+ :parent ONT::GROUP-OBJECT
+ :arguments ((:ESSENTIAL ONT::FIGURE)
+             )
+ )

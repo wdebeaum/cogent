@@ -2,7 +2,7 @@
 # Makefile for TextTagger
 #
 # William de Beaumont <wbeaumont@ihmc.us> 2008/3/6
-# $Id: Makefile,v 1.89 2016/12/06 21:39:30 wdebeaum Exp $
+# $Id: Makefile,v 1.96 2017/06/06 14:30:50 wdebeaum Exp $
 #
 
 MODULE = TextTagger
@@ -109,7 +109,7 @@ install:: wn-multiwords.tsv
 clean::
 	rm -rf wn-multiwords.tsv
 
-wn-multiwords.tsv: get-wn-multiwords.pl $(CONFIGDIR)/WordFinder/defs.lisp $(prefix)/etc/WordNetSQL/WordNetSQL.pm $(prefix)/etc/util/add_suffix.ph
+wn-multiwords.tsv: get-wn-multiwords.pl $(CONFIGDIR)/WordFinder/defs.lisp $(prefix)/etc/WordNetSQL/WordNetSQL.pm $(prefix)/etc/util/add_suffix.ph ../WordFinder/wordnet/stoplist.txt
 	TRIPS_BASE=$(prefix) ./get-wn-multiwords.pl $(WORDNET_BASEPATH) >wn-multiwords.tsv
 endif
 
@@ -145,6 +145,9 @@ alternate-spellings.tsv:
 	| perl -n -e "unless (\$$_ =~ /'''/ or \$$_ =~ / \\|\\| Y \\|\\| / or not \$$_ =~ /^ \\|\\| /) { chomp; s/^ \\|\\| //; s/ \\|\\|\\s*\$$//; s/ \\|\\| /\\t/g; print \"\$$_\\n\"; }" \
 	| cut -f1,2 \
 	>$@
+
+distclean::
+	rm -f alternate-spellings.tsv
 endif
 
 #
@@ -152,13 +155,14 @@ endif
 #
 ifneq (,$(wildcard Perl/TextTagger/Drum.pm))
 
-all:: drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.tsv
+all:: drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.tsv go_protmods.tsv
 
-install:: mirna-species.tsv drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.tsv
+install:: mirna-species.tsv drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.tsv go_protmods.tsv
 	$(INSTALL_DATA) mirna-species.tsv $(etcdir)/$(MODULE)
 	$(INSTALL_DATA) drum-terms.tsv $(etcdir)/$(MODULE)
 	$(INSTALL_DATA) specialist.tsv $(etcdir)/$(MODULE)
 	$(INSTALL_DATA) drum-dbxrefs.tsv $(etcdir)/$(MODULE)
+	$(INSTALL_DATA) go_protmods.tsv $(etcdir)/$(MODULE)
 
 # This file is in CVS, so we don't really need this rule, but it's here to
 # document how the file was made in the first place. The database is a lot
@@ -171,7 +175,7 @@ install:: mirna-species.tsv drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.
 #	'$$a = $$1 if (/^ID   (\w+)-/i);  push @{$$h{$$a}}, $$1 if (/^DE   ([A-Z]\w* \w*) mir/i and  not grep { $$_ eq $$1 } @{$$h{$$a}});  END {  print map { $$_ . join("", map { "\t$$_" } @{$$h{$$_}}) . "\n" }  sort keys %h;  }' \
 #	>$@
 
-drum-terms.tsv: merge-terms-files.pl obo-terms.tsv hgnc-terms.tsv uniprot-terms.tsv uniprot-subcell-terms.tsv nextprot-family-terms.tsv pfam-terms.tsv mesh-scr-terms.tsv ncit-terms.tsv
+drum-terms.tsv: merge-terms-files.pl obo-terms.tsv hgnc-terms.tsv uniprot-terms.tsv uniprot-subcell-terms.tsv nextprot-family-terms.tsv pfam-terms.tsv mesh-scr-terms.tsv ncit-terms.tsv hlsm-terms.tsv
 	./$^ >$@
 
 drum-dbxrefs.tsv: get-uniprot-dbxrefs.pl downloads/uniprot_sprot.dat.gz
@@ -183,6 +187,12 @@ OBO_FILES=$(foreach f,bioentities.obo BrendaTissueOBO cellosaurus.obo chebi.obo 
 
 obo-terms.tsv: get-obo-terms.pl $(OBO_FILES) Makefile
 	TRIPS_BASE=$(prefix) ./get-obo-terms.pl $(OBO_FILES) >$@
+
+go_protmods.obo: go_protmods.pl downloads/go.obo
+	./go_protmods.pl -o $@ downloads/go.obo
+
+go_protmods.tsv: get-obo-terms.pl go_protmods.obo
+	TRIPS_BASE=$(prefix) ./get-obo-terms.pl go_protmods.obo >$@
 
 hgnc-terms.tsv: get-hgnc-terms.pl downloads/protein-coding_gene.txt.gz
 	gunzip -c <downloads/protein-coding_gene.txt.gz \
@@ -220,6 +230,9 @@ $(info NCIT_ZIPFILE=$(NCIT_ZIPFILE))
 
 # also writes drum-dsl/NCIT/*
 ncit-terms.tsv: get-ncit-terms.pl downloads/$(NCIT_ZIPFILE)
+	./$+ >$@
+
+hlsm-terms.tsv: get-hlsm-terms.pl downloads/small_molecule.csv
 	./$+ >$@
 
 specialist.tsv: get-specialist-tsv.pl downloads/LEXICON downloads/inflection.table $(prefix)/src/LexiconManager/Data/new
@@ -288,6 +301,12 @@ downloads/Pfam-A.seed.gz:
 downloads/$(NCIT_ZIPFILE):
 	$(call download,$(NCIT_WEBSITE)$(NCIT_ZIPFILE))
 
+# HMS LINCS Small Molecule database
+# see http://lincs.hms.harvard.edu/db/sm/
+downloads/small_molecule.csv:
+	mkdir -p downloads
+	curl --compressed -L "http://lincs.hms.harvard.edu/db/sm/?search=&output_type=.csv" -o $@
+
 # see http://lexsrv3.nlm.nih.gov/Specialist/Home/index.html
 
 downloads/LEXICON:
@@ -338,7 +357,7 @@ drum-dsl: drum-dsl/BE/COMPLETE drum-dsl/BTO/COMPLETE drum-dsl/CHEBI/COMPLETE dru
 # drum-dsl/SO/COMPLETE 
 
 clean::
-	rm -rf specialist.tsv drum-terms.tsv obo-terms.tsv hgnc-terms.tsv uniprot-terms.tsv ncit-terms.tsv drum-dsl
+	rm -rf specialist.tsv drum-terms.tsv drum-dbxrefs.tsv obo-terms.tsv hgnc-terms.tsv uniprot-terms.tsv uniprot-subcell-terms.tsv nextprot-family-terms.tsv ncit-terms.tsv pfam-terms.tsv mesh-scr-terms.tsv drum-dsl
 endif
 
 distclean:: clean

@@ -10,7 +10,7 @@
    (wordfeats (W::MORPH (:FORMS (-ER -LY))))
    (SENSES
     ((meta-data :origin cardiac :entry-date 20090130 :change-date nil :comments nil)
-     (LF-PARENT ONT::dampness-val)
+     (lf-parent ont::dry-val)
      (TEMPL LESS-ADJ-TEMPL)
      )
     ;; a dry cough

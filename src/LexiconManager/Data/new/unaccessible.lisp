@@ -6,7 +6,7 @@
  :words (
    (W::unaccessible
    (SENSES
-    ((LF-PARENT ONT::INACCESSIBLE)
+    ((lf-parent ont::not-accessible-val)
      (example "the routes are inaccessible by helicopter")
      (SEM (F::GRADABILITY F::+))
      (TEMPL central-adj-xp-templ (XP (% W::PP (W::PTYPE (? pt W::on W::for w::by)))))

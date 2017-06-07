@@ -6,7 +6,7 @@
  :words (
    (W::stifling
    (SENSES
-    ((LF-PARENT ONT::severity-VAL)
+    ((lf-parent ont::severe-val)
      (meta-data :origin plow :entry-date 20060802  :change-date nil :wn ("stifling%5:00:00:hot:00") :comments weather)
      (sem (f::gradability +) (f::intensity ont::hi) (f::orientation ont::less))
      )

@@ -1,6 +1,7 @@
 ;;;;
-;;;; W::LITTLE
-;;;;
+;;;; w::little
+;;;; 
+
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :tags (:base500)
@@ -9,7 +10,7 @@
    (wordfeats (W::MORPH (:FORMS (-ER))))
    (SENSES
     ((meta-data :origin trips :entry-date 20060824 :change-date 20090731 :comments nil :wn ("little%3:00:01"))
-     (LF-PARENT ONT::little)
+     (lf-parent ont::little)
      (TEMPL LESS-ADJ-TEMPL)
      (SEM (F::GRADABILITY F::+) (f::orientation ont::less) (f::intensity ont::med))
      )

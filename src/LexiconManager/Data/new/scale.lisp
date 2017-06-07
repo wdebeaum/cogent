@@ -10,6 +10,11 @@
      (LF-PARENT ONT::measure-domain)
      (TEMPL OTHER-RELN-TEMPL)
      )
+    ((meta-data :wn ("scale%1:10:00"))
+     (LF-PARENT ONT::MUSIC-SCALE)
+     ; any set of musical notes ordered by fundamental frequency or pitch
+     (EXAMPLE "Scales are typically listed from low to high pitch.")
+     )
     )
    )
 ))
@@ -25,15 +30,18 @@
 )
 ))
 
+
 (define-words :pos W::v 
  :words (
-((w::scale (w::down))
+((w::scale) ;(w::scale (w::down))
  (senses
   ((meta-data :origin task-learning :entry-date 20050829 :change-date 20090504 :comments nil)
-   (LF-PARENT ONT::decrease)
+   ;(LF-PARENT ONT::decrease)
+   (LF-PARENT ONT::CHANGE-MAGNITUDE)
    (example "scale down the image resolution")
    (SEM (F::Cause F::Agentive) (F::Aspect F::bounded) (F::Time-span F::atomic))
-   (TEMPL AGENT-affected-RESULT-OPTIONAL-TEMPL (xp (% W::PP (W::ptype W::to))))
+   ;(TEMPL AGENT-affected-RESULT-OPTIONAL-TEMPL (xp (% W::PP (W::ptype W::to))))
+   (TEMPL AGENT-AFFECTED-XP-TEMPL)
    )
   )
  )

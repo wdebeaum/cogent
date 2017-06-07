@@ -8,7 +8,7 @@
    (wordfeats (W::morph (:FORMS (-LY))))
    (SENSES
     ((meta-data :origin cardiac :entry-date 20080508 :change-date nil :comments LM-vocab)
-     (LF-PARENT ONT::mental-VAL)
+     (lf-parent ont::mental-val)
      (example "mental activity")
      )
     )
@@ -19,7 +19,7 @@
  :words (
   (w::cerebral
   (senses
-   ((LF-PARENT ONT::body-part-val)
+   ((lf-parent ont::mental-val)
     (TEMPL central-adj-templ)
     (meta-data :origin cardiac :entry-date 20090408 :change-date nil :comments nil)
     )

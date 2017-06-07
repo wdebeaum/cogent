@@ -12,12 +12,13 @@
 			 (LF-PARENT ONT::increase)
 			 (example "increase the budget [to 3K]")
 			 (SEM (F::Cause F::Agentive) (F::Aspect F::bounded) (F::Time-span F::atomic))
-			 (TEMPL AGENT-affected-RESULT-OPTIONAL-TEMPL (xp (% W::PP (W::ptype W::to))))
+			 ;(TEMPL AGENT-affected-RESULT-OPTIONAL-TEMPL (xp (% W::PP (W::ptype W::to))))
+			 (TEMPL AGENT-AFFECTED-XP-TEMPL)
 			 )
 			((meta-data :origin step :entry-date 20080626 :change-date 20090504 :comments nil)
 			 (LF-PARENT ONT::increase)
 			 (example "it increased in temperature")
-			 (templ affected-theme-xp-optional-templ  (xp (% W::PP (W::ptype (? pt w::in W::with)))))
+			 (templ affected-scale-xp-optional-templ  (xp (% W::PP (W::ptype (? pt w::in W::with)))))
 			 )
 			;; the rest are redundant with the first cases
   #|| 

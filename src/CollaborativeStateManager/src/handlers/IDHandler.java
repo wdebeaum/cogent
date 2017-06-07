@@ -3,7 +3,7 @@ package handlers;
 public class IDHandler {
 	static int currentID = 0;
 	
-	public static String getNewID()
+	public static synchronized String getNewID()
 	{
 		currentID++;
 		return "C" + String.format("%05d", currentID);

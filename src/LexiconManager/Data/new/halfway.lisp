@@ -7,7 +7,7 @@
   (W::halfway
    (SENSES
     ((meta-data :origin step :entry-date 20080528 :change-date nil :comments nil)
-     (LF-PARENT ONT::stage-val)
+     (lf-parent ont::mid-stage-val)
      (example "the halfway point")
      )
     )

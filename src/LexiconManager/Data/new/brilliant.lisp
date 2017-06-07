@@ -9,19 +9,19 @@
    (SENSES
     ((meta-data :origin lam :entry-date 20050422 :change-date 20061106 :wn ("brilliant%5:00:00:superior:00") :comments lam-initial :comlex (EXTRAP-ADJ-FOR-TO-INF-RS))
      (example "a good book")
-     (LF-PARENT ONT::ACCEPTABILITY-VAL)
+     (lf-parent ont::great-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::hi))
      (TEMPL central-adj-templ)
      )
     ((meta-data :origin lam :entry-date 20050422 :change-date 20061106 :wn ("brilliant%5:00:00:superior:00") :comments lam-initial :comlex (EXTRAP-ADJ-FOR-TO-INF-RS))     
      (example "a wall good for climbing")
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::hi))
-     (LF-PARENT ONT::ACCEPTABILITY-VAL)
+     (lf-parent ont::great-val)
      (TEMPL adj-purpose-TEMPL)
      )
     ((meta-data :origin lam :entry-date 20050422 :change-date 20061106 :wn ("brilliant%5:00:00:superior:00") :comments lam-initial :comlex (EXTRAP-ADJ-FOR-TO-INF-RS))     
      (EXAMPLE "a drug suitable for cancer")
-     (LF-PARENT ONT::ACCEPTABILITY-VAL)
+     (lf-parent ont::great-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::hi))
      ;; this is a sense that allows for implicit/indirect senses of "for"
      ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"
@@ -30,7 +30,7 @@
      )
     ((meta-data :origin lam :entry-date 20050422 :change-date 20061106 :wn ("brilliant%5:00:00:superior:00") :comments lam-initial :comlex (ADJ-PP-FOR))     
      (EXAMPLE "a solution good for him")
-     (LF-PARENT ONT::ACCEPTABILITY-VAL)
+     (lf-parent ont::great-val)
      (SEM (f::gradability +) (f::orientation ont::more) (f::intensity ont::hi))
      ;; this is another indirect sense of "for"
      ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"

@@ -18,7 +18,7 @@
    (W::senior
    (SENSES
     ((meta-data :origin calo-ontology :entry-date 20051214 :change-date 20090731 :wn ("senior%3:00:00") :comments nil)
-     (LF-PARENT ONT::primary)
+     (lf-parent ont::senior-val)
      (example "senior scientist")
      )
     )

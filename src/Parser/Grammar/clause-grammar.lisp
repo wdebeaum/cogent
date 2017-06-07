@@ -271,12 +271,20 @@
     (head (s (stype how-about) (var ?v) (lf (constraint ?c)) (advbl-needed -))
           ))
 
-   ;; test: how about chasing the cat?
+   ;; test: how about chasing the cat? How about the dog?
+   ((s (stype how-about) (lf (constraint (& (content ?v)))))
+    -how-about-np>
+    (word (lex (? x how what)) (var ?v1))
+    (word (lex about)) 
+    (head (np (gap -) (var ?v) (lf ?lf) (case (? case obj -)))))
+
+   ;; test: how about you do it
    ((s (stype how-about) (lf (constraint (& (content ?v)))))
     -how-about-s>
     (word (lex (? x how what)) (var ?v1))
     (word (lex about)) 
-    (head (np (gap -) (var ?v) (lf ?lf) (case (? case obj -)))))
+    (head (S (gap -) (stype decl) (vform pres)
+	     (var ?v) (lf ?lf) (case (? case obj -)))))
 
     ;; test: how about horizontally?
     ;; test: what about from the cat?
@@ -320,7 +328,7 @@
     (head (vp (lf ?lf) (gap ?g)
               (template (? !x  lxm::propositional-equal-templ))
 	      (subjvar ?npvar)
-	      (subj (% np (sem ?npsem) (var ?npvar) (lex ?lex)))
+	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (lex ?lex)))
 	      (var ?v) (vform fin) (agr ?a)
 	      (advbl-needed ?avn)
 	      (neg ?neg)
@@ -344,7 +352,7 @@
      (pp-word -) (changeagr -) (subcat-map ont::formal))
     (head (vp (lf ?lf) (gap ?g) (template lxm::propositional-equal-templ)
 	      (subjvar ?npvar)
-	      (subj (% np (sem ?npsem) (var ?npvar) (lex ?lex)))
+	      (subj (% np (sem ?npsem) (agr ?a) (var ?npvar) (lex ?lex)))
 	      (var ?v) (vform fin) (agr ?a)
 	      (advbl-needed ?avn)
 	      (neg ?neg)
@@ -367,7 +375,7 @@
      (pp-word -) (changeagr -) (comp3-map ont::formal))
     (head (vp (lf ?lf) (gap ?g) (template lxm::propositional-equal-templ)
 	      (subjvar ?npvar)
-	      (subj (% np (sem ?npsem) (var ?npvar) (lex ?lex)))
+	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (lex ?lex)))
 	      (var ?v) (vform fin) (agr ?a)
 	      (advbl-needed ?avn)
 	      (neg ?neg)
@@ -391,7 +399,7 @@
      )
     (head (vp (lf ?lf) (gap ?g)
 	   
-	   (subj (% np (sem ?subjsem) (var ?npvar) (lex ?lex))) 
+	   (subj (% np (sem ?subjsem) (var ?npvar) (agr ?a) (lex ?lex))) 
 	   (var ?v) (vform base)
 	   (advbl-needed ?avn)
 	   )
@@ -452,7 +460,8 @@
     ;; use a vp which expects "there" in the sense ont::exists
     (head (vp (lf ?lf) (gap -)
               
-	   (subj (% np (sem ?subjsem) (var ?npvar) (lex there))) 
+	   (subj (% np (sem ?subjsem) (var ?npvar) (agr ?vpagr) (lex there))) 
+	   (subj ?subj)
 	   (var ?v) (vform fin) (agr ?vpagr)
 	   (advbl-needed -)
 	   (lf (% prop (transform ?transform) (sem ?ssem) (class ?c) (class ont::exists) (constraint ?con) (tma ?tma)))
@@ -988,7 +997,8 @@
             (filled -) (adjectival +) (how ?how)
             )
       -pred-adj> 1
-      (head (adjp (lf ?lf) (var ?v) (arg ?arg) (argument ?argument) (argument (% ?argcat (var ?arg))) ;;(wh -) eliminated to allow "how red"
+      (head (adjp (lf ?lf) (sem ?sem)
+		  (var ?v) (arg ?arg) (argument ?argument) (argument (% ?argcat (var ?arg))) ;;(wh -) eliminated to allow "how red"
 	     (set-modifier -) ;; numbers are set-modifier +, and they don't behave as normal adjps in predicates
 	     (atype (? atp central predicative-only))
 	     ;; md 2008/17/07 eliminated cases with positive post-subcat, they should only happen when an adjective is looking for an argument after an np, not possible in the pred situation
@@ -1003,9 +1013,10 @@
        )
       -pred-advbl> 0.98 ;; don't use it if a regular advbl interpretation is possible
       ;; md: argument should be % np, if an adverbial does not apply to nps, don't use it
-      (head (advbl (lf ?lf) (var ?v) (arg ?arg) (argument ?argument) (argument (% np (var ?arg)))
-	     (wh (? wh - q)) (sort (? srt binary-constraint pp-word pred))
-	     (gap ?gap)
+      (head (advbl (lf ?lf) (var ?v) (arg ?arg) (argument ?argument) 
+		   (argument (% np (var ?arg))) (sem ?sem)
+		   (wh (? wh - q)) (sort (? srt binary-constraint pp-word pred))
+		   (gap ?gap)
 	     ))
       )
 
@@ -1052,12 +1063,12 @@
      ((vp (lf (% prop (class ?c) (var ?v) (constraint ?constraint) (tma ?newtma) 
 	         (transform ?transf) (sem ?sem)))
           (class ?c) (var ?v) (constraint ?constraint) (tma ?newtma)  (sem ?sem) (transform ?transf)
-           (vform (? vf past pres fut))
+           (vform (? vf past pres fut)) (dobjvar ?dobjvar)
           )
       -vp-tns+> 1.0 ;; 1 because we are simply adding tense info, not really using more rules
      (head
       (vp- (class ?c)  (constraint ?constraint) (tma ?tma1) 
-        (vform (? vf past pres fut)) (subjvar ?sv)
+        (vform (? vf past pres fut)) (subjvar ?sv) (dobjvar ?dobjvar)
        (advbl-needed -)
        )) 
      (add-to-conjunct (val (tense ?vf)) (old ?tma1) (new ?newtma))
@@ -1172,7 +1183,8 @@
      ?dobj
      )
 
-   ;; the indirect object beneficiary construction
+    ;; the indirect object beneficiary construction
+    ;; eat me a sandwich
     ((vp- (subj ?subj)  (subjvar ?subjvar) (dobjvar ?dobjvar)
       (var ?v) (class ?c) (gap ?gap) 
       (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1227,7 +1239,8 @@
 	    (sem ?sem)
 	    (vform ?vf)
 	    (tma ?tma1)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr)
+				  (sem ?subjsem) (gap -))) ;; note double matching required
 	    (subj-map ?lsubj-map) 
 	    ))
      (add-to-conjunct (old ?tma1) (val ?tma-contrib) (new ?newtma))
@@ -1251,7 +1264,8 @@
 	    (sem ?sem)
 	    (vform ?vf)
 	    (tma ?tma1)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) 
+				  (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	    (subj-map ?lsubj-map) 
 	    ))
      (neg)
@@ -1282,7 +1296,7 @@
 	    (lex (? lx be am ^m ^re ^s))
 	    (sem ($ f::situation (f::type ont::situation-root)))
 	    (vform ?vf)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	    (iobj ?iobj)  (iobj (% ?s2  (case (? icase obj -)) (var ?iobjvar) (sem ?iobjsem) (gap -)))
 	    (part ?part) 
 	    (dobj ?dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
@@ -1318,7 +1332,8 @@
 	    (lex ?lx)
 	    (sem ?argsem) (sem ($ f::situation (f::type ont::situation-root)))
 	    (vform ?vf)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr)
+				  (sem ?subjsem) (gap -))) ;; note double matching required
 	    (iobj (% -))
 	    (part ?part) 
 	    (dobj ?!dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
@@ -1356,7 +1371,7 @@
 	    (lex (? lx are is was were ^s))
 	    (sem ?argsem) (sem ($ f::situation (f::type ont::situation-root)))
 	    (vform ?vf)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	    (iobj (% -))
 	    (part ?part) 
 	    (dobj ?dobj) (dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
@@ -1394,7 +1409,7 @@
 	    (lex (? lx are is was were ^s))
 	    (sem ?argsem) (sem ($ f::situation (f::type ont::situation-root)))
 	    (vform ?vf)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr)  (sem ?subjsem) (gap -))) ;; note double matching required
 	    (iobj (% -))
 	    (part ?part) 
 	    (dobj ?dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
@@ -1430,7 +1445,7 @@
     -vp-dobj-gap-role> ;;.97
     (head (v (aux -)  (be-there -)
 	   (lf ?c) (sem ($ f::situation (f::type ont::situation-root))) (vform ?tense-pro)
-             (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+             (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	     (iobj ?iobj) (iobj (% ?s2 (case (? icase obj -)) (var ?iobjvar) (sem ?iobjsem) (gap -)))
 	     (part ?part) 
 	     (dobj ?!dobj) (dobj (% ?!cat (case (? dcase obj -)) (var ?gapvar) (arg ?arg) (sem ?gapsem) (agr ?gapagr) (ptype ?ptype))) ;; must have a possibility of np dobj
@@ -1527,7 +1542,7 @@
     -vp-comp-gap1-role> .97
     (head (v (aux -)
 	   (lf ?c) (sem ($ f::situation (f::type ont::situation-root))) (vform ?tense-pro)
-	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	   ;;(subjvar ?subjvar)
 	   (iobj ?iobj)  (iobj (% ?s2 (var ?iobjvar) (sem ?iobjsem) (gap -) (case (? icase obj -))))
 	   (part ?part) 
@@ -1561,7 +1576,7 @@
     -vp-comp-gap1-part-role> .97
     (head (v (aux -)
 	   (lf ?c) (sem ($ f::situation (f::type ont::situation-root))) (vform ?tense-pro)
-	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	   (iobj ?iobj)  (iobj (% ?s2 (var ?iobjvar) (sem ?iobjsem) (gap -) (case (? icase obj -))))
 	   (part ?!part) ;;(part (% part))
 	   (dobj ?dobj)	(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (gap -) (case (? dcase obj -))))
@@ -1590,7 +1605,7 @@
     -vp-comp-gap2-role> 0.97
     (head (v (aux -)
 	   (lf ?c) (sem ($ f::situation (f::type ont::situation-root))) (vform ?tense-pro)
-	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -))) ;; note double matching required
 	   (iobj ?iobj)  (iobj (% ?s2 (var ?iobjvar) (sem ?iobjsem) (gap -) (case (? icase obj -))))
 	   (part ?!part) 
 	   (dobj ?dobj)	 (dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (gap -) (case (? dcase obj -))))
@@ -1620,7 +1635,7 @@
     -vp-particle-role> 1  ;; boost this as finding the particle is good evidence for the interpretation
     (head (v (aux -)
 	   (lf ?c) (sem ($ f::situation (f::type ont::situation-root)))  (vform ?tense-pro)
-	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -) )) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -) )) ;; note double matching required
 	   (iobj (% -))
 	   (part ?!part) ;;(part (% part))
 	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (case (? dcase obj -)) ))
@@ -1634,7 +1649,7 @@
     )
 
    
- ;;  test: load up the oranges  ;; note: example isobsolete as up will be compositional!!!
+ ;;  test: move up the blocks
    ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar) (main +)
       (class ?c) (var ?v) 
      (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1645,10 +1660,10 @@
 		      ))
      (postadvbl -)
      )
-    -vp-compositional-particle-role> 1
+    -vp-compositional-particle-role> 
     (head (v (aux -) (var ?v)
-	   (lf ?c) (sem ?sem) (sem ($ f::situation (f::type ont::situation-root)))  (vform ?tense-pro)
-	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -) )) ;; note double matching required
+	   (lf ?c) (sem ?sem) (sem ($ f::situation (f::type ont::event-of-change)))  (vform ?tense-pro)
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -) )) ;; note double matching required
 	   (iobj (% -))
 	   (part (% -)) ;;(part (% part))
 	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (case (? dcase obj -)) ))
@@ -1656,7 +1671,38 @@
 	   (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
 	   
 	   ))
-    (advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
+    ;(advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
+    (advbl (particle +) (particle-role-map result) (var ?adv-v) (arg ?dobjvar) 
+     (argument (% np (sem ?dobjsem))) (gap -))
+    ?dobj
+    ?comp
+    )
+
+   ;;  test: clean up your room
+   ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar) (main +)
+      (class ?c) (var ?v) 
+     (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
+		      (lcomp ?compvar)
+		      (?lsubj-map ?subjvar) (?dobj-map ?dobjvar)
+		      (?iobj-map ?iobjvar) (?comp3-map ?compvar)
+		      (manner ?adv-v)
+		      ))
+     (postadvbl -)
+     )
+    -vp-compositional-particle-manner-role> 
+    (head (v (aux -) (var ?v)
+	   (lf ?c) (sem ?sem) (sem ($ f::situation (f::type ont::event-of-change)))  (vform ?tense-pro)
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -) )) ;; note double matching required
+	   (iobj (% -))
+	   (part (% -)) ;;(part (% part))
+	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (case (? dcase obj -)) ))
+	   (comp3 ?comp)		(comp3 (% ?s4 (var ?compvar) (sem ?compsem) (case (? ccase obj -))))
+	   (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
+	   
+	   ))
+    ;(advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
+    (advbl (particle +) (particle-role-map manner) (var ?adv-v) (arg ?v) 
+     (argument (% s (sem ?sem))) (gap -))
     ?dobj
     ?comp
     )
@@ -1723,7 +1769,7 @@
        (part ?part)) 
     -v-passive-by> 1.0
     (head (v (vform pastpart) (lex (? !lx been)) (exclude-passive -);; exclude be
-	     (subj (% np (lex ?subjlex) (sem ?!subj-sem) (sem ($ ?!type))))
+	     (subj (% np (lex ?subjlex) (sem ?!subj-sem) (agr ?subjagr) (sem ($ ?!type))))
 	     (subj-map ?subj-map) (iobj-map ?iobj-map)
 	     (dobj ?!dobj) (dobj-map ?dobj-map)
 	     (iobj ?iobj) 	  
@@ -1775,7 +1821,7 @@
     -v-passive-by-reversed>
     
     (head (v (vform pastpart) (lex (? !lx been)) ;; exclude be
-	   (subj (% np (lex ?subjlex) (sem ?!subj-sem) (sem ($ ?!type))))
+	   (subj (% np (lex ?subjlex) (sem ?!subj-sem) (agr ?subjagr) (sem ($ ?!type))))
 	   (subj-map ?subj-map) (iobj-map ?iobj-map)
 	   (dobj ?!dobj) (dobj-map ?dobj-map)
 	   (iobj ?iobj) 
@@ -2094,7 +2140,7 @@
    ;; test: ; is the train late?
    ;;       is there a train?
    ((s (stype ynq) (main +) (aux -) (gap ?gap)
-     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar)))
+     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
      (sort pred) 
      
      (var ?v) ;; propagate up explicitly because not a head feature	   
@@ -2135,7 +2181,7 @@
 	   ;; no uniform & unique lf's for main verb be uses, so have to match the lex
 	   ;; unless we can match the lf-form be
 	   (lex (? lx am are is was were ^s))
-	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (lex ?subjlex) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (agr ?subjagr) (lex ?subjlex) (gap -))) ;; note double matching required
 	   (iobj (% -))
 	   (part (% -));; (part ?part) 
 	   (dobj ?dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap ?gap)))
@@ -2155,7 +2201,7 @@
    ;; test: ; isn't the train late?
    ;;       isn't there a train?
      ((s (stype ynq) (main +) (aux -) (gap ?gap)
-       (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar)))
+       (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
        (sort pred) 
        (advbl-needed ?avn)
        
@@ -2180,16 +2226,16 @@
 	    (transform ?transform)
 	    )))
     -s-ynq-be-neg>
-      (head (v (sem ?sem) (aux -)
+      (head (v (sem ?sem) (aux -) (var ?v)
 	   (advbl-needed ?avn)
 	   (lf ?belf)
 	   (subj-map ?subj-map) (dobj-map ?dobj-map) (comp3-map ?comp3-map)
-	   (agr ?a) 
+	   (agr ?subjagr) 
 	   (tma ?tma) (vform ?vf) (transform ?transform)
 	   ;; no uniform & unique lf's for main verb be uses, so have to match the lex
 	   ;; unless we can match the lf-form be
 	   (lex (? lx am are is was were ^s))
-	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (lex ?subjlex) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (agr ?subjagr) (lex ?subjlex) (gap -))) ;; note double matching required
 	   (iobj (% -))
 	    (part (% -)) ;; (part ?part) 
 	   (dobj ?dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap ?gap)))
@@ -2248,7 +2294,7 @@
 	   ;; no uniform & unique lf's for main verb be uses, so have to match the lex
 	   ;; unless we can match the lf-form be
 	   (lex (? lx am are is was were ^s))
-	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (lex ?subjlex) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (agr ?subjagr) (lex ?subjlex) (gap -))) ;; note double matching required
 	   (iobj (% -))
 	   (part (% -))		 
 	   (dobj ?!dobj) (dobj (% ?!s3 (case (? dcase obj -)) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap ?gap)))
@@ -2257,7 +2303,7 @@
 	    
      ))
     ;;?subj
-    (np (var ?subjvar) (case sub) (sem ?subjsem) (wh -) (sort (? !sort wh-desc)) (gap -) (lex ?subjlex) )  ;; lots of restrictions on this np to eliminate sentences like "is where the people"
+    (np (var ?subjvar) (case sub) (sem ?subjsem) (agr ?subjagr) (wh -) (sort (? !sort wh-desc)) (gap -) (lex ?subjlex) )  ;; lots of restrictions on this np to eliminate sentences like "is where the people"
     ;;?!dobj
     (add-to-conjunct (val (tense (? vf past pres fut))) (old ?tma) (new ?newtma))
     )
@@ -2268,7 +2314,7 @@
    ;; they are hard to capture using the general mechanisms for the be serves as the aux and the main verb
    ;; e.g., is the train late?
    ((s (stype ynq) (main +) (aux -) (gap -)
-     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar)))
+     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
      (sort pred) 
      
      (var ?v) ;; propagate up explicitly because not a head feature	   
@@ -2307,7 +2353,7 @@
 	   ;; no uniform & unique lf's for main verb be uses, so have to match the lex
 	   ;; unless we can match the lf-form be
 	   (lex (? lx are is was were ^s))
-	   (subj ?subj) (subj (% ?s1 (case sub) (var ?subjvar) (sem ?subjsem) (lex ?subjlex) (gap -))) ;; note double matching required
+	   (subj ?subj) (subj (% ?s1 (case sub) (var ?subjvar) (sem ?subjsem) (agr ?subjagr) (lex ?subjlex) (gap -))) ;; note double matching required
 	   (iobj (% -))
 	   (part (% -))
 	   (dobj ?dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
@@ -2616,7 +2662,7 @@
 	    (advbl-needed ?avn)
 	    (lf ?belf)
 	    (subj-map ?subj-map) (dobj-map ?dobj-map) (comp3-map ?comp3-map)
-	    (agr ?a) 
+	    (agr ?gagr) 
 	    (tma ?tma) (vform ?vf) (transform ?transform)
 	    ;; no uniform & unique lf's for main verb be uses, so have to match the lex
 	    ;; unless we can match the lf-form be
@@ -2687,7 +2733,7 @@
     ((utt (lf (% speechact (var *) (class ont::sa_request) (constraint (& (content ?v))))) (var *)
           )
      -command-imp1>
-     (head (s (stype imp) (wh -) (var ?v) (sem ($ F::SITUATION (F::type ONT::EVENT-OF-ACTION)))
+     (head (s (stype imp) (wh -) (var ?v) (sem ($ F::SITUATION (F::type ONT::EVENT-OF-change)))
 	      (gap -) (advbl-needed -))))
       
     ;; test: bark.
@@ -2703,7 +2749,7 @@
 	    (sem ?sem)
 	    (sem ($ f::situation (f::aspect (? aspc f::dynamic f::stage-level)
 					    )
-		    (f::type ont::event-of-action)
+		    (f::type ont::event-of-change)
 		    ))
 	    (var ?v) (aux -) (tma ?tma)
 	    (constraint ?con)
@@ -2849,7 +2895,7 @@
       (head
        (vp- (class ?c)  (constraint ?constraint) (tma ?tma1) (sem ?sem) ;; i added the sem feature to get right restrictions in "i know where the loop is", but maybe it wasn't there for some other reason jfa 6/04
 	 (vform (? vf past pres fut)) (var ?var)
-	(advbl-needed +) (gap -) (subj ?subj) (subj (% np (var ?subjvar)))
+	(advbl-needed +) (gap -) (subj ?subj) (subj (% np (var ?subjvar) (agr ?subjagr) (sem ?subjsem) ))
 	)) 
       (add-to-conjunct (val (tense ?vf)) (old ?tma1) (new ?newtma))
       )
@@ -2862,7 +2908,7 @@
     -vp-tns--gap> 
     (head
      (vp- (class ?c) (constraint ?constraint) (tma ?tma) 
-      (subj ?subj) (subj (% np (var ?subjvar))) (sem ?sem)   ;; see vp-tns+-gap> comment
+      (subj ?subj) (subj (% np (var ?subjvar) (agr ?subjagr) (sem ?subjsem))) (sem ?sem)   ;; see vp-tns+-gap> comment
       
       (vform (? vf base passive ing pastpart))
       (advbl-needed +) 
@@ -2939,7 +2985,7 @@
 		      (case (? ccase obj -)) (subj-map ?rsubjmap) 
 		      (constraint ?con) (subjvar ?subjvar) (tma ?tma1)
 		      (var ?compvar) (sem ?compsem) (gap ?gap) (subj (% ?s1 (lex ?subjlex) (case sub) (var ?subjvar)
-									(sem ?subjsem) (gap -)))
+									(sem ?subjsem) (agr ?a) (gap -)))
 		      (dobj ?dobj)
 		      (advbl-needed -)
 		      ))
@@ -2981,7 +3027,7 @@
 		      (case (? ccase obj -)) (subj-map ?rsubjmap) 
 		      (constraint ?con) (subjvar ?subjvar) (tma ?tma1)
 		      (var ?compvar) (sem ?compsem) (gap ?gap) (subj (% ?s1 (lex ?subjlex) (case sub) (var ?subjvar)
-									(sem ?subjsem) (gap -)))
+									(sem ?subjsem) (agr ?a) (gap -)))
 		      (dobj ?dobj)
 		      (advbl-needed -)
 		      ))
@@ -3065,7 +3111,7 @@
 	    (ellipsis +) (contraction -)
 	    (sem ?sem) (vform ?vf) (vform (? vf pres past fut))
 	    (var ?v) (tma ?tma1) (agr ?a)
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -))) ;; note double matching required
 	    (subj-map ?lsubj-map)
 	     (transform ?transform)
 	    (advbl-needed -)
@@ -3112,7 +3158,7 @@
 	   (vform ?vform)
 	   (agr ?a)
 	   (sem ($ f::situation (f::aspect ?aspect) (f::time-span ?time)))
-	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (gap -)))
+	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 	   (iobj (% -)) (part (% -)) (dobj (% -))
 	   (comp3 ?comp) 
 	   (comp3 (% vp- (class ?class)  (constraint ?con1) (tma ?tma1) (var ?var)
@@ -3120,7 +3166,7 @@
 		     (gap ?gap)		     
 		     (sem ?compsem) ;; (sem ($ f::situation (aspect (? !asp f::indiv-level))))  ;; constraints are in lf
 		     (subjvar ?subjvar) (dobjvar ?dobjvar) (transform ?transform)
-		     (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -)))
+		     (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 		     (advbl-needed -) (subj-map ?lsubj-map)
 		     (auxname ?compauxname)
 		     ))
@@ -3159,12 +3205,12 @@
 	    (lex ?l)
 	    (vform ?vform) (vform (? vf past pres fut)) ;; double matching for 'do', since tense not marked in lexicon
 	    (agr ?a) 
-	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -)))
+	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 	    (dobj (% -)) (part (% -)) (iobj (% -))
 	    (comp3 ?comp) 
 	    (comp3 (% vp- (class ?cl) (var ?v)  (constraint ?con1) (tma ?tma1) 
 		      (case (? ccase obj -)) (var ?compvar)  ;;(sem ?compsem) -- needed for bug in unifier
-		      (gap -) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (gap -)))
+		      (gap -) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 		      (subjvar ?subjvar) (dobjvar ?dobjvar) (transform ?trans)
 		      (advbl-needed -)
 		      ))
@@ -3565,3 +3611,94 @@
     )
    ))
 
+
+;;  construction for create a CAUSE event as in "He sneezed the box off the table"
+
+(parser::augment-grammar
+ '((headfeatures
+    (vp vform agr comp3 cont postadvbl  aux modal lex headcat tma transform subj-map advbl-needed template subj subjvar))
+    
+        ;;  The dog barked the cat up the tree.
+      ((vp (lf (% prop (class ONT::CAUSE-EFFECT) (var *) 
+        (constraint (& (agent ?ag) (affected ?npvar) (method ?v) (formal ?mod)))
+        (tma ?tma) 
+        ;(transform ?transf) 
+        (sem ?newsem)
+        ))
+     (tma ?tma) (class ONT::CAUSE-EFFECT) (var *)
+         ;;(LF (% PROP (constraint ?new) (class ?class) (sem ?sem) (var ?v) (tma ?tma)))
+;      (advbl-needed -) (complex +) (result-present +) (GAP ?gap)
+      ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))
+      ;(subjvar ?npvar)
+      (advbl-needed -) (complex +) (GAP ?gap)
+      )
+     -vp-result-advbl-intransitive-to-transitive> 0.98  ; prefer the transitive sense if there is one
+     (head (vp (VAR ?v) 
+        (seq -)  ;;  post mods to conjoined VPs is very rare
+        (DOBJVAR -)  ; cannot use (dobj -) because dobj is (% - (W::VAR -)) 
+        ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))  
+        ;(subjvar ?npvar)
+        (constraint ?con) (tma ?tma) (result-present -)
+    (subjvar ?ag)
+    (subj-map ONT::AGENT)
+    (COMP3 (% -))
+        ;;(aux -) 
+        (gap ?gap)
+        (ellipsis -)
+        ))
+     (np (Var ?npvar) (sem ?sem))
+     (advbl (ARGUMENT (% NP ;; (? xxx NP S)  ;; we want to eliminate V adverbials, he move quickly  vs he moved into the dorm
+             (sem ?sem) (var ?npvar)))
+      (GAP -) 
+      ;; (subjvar ?subjvar)
+      (SEM ($ f::abstr-obj (F::type (? ttt ont::path ont::position-reln)))) ;(F::type (? !ttt1 ont::position-as-extent-reln ont::position-w-trajectory-reln ))))
+;      (SEM ($ f::abstr-obj (F::type (? ttt ont::position-reln ont::goal-reln ont::direction-reln))))
+      (SET-MODIFIER -)  ;; mainly eliminate numbers 
+      (ARG ?npvar) (VAR ?mod)
+      ;;(role ?advrole) 
+      )
+     (compute-sem-features (lf ONT::CAUSE-EFFECT) (sem ?newsem))
+     )
+
+        ;;  He talked me deaf.
+      ((vp (lf (% prop (class ONT::CAUSE-EFFECT) (var *) 
+        (constraint (& (agent ?ag) (affected ?npvar) (method ?v) (formal ?mod)))
+        (tma ?tma) 
+        ;(transform ?transf) 
+        (sem ?newsem)
+        ))
+     (tma ?tma) (class ONT::CAUSE-EFFECT) (var *)
+         ;;(LF (% PROP (constraint ?new) (class ?class) (sem ?sem) (var ?v) (tma ?tma)))
+;      (advbl-needed -) (complex +) (result-present +) (GAP ?gap)
+      ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))
+      ;(subjvar ?npvar)
+      (advbl-needed -) (complex +) (GAP ?gap)
+      )
+     -vp-result-adj-intransitive-to-transitive> 0.98  ; prefer the transitive sense if there is one
+     (head (vp (VAR ?v) 
+        (seq -)  ;;  post mods to conjoined VPs is very rare
+        (DOBJVAR -)  ; cannot use (dobj -) because dobj is (% - (W::VAR -)) 
+        ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))  
+        ;(subjvar ?npvar)
+        (constraint ?con) (tma ?tma) (result-present -)
+	(subjvar ?ag)
+	(subj-map ONT::AGENT)
+	(COMP3 (% -))
+        ;;(aux -) 
+        (gap ?gap)
+        (ellipsis -)
+        ))
+     (np (Var ?npvar) (sem ?sem))
+     (adjp (ARGUMENT (% NP (sem ?sem) (var ?npvar))) 
+      (SEM ($ f::abstr-obj (F::type (? ttt ONT::position-reln ont::domain-property))))
+      (GAP -)
+      ;; (subjvar ?subjvar)
+      (SET-MODIFIER -)  ;; mainly eliminate numbers 
+      (ARG ?npvar) (VAR ?mod)
+      ;;(role ?advrole) 
+      )
+     (compute-sem-features (lf ONT::CAUSE-EFFECT) (sem ?newsem))
+     )
+
+      )     
+ )

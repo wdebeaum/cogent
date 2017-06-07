@@ -7,7 +7,7 @@
   (w::tasty
    (SENSES
     ((meta-data :origin chf :entry-date 20070809 :change-date nil :comments nil)
-     (LF-PARENT ONT::taste-val)
+     (lf-parent ont::tasty-val)
      )
     )
    )

@@ -15,7 +15,13 @@
      (TEMPL agent-affected-xp-templ)
      (example "Cockroaches are not allowed")
      )
-     (;;(LF-PARENT ONT::ACCOMMODATE)
+
+    ((LF-PARENT ONT::ALLOW)
+     (TEMPL agent-effect-xp-templ)
+     (example "they allow smoking"
+	      ))
+    
+     (
       (lf-parent ont::accommodate-allow) ;; 20120524 GUM change new parent
       (example "the budget allows for a thousand dollars")
       (TEMPL neutral-neutral-templ (xp (% W::pp (W::ptype W::for))))

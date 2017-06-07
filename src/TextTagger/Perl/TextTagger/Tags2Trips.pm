@@ -12,6 +12,7 @@ use TextTagger::Escape qw(escape_for_quotes unescape_backslashes un_pipe_quote);
 use KQML::KQML;
 
 use strict vars;
+use sort 'stable';
 
 # The minimum length of a clause, in characters.
 # NOTE: You might get a shorter clause if the entire sentence is that short.
@@ -508,6 +509,19 @@ sub domainSpecificInfo2trips {
 	    '"' . escape_for_quotes($info->{$key}) . '"';
 	}
       }
+    } elsif (grep { $_ eq $info->{type} } qw(pitch interval chord)) {
+      for my $key (qw(root bass letter scale-degree octave scale-degree-span semitones-above-natural quality inversion intervals-above-bass intervals-above-root)) {
+	next unless (exists($info->{$key}));
+	my $reftype = ref($info->{$key});
+	if ($reftype eq 'HASH' or $reftype eq 'ARRAY') {
+	  push @$trips, ":$key", domainSpecificInfo2trips($info->{$key});
+	} else {
+	  push @$trips, ":$key", $info->{$key};
+	}
+      }
+    } elsif (grep { $_ eq $info->{type} } qw(pitch-sequence progression)) {
+      push @$trips, ':members', domainSpecificInfo2trips($info->{members})
+        if (exists($info->{members}));
     } else {
       die "Unknown type of domain-specific-info: $info->{type}\n" . Data::Dumper->Dump([$info],['*info']);
     }

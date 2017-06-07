@@ -56,8 +56,8 @@
   )
 
 (define-type ont::contain-reln
-    :comment "Inverse of IN-LOC"
-    :parent ont::pos-as-containment-reln
+    :comment "a kind of Inverse of IN-LOC, but can't be used as a result location"
+    :parent ont::predicate
     :arguments ((:ESSENTIAL ONT::FIGURE ((? val f::phys-obj) (f::intentional -)
 					 (f::container +)
 				   )))
@@ -66,8 +66,9 @@
 ; figure is outside a container, group or area
 (define-type ont::outside
   :parent ont::pos-as-containment-reln
-  :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj) (f::intentional -) (f::container +)
-				   )))
+  :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj) (f::intentional -)
+				       (f::container +)  ;; having container + causes problems with things like "pull the plug out of the wall"
+				       )))
   )
 
 ; out (of), outside (of)
@@ -284,12 +285,6 @@
 ;             )
  )
 
-; figure is linear and adjacent to ground
-; along, alongside (of)
-(define-type ont::linear-extent
- :parent ont::position-as-extent-reln
- )
-
 ; figure is distributed over ground
 ; over
 (define-type ont::pos-as-over
@@ -302,15 +297,6 @@
  :parent ont::pos-as-over
  )
 
-; figure is linear and crosses ground
-; across
-(define-type ont::pos-as-opposite
- :parent ont::position-as-extent-reln
- )
-
-(define-type ont::pos-as-around
- :parent ont::position-as-extent-reln
- )
 
 ; *********************************************
 ;
@@ -322,6 +308,26 @@
 ; ?? how do these relate to the ont::path subtree?
 (define-type ont::position-w-trajectory-reln
  :parent ont::position-reln
+ :arguments (;(:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation) (F::trajectory +)))
+	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation)))
+             (:ESSENTIAL ONT::GROUND (F::Phys-obj))
+             )
+ )
+
+; figure is linear and crosses ground
+; across
+(define-type ont::pos-as-opposite
+ :parent ont::position-w-trajectory-reln
+ )
+
+(define-type ont::pos-as-around
+ :parent ont::position-w-trajectory-reln
+ )
+
+; figure is linear and adjacent to ground
+; along, alongside (of)
+(define-type ont::linear-extent
+ :parent ont::position-w-trajectory-reln
  )
 
 ; ground is in the trajectory
@@ -339,6 +345,7 @@
  :parent ont::pos-relative-wrt-trajectory
  )
 
+#|
 ; ground is the trajectory
 (define-type ont::pos-located-in-trajectory
  :parent ont::position-w-trajectory-reln
@@ -359,6 +366,8 @@
 (define-type ont::pos-midway
  :parent ont::pos-located-in-trajectory
  )
+
+|#
 
  ; <
 
@@ -432,16 +441,28 @@
  :arguments ((:ESSENTIAL ONT::FIGURE)); ((? of F::Situation) (F::trajectory +))))  ; FIGURE should point to the argument, not the verb
  )
 
+;;  This should modify the event - as the object arises from the event (e.g., It melted in a soft pile)
+
 (define-type ONT::resulting-object
- :parent ONT::goal-reln
- :arguments ((:ESSENTIAL ONT::FIGURE); (F::Situation (f::aspect f::dynamic) (f::type ont::change)))
+ :parent ONT::predicate
+ :arguments ((:ESSENTIAL ONT::FIGURE
+			 (F::Situation (f::aspect f::dynamic) (f::type ont::event-of-creation)))
              (:REQUIRED ONT::GROUND (F::Phys-obj ))
+             )
+ )
+
+(define-type ONT::original-material
+ :parent ONT::predicate
+ :arguments ((:ESSENTIAL ONT::FIGURE
+			 (F::Situation (f::aspect f::dynamic) (f::type ont::event-of-creation)))
+             (:REQUIRED ONT::GROUND (F::Phys-obj (f::type ont::material)))
              )
  )
 
 (define-type ONT::resulting-state
  :parent ONT::goal-reln
- :arguments ((:ESSENTIAL ONT::FIGURE); (F::Situation (f::aspect f::dynamic) (f::type ont::change)))
+ :arguments ((:ESSENTIAL ONT::FIGURE 
+			 (F::Situation (f::aspect f::dynamic) (f::type ont::change)))
              (:REQUIRED ONT::GROUND ((? t F::Abstr-obj F::situation)))
              )
  )
@@ -527,7 +548,7 @@
 (define-type ont::dir-in-terms-of-obj
  :parent ont::direction-reln
  :arguments (;(:ESSENTIAL ONT::OF (F::situation (F::type ont::motion)))
-	     (:ESSENTIAL ONT::FIGURE (F::situation (F::type ont::motion)))
+	     (:ESSENTIAL ONT::FIGURE (F::phys-obj (F::mobility f::movable)))
 	     )
  )
 
@@ -553,6 +574,7 @@
 
 ;; ***************************************************************
 
+#|
 ;; the idea in the document?
 (define-type ONT::spatial-loc
  :parent ONT::PREDICATE
@@ -572,6 +594,7 @@
              )
              )
  )
+|#
 
 ;; among, next to, adjacent to, nearby
 ;; the house/party around the corner, he walked around the party/the house
@@ -606,7 +629,7 @@
  :parent ONT::goal-reln
  :arguments (;(:ESSENTIAL ONT::OF (F::situation (f::type ont::event-of-change)))
 	     ;(:ESSENTIAL ONT::VAL ((? t F::Phys-obj F::abstr-obj)))
-	     (:ESSENTIAL ONT::FIGURE); (F::situation (f::type ont::event-of-change)))   ; "I walked to the store" FIGURE should point to "I", not "walked"
+	     (:ESSENTIAL ONT::FIGURE (F::PHYS-OBJ)); (F::situation (f::type ont::event-of-change)))   ; "I walked to the store" FIGURE should point to "I", not "walked"
 	     (:ESSENTIAL ONT::GROUND ((? t F::Phys-obj F::abstr-obj) (f::spatial-abstraction ?!sa) (F::form F::geographical-object)) )  ; spatial-abstraction is not enough: many things have spatial-abstraction, e.g., a frog.  Another possibility is (F::object-function F::spatial-object)
 	     )
  )
@@ -628,6 +651,7 @@
 	     )
  )
 
+#|
 ;; for from phrases that modify nouns, like "the girl from california" "the plane from rochester"
 (define-type ONT::source-loc
  :parent ONT::predicate
@@ -635,6 +659,7 @@
 	     (:ESSENTIAL ont::FIGURE  (f::phys-obj ))
 	     )
  )
+|#
 
 (define-type ONT::through
  :parent ONT::TRAJECTORY
@@ -657,10 +682,35 @@
 
 (define-type ONT::direction
  :parent ONT::position-reln
- :arguments ((:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation) (F::trajectory +) (f::type (? tt ONT::MOTION ONt::APPLY-FORCE))))
+ :arguments (;(:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation) (F::trajectory +) 
+		;		      (f::type (? tt ONT::MOTION ONt::APPLY-FORCE ONT::PUT))))
+	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj
+					 F::abstr-obj ; "move the plan up the agenda"?
+					 F::situation))) ; meeting is SITUATION (move the meeting up the stairs)
 	     (:ESSENTIAL ONT::GROUND (F::Phys-obj))
             )
  )
+
+(define-type ont::direction-down
+    :parent ONT::DIRECTION)
+
+(define-type ont::direction-down-ground
+    :comment "this is the transitive 'down' that has a GROUND that describes a physical object and locations objects or events"
+    :arguments ( (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj 
+					 F::situation)))
+		 (:ESSENTIAL ONT::GROUND (F::Phys-obj)))
+    :parent ONT::DIRECTION)
+
+(define-type ont::direction-up
+    :comment "This is the intransitive 'up' and is relative to some scale/domain: e.g., the temperature is up, move the ball up"
+    :parent ONT::DIRECTION)
+
+(define-type ont::direction-up-ground
+    :comment "this is the transitive 'up' that has a GROUND that describes a physical object and locations objects or events"
+    :arguments ( (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj 
+					 F::situation)))
+		 (:ESSENTIAL ONT::GROUND (F::Phys-obj)))
+    :parent ONT::DIRECTION)
 
 ;; north, south, east, west
 (define-type ont::cardinal-direction
@@ -727,10 +777,12 @@
 
 ;;; A class for temporal modifiers introduced by adjectives or adverbials
 (define-type ONT::temporal-modifier
- :parent ONT::TEMPORAL-PREDICATE
- :arguments ((:ESSENTIAL ONT::FIGURE ((? of F::Phys-obj f::situation f::abstr-obj f::time)))
-             )
- )
+    :parent ONT::TEMPORAL-PREDICATE
+    :arguments ((:ESSENTIAL ONT::FIGURE ((? of F::Phys-obj f::situation f::abstr-obj f::time)))
+		(:essential ont::scale)
+		(:essential ont::standard)
+		)
+    )
 
 ;; the delayed cargo, a scheduled meeting
 (define-type ONT::scheduled-time-modifier
@@ -752,6 +804,7 @@
  :arguments ((:ESSENTIAL ONT::FIGURE ((? of f::situation f::time)))
 ;             (:essential ont::GROUND (f::abstr-obj (F::Scale Ont::duration-scale) (F::type ont::time-unit)))
 ;             (:essential ont::GROUND ((? gd F::abstr-obj F::time) (F::time-scale f::interval)))
+	    
              (:essential ont::GROUND (F::abstr-obj (F::Scale Ont::duration-scale) (F::type ont::time-unit)))
   ))
 

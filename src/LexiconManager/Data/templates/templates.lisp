@@ -65,14 +65,17 @@
     
       (AGENT-goal-XP-TEMPL
        (ARGUMENTS
-	(LSUBJ (% W::NP) ONT::AGENT)
+	(LSUBJ  (% W::NP) ONT::AGENT)
 	(LOBJ (:parameter xp (:default (% W::NP))) ONT::RESULT)
 	))
 
       (AGENT-goal-optional-TEMPL
        (ARGUMENTS
-	(LSUBJ (% W::NP) ONT::AGENT)
-	(LOBJ (:parameter xp (:default (% W::NP))) ONT::RESULT optional)
+	(LSUBJ (% W::NP (W::lex ?lsubjlex) (W::sem ?lsubjsem) (W::var ?lsubjvar)) ONT::AGENT)
+	(LCOMP (:parameter xp (:default (% W::ADVBL))
+			  (:required (W::argument (% W::np (W::sem ?lsubjsem) 
+					     (W::lex ?lsubjlex) (W::var ?lsubjvar)))))
+	      ONT::RESULT optional)
 	))
 
       (theme-goal-XP-TEMPL
@@ -702,13 +705,15 @@
 	(LSUBJ (% W::NP) ONT::AGENT)
 	(LOBJ (:parameter xp (:default (% W::NP))) ONT::PATH)
 	))
-      
+
+      #| ; there is another AGENT-SOURCE-affected-OPTIONAL-TEMPL further down
       (AGENT-SOURCE-affected-OPTIONAL-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::AGENT)
 	(LOBJ (% W::NP) ONT::SOURCE)
 	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::of)))) ONT::affected OPTIONAL)
 	))
+      |#
 
       (AGENT-AFFECTED-EFFECT-OPTIONAL-TEMPL
        (ARGUMENTS
@@ -788,6 +793,14 @@
 	       ONT::RESULT)
 	))
 
+      (AGENT-RESULT-AFFECTED-TEMPL
+       (ARGUMENTS
+	(LSUBJ (% W::NP) ONT::agent)
+	(LOBJ (:parameter xp (:default (% W::ADVBL (W::lf (% ?p (w::class (? x ont::goal-reln ont::position-reln ont::source-reln)))) (w::arg ?dobjvar) (w::particle +))))
+	       ONT::RESULT)
+	(LCOMP (% W::NP (W::lex ?dobjlex) (W::var ?dobjvar)) ONT::affected)
+	))
+      
       (AGENT-AFFECTED-EFFECT-loc-objcontrol-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::agent)
@@ -811,7 +824,19 @@
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::agent)
 	(LOBJ (% W::NP) ONT::affected)
-	(LCOMP (:parameter xp (:default (% W::ADVBL (W::lf (% ?p (w::class (? x ont::goal-reln ont::position-reln))))))
+	(LCOMP (:parameter xp (:default (% W::ADVBL (W::lf (% ?p (w::class (? x ont::goal-reln ont::position-reln ont::source-reln))))))
+			   (:required (W::argument (% W::np (W::sem ?objsem) 
+					     (W::lex ?objlex) (W::var ?objvar)))))
+	       ONT::RESULT optional)
+	))
+
+     ; this is AGENT-AFFECTED-goal-optional-TEMPL with the arg mapped to the dobj
+     ; (need to sort out the entries using AGENT-AFFECTED-goal-optional-TEMPL and AGENT-AFFECTED-goal-TEMPL)
+     (AGENT-AFFECTED-goal-optional-new-TEMPL
+       (ARGUMENTS
+	(LSUBJ (% W::NP) ONT::agent)
+	(LOBJ (% W::NP (W::lex ?dobjlex) (W::var ?dobjvar)) ONT::affected)
+	(LCOMP (:parameter xp (:default (% W::ADVBL (W::lf (% ?p (w::class (? x ont::goal-reln ont::position-reln ont::source-reln)))) (w::arg ?dobjvar)))
 			   )
 	       ONT::RESULT optional)
 	))
@@ -947,19 +972,21 @@
 	(LOBJ (% W::PRED) ONT::FORMAL)
 	))
       
-        (THEME-PLURAL-TEMPL
+      (THEME-PLURAL-TEMPL
+       (syntax (w::agr (? a W::1p W::2p W::3p)))
        (ARGUMENTS
-
 	(LSUBJ (% W::NP (W::agr (? a W::1p W::2p W::3p))) ONT::FORMAL)
 	))
 
       (AGENT-PLURAL-TEMPL
+       (syntax (w::agr (? a W::1p W::2p W::3p)))
        (ARGUMENTS
 	(LSUBJ (% W::NP (W::agr (? a W::1p W::2p W::3p))) ONT::AGENT)
 	))
       
     ;;;;; to be used when there is a plural "affected"
       (AFFECTED-PLURAL-TEMPL
+       (syntax (w::agr (? a W::1p W::2p W::3p)))
        (ARGUMENTS
 	(LSUBJ (% W::NP (W::agr (? a W::1p W::2p W::3p))) ONT::AFFECTED)
 	))
@@ -1534,10 +1561,21 @@
      W::AGR ?agr))
    (ARGUMENTS
     (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) NOROLE)
-    (LCOMP (% W::VP- (W::vform W::passive) (W::subj (% W::NP (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var 
-            ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr))) (W::roles ?croles) (W::subj-map ?subj-map 
-       ) (W::tranform ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar 
-         ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+    
+    (LCOMP (% W::VP- (W::vform W::passive) 
+	      (W::subj (% W::NP (W::sem ?lsubjsem) 
+			  (W::lex ?lsubjlex) 
+			  (W::var  ?lsubjvar) 
+			  (W::case ?lsubjcase) 
+			  (W::agr ?lsubjagr))) 
+	      (W::roles ?croles) 
+	      (W::subj-map ?subj-map)
+	      (W::tranform ?transform) 
+	      (W::class ?cclass) 
+	      (W::constraint ?constraint) 
+	      (W::tma ?tma) 
+	      (W::subjvar ?subjvar) 
+	      (W::dobjvar ?dobjvar)) NOROLE)
     ))
   
   (PERFECTIVE-TEMPL
@@ -1950,6 +1988,18 @@
     (LOBJ (:parameter xp (:default (% W::NP))) ont::formal optional)
     ))
 
+(affected-scale-XP-optional-TEMPL
+   (ARGUMENTS
+    (LSUBJ (% W::NP) ONT::affected)
+    (LOBJ (:parameter xp (:default (% W::NP))) ont::scale optional)
+    ))
+
+(affected-neutral-xp-TEMPL
+   (ARGUMENTS
+    (LSUBJ (% W::NP) ONT::affected)
+    (LOBJ (:parameter xp (:default (% W::NP))) ont::neutral)
+    ))
+
 (affected-neutral-optional-TEMPL
    (ARGUMENTS
     (LSUBJ (% W::NP) ONT::affected)
@@ -1977,11 +2027,12 @@
    (experiencer-theme-SUBJCONTROL-TEMPL
    (ARGUMENTS
     (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::sem ?lsubjsem) (W::var ?lsubjvar)) ONT::experiencer)
-    (LCOMP (:parameter xp (:default (% W::cp (W::ctype W::s-to))) (:required(W::subj (% W::np (W::sem ?lsubjsem) 
+    (LCOMP (:parameter xp (:default (% W::cp (W::ctype W::s-to))) 
+		       (:required(W::subj (% W::np (W::sem ?lsubjsem) 
                     (W::lex ?lsubjlex) (W::var ?lsubjvar))))) ont::formal)
     ))
 
-  (affected-theme-SUBJCONTROL-TEMPL
+(affected-theme-SUBJCONTROL-TEMPL
    (ARGUMENTS
     (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::sem ?lsubjsem) (W::var ?lsubjvar)) ONT::affected)
     (LCOMP (:parameter xp (:default (% W::cp (W::ctype W::s-to))) (:required(W::subj (% W::np (W::sem ?lsubjsem) 
@@ -2088,6 +2139,7 @@
   ))
 
 (neutral-plural-templ
+ (syntax (w::agr (? a W::1p W::2p W::3p)))
  (ARGUMENTS
   (LSUBJ (% W::NP (W::agr (? a W::1p W::2p W::3p))) ONT::neutral)
   ))
@@ -2144,7 +2196,7 @@
 (neutral-EFFECT-SUBJCONTROL-TEMPL
    (ARGUMENTS
     (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::sem ?lsubjsem) (W::var ?lsubjvar)) ONT::neutral)
-    (LCOMP (:parameter xp (:default (% W::cp (W::ctype W::s-to))) 
+    (LCOMP (:parameter xp (:default (% W::cp (W::ctype W::s-to)))
 		       (:required (W::subj (% W::np (W::sem ?lsubjsem) 
 					     (W::lex ?lsubjlex) (W::var ?lsubjvar))))) ONT::FORMAL)
     ))
@@ -2232,6 +2284,13 @@
    (ARGUMENTS
     (LSUBJ (% W::NP) ONT::neutral)
     (LOBJ (:parameter xp (:default (% W::NP))) ONT::neutral1)
+    (LCOMP (:parameter xp2 (:default(% W::ADJP (w::set-modifier -)))) ont::formal optional)
+    ))
+
+(experiencer-neutral-adj-predicate-optional-templ		
+   (ARGUMENTS
+    (LSUBJ (% W::NP) ONT::experiencer)
+    (LOBJ (:parameter xp (:default (% W::NP))) ONT::neutral)
     (LCOMP (:parameter xp2 (:default(% W::ADJP (w::set-modifier -)))) ont::formal optional)
     ))
 
@@ -2502,12 +2561,12 @@
     (ARGUMENT (% W::NUMBER) ONT::FIGURE)
     ))
 
-   ;; exactly five
-     (NUMBER-OPERATOR-POST-TEMPL
-        (SYNTAX(W::SORT W::OPERATOR) (W::ATYPE W::POST) (W::MASS W::COUNT))
-          (ARGUMENTS
-	   (ARGUMENT (% W::NUMBER) ONT::FIGURE)
-	   ))
+;; exactly five
+(NUMBER-OPERATOR-POST-TEMPL
+ (SYNTAX(W::SORT W::OPERATOR) (W::ATYPE W::POST) (W::MASS W::COUNT))
+ (ARGUMENTS
+  (ARGUMENT (% W::NUMBER) ONT::FIGURE)
+  ))
   
   ;;;;; operators that can modifier both quanitifers (e.g., almost all) and numbers
   (QUAN-OPERATOR-TEMPL
@@ -2879,7 +2938,16 @@
 
 ;;;;;  PARTICLES
   (PARTICLE-templ
-   (SYNTAX (W::SORT W::PRED) (W::ATYPE W::POST) (W::PARTICLE +))
+   (SYNTAX (W::SORT W::PRED) (W::ATYPE W::POST) (W::PARTICLE +)
+	   (W::particle-role-map W::result))
+   (ARGUMENTS
+    (ARGUMENT (% W::NP) ONT::FIGURE)
+    )
+   )
+
+  (PARTICLE-manner-templ
+   (SYNTAX (W::SORT W::PRED) (W::ATYPE W::POST) (W::PARTICLE +)
+	   (W::particle-role-map W::manner))
    (ARGUMENTS
     (ARGUMENT (% W::S) ONT::FIGURE)
     )
@@ -3494,16 +3562,16 @@
     ))
 
   ;; quiet enough for all
-  (postpositive-adv-optional-xp-templ
-   (SYNTAX (W::SORT W::PRED) (W::ALLOW-DELETED-COMP +) (W::ATYPE W::postpositive) (W::ARG ?arg))
+  (post-adv-optional-xp-templ
+   (SYNTAX (W::SORT W::PRED) (W::ALLOW-DELETED-COMP +) (W::ATYPE W::post) (W::ARG ?arg))
    (ARGUMENTS
     (ARGUMENT (% (? W::argcat W::ADVBL W::ADJP)  (w::set-modifier -) (W::sort ?sort)) ONT::FIGURE)
     (subcat (:parameter xp (:default (% W::pp (W::ptype W::for)))) ONT::STANDARD optional)
     ))
 
  ;; quiet enough to sing a song
-  (postpositive-adv-xp-templ
-   (SYNTAX (W::SORT W::PRED) (W::ALLOW-DELETED-COMP +) (W::ATYPE W::postpositive) (W::ARG ?arg))
+  (post-adv-xp-templ
+   (SYNTAX (W::SORT W::PRED) (W::ALLOW-DELETED-COMP +) (W::ATYPE W::post) (W::ARG ?arg))
    (ARGUMENTS
     (ARGUMENT (% (? W::argcat W::ADVBL W::ADJP)  (w::set-modifier -) (W::sort ?sort)) ONT::FIGURE)
     (subcat (:parameter xp (:default (% W::cp))) ONT::STANDARD)

@@ -1,6 +1,6 @@
 ;;;;
 ;;;; W::characteristic
-;;;;
+;;;; 
 
 (define-words :pos W::n :templ COUNT-PRED-TEMPL
  :words (
@@ -19,7 +19,7 @@
    (W::characteristic
    (SENSES
     (
-     (LF-PARENT ont::common)
+     (lf-parent ont::stereotypical-val)
      (TEMPL central-adj-optional-xp-templ (xp (% W::PP (W::ptype W::of))))
      (example "footprints characteristic of the penguin")
       )

@@ -9,19 +9,19 @@
     (SENSES
      ((meta-data :origin calo :entry-date 20031223 :change-date 20061106 :wn ("inappropriate%3:00:00" "inappropriate%5:00:00:incongruous:00") :comments html-purchasing-corpus :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT))
      (example "a good book")
-     (LF-PARENT ONT::APPROPRIATENESS-VAL)
+     (lf-parent ont::not-appropriate-val)
      (sem (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
      (TEMPL central-adj-templ)
      )
      ((meta-data :origin calo :entry-date 20031223 :change-date 20061106 :wn ("inappropriate%3:00:00" "inappropriate%5:00:00:incongruous:00") :comments html-purchasing-corpus :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT))
       (example "a wall good for climbing")
-      (LF-PARENT ONT::APPROPRIATENESS-VAL)
+      (lf-parent ont::not-appropriate-val)
       (sem (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
       (TEMPL adj-purpose-TEMPL)
       )
      ((meta-data :origin calo :entry-date 20031223 :change-date 20061106 :wn ("inappropriate%3:00:00" "inappropriate%5:00:00:incongruous:00") :comments html-purchasing-corpus :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT))
       (EXAMPLE "a drug suitable for cancer")
-      (LF-PARENT ONT::APPROPRIATENESS-VAL)
+      (lf-parent ont::not-appropriate-val)
       (sem (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
       ;; this is a sense that allows for implicit/indirect senses of "for"
       ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"
@@ -30,7 +30,7 @@
       )
      ((meta-data :origin calo :entry-date 20031223 :change-date 20061106 :wn ("inappropriate%3:00:00" "inappropriate%5:00:00:incongruous:00") :comments html-purchasing-corpus :comlex (EXTRAP-ADJ-FOR-TO-INF-OMIT))
       (EXAMPLE "a solution good for him")
-      (LF-PARENT ONT::APPROPRIATENESS-VAL)
+      (lf-parent ont::not-appropriate-val)
       (sem (f::gradability +) (f::orientation ont::less) (f::intensity ont::med))
       ;; this is another indirect sense of "for"
       ;; the main sense is adj-purpose-templ for cases such as "this is good for treating cancer"
