@@ -213,8 +213,8 @@ fi
      $port_opt \
      -process-input-utterances yes \
      -terms-file $TRIPS_BASE/etc/$TRIPS_SYSNAME/domain-terms.tsv \
-     -init-taggers terms-from-file \
-     -default-type '(or affixes words punctuation terms-from-file)' \
+     -init-taggers terms-from-file,misspellings \
+     -default-type '(or affixes words punctuation terms-from-file misspellings)' \
  2>&1 | tee $logdir/TextTagger.err) &
 
 # Start Graphviz

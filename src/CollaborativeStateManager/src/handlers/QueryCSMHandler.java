@@ -10,6 +10,7 @@ import java.util.*;
 
 import extractors.OntologyReader;
 import plans.GoalPlanner;
+import plans.Messages;
 import states.Goal;
 
 public class QueryCSMHandler extends MessageHandler implements Runnable {
@@ -74,7 +75,7 @@ public class QueryCSMHandler extends MessageHandler implements Runnable {
 		{
 			KQMLList failureReason = new KQMLList();
 			failureReason.add("NO-ACTIVE-GOAL");
-			return failureMessage("NIL",newContext,failureReason);
+			return Messages.failureMessage("NIL",newContext,failureReason);
 		}
 		
 		for (Goal g : pathToRoot)
@@ -90,7 +91,7 @@ public class QueryCSMHandler extends MessageHandler implements Runnable {
 		response.add(":WHAT");
 		response.add(listToReturn);
 		
-		return reportContent(response, newContext);
+		return Messages.reportContent(response, newContext);
 	}
 	
 	private KQMLList handleTopLevelGoals()
@@ -111,7 +112,7 @@ public class QueryCSMHandler extends MessageHandler implements Runnable {
 		response.add(":WHAT");
 		response.add(listToReturn);
 		
-		return reportContent(response, newContext);
+		return Messages.reportContent(response, newContext);
 	}
 
 	private KQMLList handleActiveGoal() {
@@ -122,6 +123,29 @@ public class QueryCSMHandler extends MessageHandler implements Runnable {
 		
 		String goalVariable = "NIL";
 		String goalId = "NIL";
+		
+		if (goalPlanner.hasAmbiguousActiveGoal())
+		{
+			List<Goal> topLevelGoals = new ArrayList<Goal>();
+			topLevelGoals.addAll(goalPlanner.getTopLevelGoals());
+			KQMLList whats = new KQMLList();
+			KQMLList ids = new KQMLList();
+			for (Goal g : topLevelGoals)
+			{
+				whats.add(g.getVariableName());
+				ids.add(g.getId());
+				newContext.addAll(g.getOriginalContext());
+			}
+			KQMLList response = new KQMLList();
+			response.add("AMBIGUOUS-ACTIVE-GOAL");
+			response.add(":IDS");
+			response.add(ids);
+			response.add(":WHATS");
+			response.add(whats);
+			
+			return Messages.reportContent(response, newContext);
+		}
+		
 		if (activeGoal != null)
 		{
 			goalVariable = activeGoal.getVariableName();
@@ -139,7 +163,7 @@ public class QueryCSMHandler extends MessageHandler implements Runnable {
 		response.add(new KQMLToken(goalVariable));
 		
 		
-		return reportContent(response, newContext);
+		return Messages.reportContent(response, newContext);
 	}
 
 }

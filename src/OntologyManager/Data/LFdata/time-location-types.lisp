@@ -19,7 +19,7 @@
  :arguments (;(:ESSENTIAL ONT::OF ((? of F::Phys-obj F::Situation f::abstr-obj)))
 	     ;(:ESSENTIAL ONT::val ((? val F::Phys-obj F::Situation f::abstr-obj)))
 	     (:ESSENTIAL ONT::FIGURE ((? fig F::Phys-obj F::Situation f::abstr-obj)))
-	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj F::Situation f::abstr-obj)))
+	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj F::Situation f::abstr-obj)) (f::type (? !t ONT::TIME-MEASURE-SCALE)))
              )
  )
 
@@ -51,7 +51,9 @@
 ; in, within, inside (of)
 (define-type ont::in-loc
   :parent ont::pos-as-containment-reln
-  :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj) (f::intentional -) (f::container +)
+  :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj f::abstr-obj) ; measure (music)
+					(f::type (? t ont::phys-object ont::information-function-object ont::mental-construction)) ; mental-construction: signaling-pathway
+				       (f::intentional -) (f::container +) ; containers include corner and pathway
 				   )))
   )
 
@@ -158,6 +160,8 @@
 ; direction is a verticality reln
 (define-type ont::directional-vert
   :parent ont::pos-directional-reln
+  :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj f::abstr-obj )
+				   ))) ; situation should use SITUATED-IN
   )
 
 ; figure is below ground (in some way)
@@ -446,7 +450,8 @@
 (define-type ONT::resulting-object
  :parent ONT::predicate
  :arguments ((:ESSENTIAL ONT::FIGURE
-			 (F::Situation (f::aspect f::dynamic) (f::type ont::event-of-creation)))
+			 ;(F::Situation (f::aspect f::dynamic) (f::type (? t ont::event-of-creation ont::change)))) ; e.g., make, cut
+	                 (F::Phys-obj ))
              (:REQUIRED ONT::GROUND (F::Phys-obj ))
              )
  )
@@ -461,8 +466,8 @@
 
 (define-type ONT::resulting-state
  :parent ONT::goal-reln
- :arguments ((:ESSENTIAL ONT::FIGURE 
-			 (F::Situation (f::aspect f::dynamic) (f::type ont::change)))
+ :arguments ((:ESSENTIAL ONT::FIGURE )
+			 ;(F::Situation (f::aspect f::dynamic) (f::type ont::change)))
              (:REQUIRED ONT::GROUND ((? t F::Abstr-obj F::situation)))
              )
  )
@@ -566,7 +571,8 @@
 ; via, by way of
 (define-type ont::obj-in-path
     :arguments (;(:ESSENTIAL ONT::FIGURE ((? type F::Situation F::phys-obj) (F::type (? path-type ont::motion ont::apply-force ont::route)) (F::trajectory +)))
-		(:ESSENTIAL ONT::FIGURE ((? type F::phys-obj) ))
+		;(:ESSENTIAL ONT::FIGURE ((? type F::phys-obj) ))
+		(:ESSENTIAL ONT::FIGURE ((? type F::Situation F::phys-obj) (F::type (? t F::route F::event-of-change)) )) ; I go to the post office via ...; The route to Avon via...
 		(:essential ONT::GROUND  (F::Phys-obj (F::form F::object)))) 
     :parent ont::path
     )
@@ -619,18 +625,29 @@
 
 (define-type ONT::from-loc
  :parent ONT::source-reln
- :arguments ((:ESSENTIAL ONT::FIGURE ( F::situation (F::type ont::motion)))
-	     (:ESSENTIAL ONT::GROUND (F::Phys-obj (f::spatial-abstraction (? sa f::spatial-point))))
+ :arguments (;(:ESSENTIAL ONT::FIGURE ( F::situation (F::type ont::motion)))
+	     ;(:ESSENTIAL ONT::GROUND (F::Phys-obj (f::spatial-abstraction (? sa f::spatial-point))))
+
+	     ; copied from to-loc
+	     (:ESSENTIAL ONT::FIGURE ((? f F::PHYS-OBJ F::abstr-obj))); (F::situation (f::type ont::event-of-change)))   ; "I walked to the store" FIGURE should point to "I", not "walked"
+	     (:ESSENTIAL ONT::GROUND ((? t F::Phys-obj F::abstr-obj) (f::spatial-abstraction ?!sa)
+					;(F::form F::geographical-object)
+				      ) )  ; spatial-abstraction is not enough: many things have spatial-abstraction, e.g., a frog.  Another possibility is (F::object-function F::spatial-object)
+
 	     )
  )
 
+; I moved from the chair to the sofa.  not geographic-object (gound)
+; transmit the signal: signal is abstr-obj (figure)
 (define-type ONT::to-loc
     :comment "the generic goal role: might be a physical object (as possessor) or a resulting state"
  :parent ONT::goal-reln
  :arguments (;(:ESSENTIAL ONT::OF (F::situation (f::type ont::event-of-change)))
 	     ;(:ESSENTIAL ONT::VAL ((? t F::Phys-obj F::abstr-obj)))
-	     (:ESSENTIAL ONT::FIGURE (F::PHYS-OBJ)); (F::situation (f::type ont::event-of-change)))   ; "I walked to the store" FIGURE should point to "I", not "walked"
-	     (:ESSENTIAL ONT::GROUND ((? t F::Phys-obj F::abstr-obj) (f::spatial-abstraction ?!sa) (F::form F::geographical-object)) )  ; spatial-abstraction is not enough: many things have spatial-abstraction, e.g., a frog.  Another possibility is (F::object-function F::spatial-object)
+	     (:ESSENTIAL ONT::FIGURE ((? f F::PHYS-OBJ F::abstr-obj))); (F::situation (f::type ont::event-of-change)))   ; "I walked to the store" FIGURE should point to "I", not "walked"
+	     (:ESSENTIAL ONT::GROUND ((? t F::Phys-obj F::abstr-obj) (f::spatial-abstraction ?!sa)
+					;(F::form F::geographical-object)
+				      ) )  ; spatial-abstraction is not enough: many things have spatial-abstraction, e.g., a frog.  Another possibility is (F::object-function F::spatial-object)
 	     )
  )
 
@@ -738,7 +755,8 @@
  :arguments (;(:ESSENTIAL ONT::FIGURE (F::Situation))
 	     (:ESSENTIAL ONT::FIGURE (F::Situation (f::type ont::change-magnitude)))
 ;	     (:ESSENTIAL ONT::GROUND (F::abstr-obj (F::scale ont::length)))
-	     (:ESSENTIAL ONT::GROUND (F::abstr-obj))  ; no scale (e.g., increase by three dogs)
+;	     (:ESSENTIAL ONT::GROUND (F::abstr-obj))  ; no scale (e.g., increase by three dogs)
+	     (:ESSENTIAL ONT::GROUND (F::abstr-obj (F::scale ?!sc)))  ; put scale back for now
              )
  )
 
@@ -805,7 +823,8 @@
 ;             (:essential ont::GROUND (f::abstr-obj (F::Scale Ont::duration-scale) (F::type ont::time-unit)))
 ;             (:essential ont::GROUND ((? gd F::abstr-obj F::time) (F::time-scale f::interval)))
 	    
-             (:essential ont::GROUND (F::abstr-obj (F::Scale Ont::duration-scale) (F::type ont::time-unit)))
+             ;(:essential ont::GROUND (F::abstr-obj (F::Scale Ont::duration-scale) (F::type ont::time-unit)))
+             (:essential ont::GROUND ((? gd F::abstr-obj F::time) (F::Scale Ont::duration-scale) (F::type ont::time-unit ont::time-interval)))
   ))
 
 #|
@@ -1012,10 +1031,10 @@
 (define-type ONT::TIme-interval
  :wordnet-sense-keys ("interval%1:28:00" "time_interval%1:28:00" "time%1:28:03" "clock_time%1:28:00" "time%1:28:00" "time%1:28:05" "time_period%1:28:00")
  :parent ONT::TIME-OBJECT
- :sem (F::time (F::time-scale (? sc F::interval)))
- :arguments ((:OPTIONAL ONT::FIGURE (F::time (f::time-function f::time-frame) (f::time-scale f::interval) (f::scale ont::duration-scale)))
+ :sem (F::time (F::time-scale (? sc F::interval)) (F::Scale Ont::duration-scale))
+ :arguments ((:OPTIONAL ONT::GROUND (F::time (f::time-function f::time-frame) (f::time-scale f::interval) (f::scale ont::duration-scale)))
              ;;; a time of two hours
-             (:OPTIONAL ONT::GROUND (F::Abstr-obj))
+             (:OPTIONAL ONT::FIGURE ((? t f::situation f::abstr-obj)))
 	     (:OPTIONAL ONT::EXTENT (F::Abstr-obj (f::time-scale f::interval) (f::scale ont::duration-scale)))
              )
  )

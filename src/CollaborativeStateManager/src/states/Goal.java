@@ -7,6 +7,7 @@ import java.util.*;
 
 import extractors.TermExtractor;
 import TRIPS.KQML.KQMLList;
+import TRIPS.KQML.KQMLObject;
 import TRIPS.KQML.KQMLString;
 import TRIPS.KQML.KQMLToken;
 
@@ -274,6 +275,15 @@ public class Goal {
 	public KQMLList getAdditionalContext()
 	{
 		return additionalContext;
+	}
+	
+	public String getArgumentAsString(String argument)
+	{
+		KQMLObject resultObject = term.getKeywordArg(argument);
+		if (resultObject == null)
+			return null;
+		
+		return resultObject.stringValue();
 	}
 	
 }

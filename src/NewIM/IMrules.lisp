@@ -50,21 +50,35 @@
 		   )
       )
 
+     #|
     ;; indirect proposal, "shall i/we do this" 
    ((ONT::SPEECHACT ?v ONT::SA_YN-QUESTION :CONTENT ?!v1)
     (ONT::F ?!v1 ONT::SITUATION-ROOT :force ont::FUTURE)
     -yes-no-proposal>
     (ONT::PROPOSE :who *user* :to *ME* :what ?!v1 :as ONT::GOAL)
     )
+     |#
+
+   ;; can you/I... (indirect requests)
+   ((ONT::SPEECHACT ?V7187 ONT::SA_YN-QUESTION :CONTENT ?!c)
+    (ONT::F ?!c ONT::EVENT-OF-CHANGE ;ONT::EVENT-OF-ACTION  ; can you find a drug...
+	    :AGENT ?!V6 :force (? f ONT::ALLOWED ONT::PROHIBITED ONT::FUTURE ONT::FUTURENOT ONT::POSSIBLE ONT::FUTURE))
+    ((? z ONT::PRO ONT::PRO-SET) ?!V6 ONT::PERSON :proform (? xx w::ME w::I w::you w::we w::us))    
+      -can-indirect-proposal>
+      (ONT::PROPOSE :who *USER* :to *ME*
+		   :what ?!c
+		   ;:as ONT::GOAL
+		   )
+      )   
    
    ;; indirect question, "are there any trucks available" 
    ((ONT::SPEECHACT ?v ONT::SA_YN-QUESTION :CONTENT ?!v1)
-    (ONT::F ?!v1 ONT::EXISTS :neutral ?!n)
-    
+    (ONT::F ?!v1 ONT::EXISTS :neutral ?!n)    
     -yes-no-question>
     (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :as ONT::GOAL)
     )
 
+   #|
    ;; are there any trucks carrying pineapples?
    ;; are there any green trucks?
    ((ONT::SPEECHACT ?v ONT::SA_YN-QUESTION :CONTENT ?!v1)
@@ -74,6 +88,29 @@
     -yes-no-question-suchthat>
     (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :as ONT::GOAL)
     (?!spec ?!n ?!t :suchthat ?!m)
+    )
+   |#
+
+   ;; are there any trucks carrying pineapples?
+   ;; are there any green trucks?
+   ((ONT::SPEECHACT ?v ONT::SA_YN-QUESTION :CONTENT ?!v1)
+    (ONT::F ?!v1 ONT::EXISTS :neutral ?!n) 
+    (?!spec ?!n ?!t :MODS (?!m))
+    (ONT::F ?!m ?!t2)
+    -yes-no-question-suchthat>
+    (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
+    ;(?!spec ?!n ?!t :suchthat ?!m)
+    )
+
+   ;; Do you know any good books?
+   ;; Do you know any drugs for BRAF?
+   ((ONT::SPEECHACT ?v ONT::SA_YN-QUESTION :CONTENT ?!v1)
+    (ONT::F ?!v1 ONT::KNOW :neutral ?!n) 
+    (?!spec ?!n ?!t :MODS (?!m))
+    (ONT::F ?!m ?!t2)
+    -yes-no-question-suchthat-know>
+    (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
+    ;(?!spec ?!n ?!t :suchthat ?!m)
     )
    
    ;; 
@@ -271,13 +308,25 @@
        (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!ff :suchthat ?!rr)
 	)
       
+   ;; conditional questions: "What happens to the price of wheat in South Sudan if we cut the amount of fertilizer?"
+
+     ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
+      (ONT::WH-TERM ?!ff ?!type)
+      (ONT::F ?!rr ONT::SITUATION-ROOT :condition ?!cond-op)
+      (ONT::F ?!cond-op ONT::POS-CONDITION :GROUND ?!test)
+      ;(ONT::F ?!test ONT::EVENT-OF-CAUSATION)
+      (ONT::F ?!test ONT::EVENT-OF-CHANGE)  ; "activate" is not EVENT-OF-CAUSATION
+      -ask-wh-condition>
+      (ONT::ASK-CONDITIONAL-WHAT-IS :who *USER* :to *ME* :what ?!ff :suchthat ?!rr :condition ?!test)
+      )
       
    ;; conditional questions: is ERK activated if we add Serafinabib?
 
      ((ONT::SPEECHACT ?!a ONT::SA_YN-QUESTION :CONTENT ?!rr)
       (ONT::F ?!rr ONT::SITUATION-ROOT :condition ?!cond-op)
       (ONT::F ?!cond-op ONT::POS-CONDITION :GROUND ?!test)
-      (ONT::F ?!test ONT::EVENT-OF-CAUSATION)
+      ;(ONT::F ?!test ONT::EVENT-OF-CAUSATION)
+      (ONT::F ?!test ONT::EVENT-OF-CHANGE)  ; "activate" is not EVENT-OF-CAUSATION      -ynq-condition>
       -ynq-condition>
       (ONT::ASK-CONDITIONAL-IF :who *USER* :to *ME* :what ?!rr :condition ?!test)
       )
@@ -297,18 +346,6 @@
       (ONT::F ?!rr ?type)
       -ynq> 1
       (ONT::ASK-IF :who *USER* :to *ME* :what ?!rr)
-      )
-
-   ;; can you/I indirect requests
-   ((ONT::SPEECHACT ?V7187 ONT::SA_YN-QUESTION :CONTENT ?!c)
-    (ONT::F ?!c ONT::EVENT-OF-ACTION :AGENT ?!V6 :force (? f ONT::ALLOWED ONT::PROHIBITED ONT::FUTURE ONT::FUTURENOT ONT::POSSIBLE))
-    ((? z ONT::PRO ONT::PRO-SET) ?!V6 ONT::PERSON :proform (? xx w::ME w::I w::you w::we w::us))
-    
-      -can-indirect-proposal>
-      (ONT::PROPOSE :who *USER* :to *ME*
-		   :what ?!c
-		   :as ONT::GOAL
-		   )
       )
 
    ;; The dog?

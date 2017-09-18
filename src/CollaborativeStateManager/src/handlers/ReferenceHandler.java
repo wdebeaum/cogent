@@ -19,7 +19,8 @@ public class ReferenceHandler {
 	
 	public void addReference(KQMLList reference)
 	{
-		references.put(reference.get(1).stringValue(), reference);
+		if (reference.size() > 1)
+			references.put(reference.get(1).stringValue(), reference);
 		//System.out.println("Adding term " + reference.get(1).stringValue());
 	}
 	

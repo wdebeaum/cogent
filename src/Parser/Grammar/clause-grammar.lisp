@@ -33,7 +33,7 @@
  '((headfeatures
     (vp vform var agr neg sem iobj dobj comp3 part cont aux tense-pro gap subj subjvar modal auxname lex headcat transform subj-map template complex ellipsis)
     (vp- vform var agr neg sem iobj dobj comp3 part cont   tense-pro aux modal auxname lex headcat transform subj-map advbl-needed
-	 passive passive-map template) 
+	 passive passive-map template result) 
     (s vform var neg sem subjvar dobjvar cont  lex headcat transform ellipsis)
     (cp vform var neg sem subjvar dobjvar cont  transform subj-map subj lex)
     (v lex sem lf neg var agr cont aux modal auxname ellipsis tma transform headcat)
@@ -316,8 +316,8 @@
    ;; test: the dog barked.
    ;; test: the dog chased the cat.
    ((s (stype decl) (var ?v) (subjvar ?npvar) (gap ?g) (focus ?npvar)
-     (lf ?lf) (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) 
-		       (pp-word -) (changeagr -))
+     (lf ?lf) (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex)
+		       (pp-word -) (changeagr -) (gap -))
 	       )
 
      (advbl-needed ?avn)
@@ -426,7 +426,7 @@
    ;; test: what will chase the cat?
    ((utt (lf (% speechact (var *) (class ont::sa_wh-question) (constraint (& (content ?v) (focus ?foc)))))
          (var *) (qtype ?type) (punctype ?p))
-    -decl-wh-question1> .96
+    -decl-wh-question1> .98
     (head (s (stype (? st decl imp)) (wh q) (gap -) (wh-var ?foc) (var ?v) (advbl-needed -))))
    
    
@@ -1028,10 +1028,12 @@
             (argument ?argument)
             (filled -)
             )
-      -pred4>
+      -pred4> .97
       (head (np (sem ?sem) (var ?v) (sort pred) (case (? case obj -))
-          (lf (% description (status (? x ont::indefinite ont::bare ont::indefinite-plural)) (sem ($ f::phys-obj (f::type ont::role-reln)))
-	         (class ?c) (constraint ?constr)))))
+		(derived-from-name -) (gerund -)
+		(lf (% description (status (? x ont::indefinite ont::bare ont::indefinite-plural)) 
+		       (sem ($ f::phys-obj (f::type ont::role-reln)))
+		       (class ?c) (constraint ?constr)))))
       (add-to-conjunct (val (Figure ?arg)) (old ?constr) (new ?newcon))
       )
 
@@ -1078,7 +1080,7 @@
     
      ;; vp rules 
      ;; test: he said the dog barked.
-    ((vp- (subj ?subj)  (subjvar ?subjvar) (dobjvar ?dobjvar)
+    ((vp- (subj ?subj)  (subjvar ?subjvar) (dobjvar ?dobjvar) 
       (var ?v) (class ?c) (gap ?gap) 
       (constraint ?newc)
       (tma ?tma)
@@ -1314,6 +1316,7 @@
     ;; for pre-adverbials between verb and argument
     ;; test: he said yesterday that the dog barked.
     ;; test: he saw on his left a dog barking.
+    ; I wrote on the paper my name.
     ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?dobjvar)
       (var ?v) (class ?c) (gap -)  (complex +)
       (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1430,16 +1433,13 @@
      
    ;; vp rule with dobj gap
    ;; test: who did he see
-   ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?dobjvar)
+   ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?gapvar) ;(dobjvar ?dobjvar)
      (main +) (gap (% ?!cat (var ?gapvar) (sem ?gapsem) (agr ?gapagr) (arg ?arg) (gap -) 
 		      (case ?dcase) (ptype ?ptype)
 		      ))
      (var ?v) 
-     (class ?c) (constraint (& (lsubj ?subjvar) (lobj ?gapvar)
-			       (liobj ?iobjvar) (lcomp ?compvar)
-			       (?lsubj-map ?subjvar) (?!dobj-map ?gapvar)
-			       (?iobj-map ?iobjvar) (?comp3-map ?compvar)
-			       ))
+     (class ?c)
+     (constraint ?newc)
      (postadvbl -)
      )
     -vp-dobj-gap-role> ;;.97
@@ -1451,11 +1451,19 @@
 	     (dobj ?!dobj) (dobj (% ?!cat (case (? dcase obj -)) (var ?gapvar) (arg ?arg) (sem ?gapsem) (agr ?gapagr) (ptype ?ptype))) ;; must have a possibility of np dobj
 	     (comp3 ?comp) (comp3 (% ?s4 (case (? ccase obj -)) (var ?compvar) (sem ?compsem) (gap -))) 
 	     (subj-map ?lsubj-map) (dobj-map ?!dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
-	      
+	     (restr ?prefix)
 	     ))
     ?iobj     
     ?part
     ?comp
+    (append-conjuncts (conj1 ?prefix)
+		      (conj2 (& (lsubj ?subjvar) (lobj ?gapvar)
+			       (liobj ?iobjvar) (lcomp ?compvar)
+			       (?lsubj-map ?subjvar) (?!dobj-map ?gapvar)
+			       (?iobj-map ?iobjvar) (?comp3-map ?compvar)
+			       ))
+		       (new ?newc))
+
     )
    
    ;; vp rules where the object pp or pred has a gap
@@ -1649,7 +1657,8 @@
     )
 
    
- ;;  test: move up the blocks
+   ;;  test: move up the blocks (i.e., move the blocks up)
+   ;;  push up the window
    ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar) (main +)
       (class ?c) (var ?v) 
      (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1669,16 +1678,18 @@
 	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (case (? dcase obj -)) ))
 	   (comp3 ?comp)		(comp3 (% ?s4 (var ?compvar) (sem ?compsem) (case (? ccase obj -))))
 	   (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
-	   
+	   (result ?asem)
 	   ))
     ;(advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
     (advbl (particle +) (particle-role-map result) (var ?adv-v) (arg ?dobjvar) 
-     (argument (% np (sem ?dobjsem))) (gap -))
+	   (argument (% np (sem ?dobjsem))) (gap -)
+	   (sem ?asem))
     ?dobj
     ?comp
     )
 
    ;;  test: clean up your room
+   ;;  wash up the dishes
    ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar) (main +)
       (class ?c) (var ?v) 
      (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1698,16 +1709,47 @@
 	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (case (? dcase obj -)) ))
 	   (comp3 ?comp)		(comp3 (% ?s4 (var ?compvar) (sem ?compsem) (case (? ccase obj -))))
 	   (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
-	   
+	   (result ?asem)
 	   ))
     ;(advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
     (advbl (particle +) (particle-role-map manner) (var ?adv-v) (arg ?v) 
-     (argument (% s (sem ?sem))) (gap -))
+	   (argument (% s (sem ?sem))) (gap -)
+	   (sem ?asem))
     ?dobj
     ?comp
     )
    
-  
+   ;; either this rule or we need a version of -vp1-pre-arg-adv> whose advbl takes an NP as argument
+   ;;  test: I moved to the table the box
+   ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar) (main +)
+      (class ?c) (var ?v) 
+     (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
+		      (lcomp ?compvar)
+		      (?lsubj-map ?subjvar) (?dobj-map ?dobjvar)
+		      (?iobj-map ?iobjvar) (?comp3-map ?compvar)
+		      (result ?adv-v)
+		      ))
+     (postadvbl -)
+     )
+    -vp-compositional-result-role> 
+    (head (v (aux -) (var ?v)
+	   (lf ?c) (sem ?sem) (sem ($ f::situation (f::type ont::event-of-change)))  (vform ?tense-pro)
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -) )) ;; note double matching required
+	   (iobj (% -))
+	   (part (% -)) ;;(part (% part))
+	   (dobj ?dobj)			(dobj (% ?s3 (var ?dobjvar) (sem ?dobjsem) (case (? dcase obj -)) ))
+	   (comp3 ?comp)		(comp3 (% ?s4 (var ?compvar) (sem ?compsem) (case (? ccase obj -))))
+	   (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
+	   (result ?asem)
+	   ))
+    ;(advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
+    (advbl (result-only +) (var ?adv-v) (arg ?dobjvar) 
+	   (argument (% np (sem ?dobjsem))) (gap -)
+	   (sem ?asem))
+    ?dobj
+    ?comp
+    )
+ 
    
    ;; passive transformations
 
@@ -1722,7 +1764,7 @@
    ;; test: the dog was given (me)
    ((v (vform passive) (passive +)
      (subj ?!dobj) (subj-map ?dobj-map) 
-     (dobj (% -)) (agent-map ?subj-map)
+     (dobj (% -)) (agent-map ?subj-map) (agent-sem ?subjsem)
      (iobj ?iobj) (iobj-map ?iobj-map)
      (comp3 ?comp3) (part ?part) (comp3-map ?comp-map)
 ;     (prefix ?prefix)
@@ -1731,6 +1773,7 @@
     -v-passive> 1.0 
     (head (v (vform pastpart) (lex (? !lx been)) ;; exclude be
 	   (subj ?subj) (subj-map ?subj-map) ;; please don't remove - this is needed for trips-tflex conversion
+	   (subj (% ?s (sem ?subjsem)))
 	   (dobj ?!dobj) (dobj-map ?dobj-map) (exclude-passive -)
 	   (iobj ?iobj) (iobj-map ?iobj-map)
 	   (comp3 ?comp3) (comp3-map ?comp-map)
@@ -1738,23 +1781,26 @@
 ;	   (prefix ?prefix)
 	   (restr ?prefix)
 	   )))
-   
+
    ;; test:  the dog is taken care of
    ((v (vform passive)  (passive +)
-     (subj (% np (lex ?subjlex) (sem ?dobjsem) (var ?dobjvar) (agr ?dobjagr)))
+     (subj (% np (lex ?dobjlex) (sem ?dobjsem) (var ?dobjvar) (agr ?dobjagr)))
      (subj-map ?dobj-map) 
-     (dobj (% prep (lex ?pt))) (dobj-map -)
+     ;(dobj (% prep (lex ?pt)))
+     (dobj (% -)) 
+     (dobj-map -)
      (iobj ?iobj) (iobj-map ?iobj-map)
      (comp3 ?comp3) (part ?part) (comp3-map ?comp-map)
      )
     -v-passive-pp> 1.0
     (head (v (vform pastpart) (lex (? !lx been)) (exclude-passive -);; exclude be
 	   (subj (% np (lex ?subjlex) (sem ($ ?!type))))
-	   (dobj (% pp (ptype ?pt) (sem ?dobjsem) (var ?dobjvar) (agr ?dobjagr)))
+	   (dobj (% pp (ptype ?pt) (lex ?dobjlex) (sem ?dobjsem) (var ?dobjvar) (agr ?dobjagr)))
 	   (dobj-map ?dobj-map)
 	   (iobj ?iobj) (iobj-map ?iobj-map)
 	   (comp3 ?comp3) (comp3-map ?comp-map)
 	   (part ?part)))
+    (prep (lex ?pt))
     )
 
    ;; test: the dog was given me by him
@@ -1764,9 +1810,9 @@
        (subj ?!dobj) (subj-map ?dobj-map) 
      ;;       (dobj (% -)) 
      (dobj ?comp3) (dobj-map ?comp3-map)     
-       (iobj ?iobj) (iobj-map ?iobj-map)
-       (comp3 (% pp (ptype by) (sem ?!subj-sem))) (comp3-map ?subj-map)
-       (part ?part)) 
+     (iobj ?iobj) (iobj-map ?iobj-map)
+     (comp3 (% pp (ptype by) (gerund -) (sem ?!subj-sem))) (comp3-map ?subj-map)
+     (part ?part)) 
     -v-passive-by> 1.0
     (head (v (vform pastpart) (lex (? !lx been)) (exclude-passive -);; exclude be
 	     (subj (% np (lex ?subjlex) (sem ?!subj-sem) (agr ?subjagr) (sem ($ ?!type))))
@@ -1775,7 +1821,8 @@
 	     (iobj ?iobj) 	  
 	     (comp3 ?comp3) (comp3-map ?comp3-map)
 	     (part ?part)))
-)
+    )
+   
    ;; test: i was given the dog
    ;;  passive form with indirect object
    ((v (vform passive)  (passive +)
@@ -1809,6 +1856,41 @@
 	   (iobj ?!iobj) 
 	   (comp3 ?comp3) (comp3-map (% -))
 	   (part ?part))))
+
+   ;; the dog was computer generated.  It is FDA approved.
+   ((vp- (vform passive)  (passive +)
+     (subj-map ?subj-map) (subj ?subj)
+     ;;(dobj (% np (sem ?sem) (var ?v-n) (agr ?a) (lex ?lex) (gap -) (RESTR ?nr))) 
+     ;;(dobj-map ?subj-map)
+     (class ?class)
+     (iobj ?iobj) (iobj-map ?iobj-map)
+     (subjvar ?subjvar)
+     ;;(comp3 ?comp3) (comp3-map ?comp3-map)
+     (constraint (& (?ag-map ?v-n) ;(ont::agent ?v-n)
+			   ;;(% *PRO* (class ?nc) (status ont::bare) (constraint ?nr) (var ?v-n)))
+		    (?subj-map ?subjvar)
+		    (?dobj-map  ?dobjvar)
+		    (?iobj-map ?iobjvar)))
+		    
+     (part ?part)) 
+    -v-passive+prenom-subj> 
+    (np (sort ?sort) (LF (% description (status (? x ont::bare ont::name)))) ;;(RESTR ?nr) (status ?status) 
+     (complex -) (gerund -) (var ?v-n) 
+     (sem ?sem) (relc -) (abbrev -) (gap -) (agr ?a) (lex ?lex)
+     )
+    (head (v (vform passive) (lex (? !lx been)) (exclude-passive -);; exclude be
+	     (lf ?class) (agent-map ?ag-map) (agent-sem ?sem)
+	     (subj (% np (lex ?subjlex) (sem ?!subj-sem) (agr ?subjagr) (var ?subjvar) (sem ($ ?!type))))
+	     (subj-map ?subj-map) (iobj-map ?iobj-map)
+	     ;;(dobj ?!dobj) 
+	     (dobj-map ?dobj-map) (dobj (% ?s3 (agr ?dobjagr) (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap ?gap)))
+	     (iobj ?iobj)  (iobj (% ?s2  (case (? icase obj -)) (var ?iobjvar) (sem ?iobjsem) (gap -)))     
+	     (comp3 (% -));; (comp3-map ?comp3-map)
+	     (part ?part)
+	     (restr ?con)
+	     ))
+    )
+    
    
    ;;;   ;;  e.g., terminal 1 is separated by a gap from a positive terminal
    ;;; "by" comes before a subcategorized pp argument
@@ -1816,7 +1898,7 @@
        (subj ?!dobj) (subj-map ?dobj-map) 
        (comp3 ?!comp3) (comp3-map ?comp-map)
        (iobj ?iobj) (iobj-map ?iobj-map)
-       (dobj (% pp (ptype by) (sem ?!subj-sem))) (dobj-map ?subj-map)
+       (dobj (% pp (ptype by) (gerund -) (sem ?!subj-sem))) (dobj-map ?subj-map)
        (part ?part)) 
     -v-passive-by-reversed>
     
@@ -1967,7 +2049,8 @@
 	    )))   
 
    
-   ;; a transformation on be to take expletive + filled predicate    
+   ;; a transformation on be to take expletive + filled predicate
+   ;; It is...
     ((v (vform ?vform) (be-there +)
       (subj (% np (lex it) (agr 3s) (expletive +) (sem ($ -)))) (subj-map -)
       (dobj ?dobjnew) (dobj-map ?dobj-map)
@@ -2060,7 +2143,7 @@
  ;;== new passive treatment ====
 (parser::augment-grammar
  '((headfeatures
-    (vp- vform var agr neg sem iobj dobj comp3 part cont   tense-pro aux modal auxname lex headcat transform subj-map advbl-needed passive subjvar template)
+    (vp- vform var agr neg sem iobj dobj comp3 part cont   tense-pro aux modal auxname lex headcat transform subj-map advbl-needed passive subjvar template result)
     (v lex sem lf neg var agr cont aux modal auxname ellipsis tma transform headcat)
     (cp vform neg sem subjvar dobjvar cont  transform)
     )
@@ -2278,7 +2361,7 @@
      (gap (% ?!s3 (case ?dcase) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap -)))
      (advbl-needed ?avn)
      )
-    -s-ynq-be-gap> 0.97
+    -s-ynq-be-gap> 0.96  ;; downgrade this until we find an example that needs this rule!!  Why do we not require the V to be ONT::BE or ONT::EQUAL????
     (head (v (aux -)
 	   
 	   (var ?v) ;; propagate up explicitly because not a head feature	   
@@ -2542,11 +2625,11 @@
     ;; test: who did you see?
     ;; test: who did you see at the store?
     ;; test: whose dog did you see at the store?
-    ((s (stype whq) (subjvar ?subjvar) (dobjvar ?dobjvar) (subj ?subj)
+    ((s (stype whq) (subjvar ?subjvar) (dobjvar ?dobjvar) (subj ?subj) (sem ?sem)
       (qtype q) (lf ?lf) (var ?v))
      -wh-q2>
      (np (var ?npvar) (sem ?npsem) (wh q) (agr ?a) (case ?case))
-     (head (s (stype ynq) (lf ?lf) (var ?v) 
+     (head (s (stype ynq) (lf ?lf) (var ?v) (sem ?sem)
 	    (advbl-needed -)
 	    (subj ?subj)
 	    (subjvar ?subjvar) (dobjvar ?dobjvar)
@@ -2617,7 +2700,7 @@
   '((headfeatures
      (s vform var neg sem dobjvar cont  lex headcat transform advbl-needed)
      (pred qtype focus arg var sem wh lf lex headcat transform)
-     (vp- vform var agr neg sem iobj dobj comp3 part cont  tense-pro aux modal lex headcat transform tma subj-map advbl-needed template)
+     (vp- vform var agr neg sem iobj dobj comp3 part cont  tense-pro aux modal lex headcat transform tma subj-map advbl-needed template result)
      )
     
 
@@ -2786,16 +2869,14 @@
 	)
      -lets-imp> 1.0 ;; get let's to go through this rule instead of command-imp2
      (word (lex let))
-     (np (lex us))
+     (np (lex us) (var ?npvar))
      (head (vp (gap  -) (sem ?sem)
 	       (sem ($ f::situation (f::aspect (? aspc f::dynamic f::stage-level))))
 	       (var ?v) (aux -) (tma ?tma)
 	       (constraint ?con)
-	       (subj (% np (var (% *pro* (status ont::pro-set) (class (:* ont::person w::us)) (var *) (sem ?subjsem) (constraint (& (proform us)))))
-			(sem ($ f::phys-obj (f::form f::object) (f::intentional +)))
+	       (subj (% np (var ?npvar)
 			(sem ?subjsem)))
-	       (subjvar (% *pro* (var *) (status ont::pro-set)
-			   (class (:* ont::person w::us)) (sem ?subjsem) (constraint (& (proform us)))))
+	       (subjvar ?npvar)
 	       (class ?c)
 	       (vform base) (postadvbl ?pa) (main ?ma)
 	    (transform ?transform)
@@ -3129,7 +3210,7 @@
 (parser::augment-grammar
  '((headfeatures
     (vp agr neg iobj dobj comp3 part cont  tense-pro gap subj subjvar aux modal auxname headcat advbl-needed template)
-    (vp- lex headcat template)
+    (vp- lex headcat template result)
     )
    
    ;; aux rule for auxilliaries that change the sem features of the phrase
@@ -3158,7 +3239,7 @@
 	   (vform ?vform)
 	   (agr ?a)
 	   (sem ($ f::situation (f::aspect ?aspect) (f::time-span ?time)))
-	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
+	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 	   (iobj (% -)) (part (% -)) (dobj (% -))
 	   (comp3 ?comp) 
 	   (comp3 (% vp- (class ?class)  (constraint ?con1) (tma ?tma1) (var ?var)
@@ -3239,6 +3320,7 @@
     (vbarseq sem)
     (vpseq sem)
     ;;(vp- sem)
+    (vp- result)
     )
    
    ;; conjoined vps w/ same subject
@@ -3635,13 +3717,14 @@
      -vp-result-advbl-intransitive-to-transitive> 0.98  ; prefer the transitive sense if there is one
      (head (vp (VAR ?v) 
         (seq -)  ;;  post mods to conjoined VPs is very rare
-        (DOBJVAR -)  ; cannot use (dobj -) because dobj is (% - (W::VAR -)) 
+        ;(DOBJVAR -)  ; This doesn't work because it could unify with a dobjvar not yet instantiated
+	(dobj (% -)) ; cannot use (dobj -) because dobj is (% - (W::VAR -))
         ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))  
         ;(subjvar ?npvar)
         (constraint ?con) (tma ?tma) (result-present -)
-    (subjvar ?ag)
-    (subj-map ONT::AGENT)
-    (COMP3 (% -))
+	(subjvar ?ag)
+	(subj-map ONT::AGENT)
+	(COMP3 (% -))
         ;;(aux -) 
         (gap ?gap)
         (ellipsis -)
@@ -3677,7 +3760,8 @@
      -vp-result-adj-intransitive-to-transitive> 0.98  ; prefer the transitive sense if there is one
      (head (vp (VAR ?v) 
         (seq -)  ;;  post mods to conjoined VPs is very rare
-        (DOBJVAR -)  ; cannot use (dobj -) because dobj is (% - (W::VAR -)) 
+        ;(DOBJVAR -)  ; This doesn't work because it could unify with a dobjvar not yet instantiated
+	(dobj (% -)) ; cannot use (dobj -) because dobj is (% - (W::VAR -))
         ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))  
         ;(subjvar ?npvar)
         (constraint ?con) (tma ?tma) (result-present -)

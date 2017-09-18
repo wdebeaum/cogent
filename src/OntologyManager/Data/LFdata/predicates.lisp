@@ -3,7 +3,7 @@
 ;;; All these are predicates with arguments
 (define-type ONT::predicate
   :parent ONT::abstract-object
-  :comment "predications that require a subcat to form a modifier, typically adverbials (e.g., on, as well as"
+  :comment "predications that require a subcat to form a modifier, typically adverbials (e.g., on, as well as)"
   :sem (F::ABSTR-OBJ (:default (F::GRADABILITY +) (F::scale -) (f::intensity -) (f::orientation -)  (F::CONTAINER -) (f::intentional -)))
   :arguments (;(:ESSENTIAL ONT::OF)
 	      ;(:ESSENTIAL ONT::VAL)
@@ -36,16 +36,17 @@
 
 (define-type ONT::situation-object-modifier
  :parent ONT::PREDICATE
- :sem (F::ABSTR-OBJ (:default (F::GRADABILITY +) (F::scale ont::other-scale) (f::intensity ont::hi)))
+ :sem (F::ABSTR-OBJ) ;(:default (F::GRADABILITY +) (F::scale ont::other-scale) (f::intensity ont::hi))) ; this was probably for phys-modifier (which has been moved out)
  :arguments ((:ESSENTIAL ONT::FIGURE ((? tt F::PHYS-OBJ F::situation)))
              )
  )
 
-(define-type ONT::phys-modifier
- :parent ONT::SITUATION-OBJECT-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::PHYS-OBJ))
-             )
- )
+; REMOVING. Redistributed to property-val (Jena 05.2017)
+;(define-type ONT::phys-modifier
+; :parent ONT::SITUATION-OBJECT-MODIFIER
+; :arguments ((:ESSENTIAL ONT::FIGURE (F::PHYS-OBJ))
+;             )
+; )
 
 ;;; Myrosia 01/08/03 this actually has phys-obj in the restriction
 ;;; because most frequently adjectives that tend to modify situations
@@ -293,8 +294,10 @@
 (define-type ONT::dimension
  :parent ONT::PREDICATE
  :arguments ((:ESSENTIAL ONT::FIGURE ((? s F::Phys-obj F::situation)))
-             (:REQUIRED ONT::GROUND (F::abstr-obj (f::scale ?!sc)))
-	     (:OPTIONAL ONT::GROUND1 (F::abstr-obj (f::scale ?!sc2)))
+             ;(:REQUIRED ONT::GROUND (F::abstr-obj (f::scale ?!sc)))
+	     ;(:OPTIONAL ONT::GROUND1 (F::abstr-obj (f::scale ?!sc2)))
+             (:REQUIRED ONT::GROUND (F::abstr-obj (f::scale (? sc ont::linear-scale ont::number-scale ont::linear-extent-scale))))
+	     (:OPTIONAL ONT::GROUND1 (F::abstr-obj (f::scale (? sc2 ont::linear-scale ont::number-scale ont::linear-extent-scale))))
              )
  )
 
@@ -329,7 +332,7 @@
 (define-type ONT::by-means-of
  :parent ONT::SITUATION-MODIFIER
  :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (F::type ont::event-of-change))) ;(f::aspect (? asp f::dynamic f::stage-level))))
-             (:REQUIRED ONT::GROUND (F::situation))
+             (:REQUIRED ONT::GROUND (F::situation)) ; how about: "by phone"?
              )
  )
 
@@ -367,7 +370,7 @@
  :arguments ((:ESSENTIAL ONT::FIGURE ((? xxx F::Situation 
 					 F::PHYS-OBJ)))
 	   	     ;; SITUATED-IN shouldn't be used for scales!
-	     (:REQUIRED ONT::GROUND (F::situation (F::type (? t ONT::SITUATION-ROOT))))
+	     (:REQUIRED ONT::GROUND ((? x F::situation) (F::type (? t ONT::SITUATION-ROOT))))
              )
  )
 

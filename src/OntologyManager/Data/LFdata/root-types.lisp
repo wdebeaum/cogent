@@ -52,7 +52,7 @@
      :comment "Events that involve change or force: should ahve an AGENT or AFFECTED role"
      :arguments ((:optional  ONT::agent ((? cau4 F::situation F::Abstr-obj f::phys-obj)))
 		 (:optional  ONT::affected ((? cau3a F::situation F::Abstr-obj f::phys-obj)))
-		 (:optional  ONT::result ((? cau2 F::situation F::Abstr-obj f::phys-obj)))
+		 (:optional  ONT::result ((? cau2 F::situation F::Abstr-obj f::phys-obj) (:default (F::type (? !t ont::position-reln)))))
 		 (:optional ONT::beneficiary ((? cau1 f::phys-obj))))
      :sem (F::Situation (F::aspect F::dynamic)))
 
@@ -61,7 +61,8 @@
   :wordnet-sense-keys ("happen%2:30:00")
      :parent ONT::SITUATION-ROOT
      :comment "event occurrence - e.g., an explosion happened"
-     :arguments ((:essential ONT::neutral (f::situation (F::aspect F::dynamic))))
+     :arguments ((:essential ONT::neutral (f::situation (F::aspect F::dynamic)))
+		 (:optional ONT::affected ((? t F::situation F::Abstr-obj f::phys-obj))))
      :sem (F::Situation (F::aspect F::dynamic)))
 
 (define-type ont::event-of-action 

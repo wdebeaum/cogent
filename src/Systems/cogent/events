@@ -1,0 +1,10 @@
+# The events file lists goal instances that will be extracted from an
+# ASSERTION speech act to be added to the BA's model
+  
+# The instance to the right of the arrow is the parent event, or 1 if there is
+# no parent
+  
+# Example
+
+# Standard copulatives
+# ONT::BE => 1

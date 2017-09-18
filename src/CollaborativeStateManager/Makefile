@@ -27,6 +27,8 @@ SRCS = 	CollaborativeStateManager.java \
 	src/handlers/ReferenceHandler.java \
 	src/states/Query.java \
 	src/states/Elaboration.java \
+	src/plans/GoalAdder.java \
+	src/plans/Messages.java \
 
 CLASSES = $(SRCS:.java=.class) 
 

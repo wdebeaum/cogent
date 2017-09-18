@@ -1,0 +1,20 @@
+# The goals-par file lists the goal hierarchy in terms of which goals can be
+# top-level goals by themselves (those with no parent) and which are only
+# subgoals of the listed parent goals.
+  
+# The instance after the arrow is the comma-separated list of parent goals, if
+# any.
+
+# If a speech act is listed as a parent, preceded by an @ symbol, then this
+# goal will be a possible suggestion for the speech act if there is no active
+# goal.
+
+# Examples:
+
+# Creating/making is acceptable as top-level goal
+# ONT::CREATE =>
+# Putting can be part of making
+# ONT::PUT => ONT::CREATE
+
+
+

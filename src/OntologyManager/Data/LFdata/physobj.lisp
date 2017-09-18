@@ -40,11 +40,6 @@
     :parent ONT::MOLECULAR-PART
     )
 
-(define-type ONT::residue
-;    :parent ONT::MOLECULE
-    :parent ONT::MOLECULAR-PART
-    )
-
 ;; DRUM
 (define-type ONT::BIOLOGICAL-ROLE
 ;    :parent ONT::MOLECULE
@@ -77,8 +72,10 @@
 (define-type ONT::macromolecular-complex
     :wordnet-sense-keys ("complex%1:27:00")
 ;    :parent ONT::MOLECULE
+    :sem (F::Phys-obj (F::container +))
     :parent ONT::MOLECULAR-PART
-    :arguments ((:required ONT::CONTENTS (F::Phys-obj (f::type ont::molecular-part))))
+    :arguments (;(:required ONT::CONTENTS (F::Phys-obj (f::type ont::molecular-part))))
+		(:required ONT::FIGURE (F::Phys-obj (f::type ont::molecular-part))))
     )
 
 (define-type ONT::RNA
@@ -154,7 +151,7 @@
 (define-type ONT::GEO-OBJECT
     :wordnet-sense-keys ("location%1:03:00")
     :parent ONT::phys-OBJECT
-    :sem (F::Phys-obj (F::form F::geographical-object))
+    :sem (F::Phys-obj (F::form F::geographical-object) (F::container +))
 		      ;;(:default (F::object-function F::spatial-object)))
     )
 
@@ -385,6 +382,12 @@
     :Parent ont::chemical
     )
 
+(define-type ONT::residue
+;    :parent ONT::MOLECULE
+;    :parent ONT::MOLECULAR-PART
+    :parent ONT::CHEMICAL
+  )
+
 ;; UMLS
 (define-type ont::pharmacologic-substance
     :wordnet-sense-keys ("drug%1:06:00")
@@ -535,7 +538,6 @@
 (define-type ONT::technology
  :parent ONT::manufactured-object
  :wordnet-sense-keys ("technology%1:04:00" "technology%1:06:00")
- 
  :arguments ((:essential ONT::FIGURE)
 	     )
  )
@@ -757,7 +759,7 @@
 ;; girl
 ;; woman, lady, female
 (define-type ONT::female-child
-    :wordnet-sense-keys ("woman%1:18:00" "adult_female%1:18:00")
+    :wordnet-sense-keys ("girl%1:18:02")
     :parent ONT::female-person
     )
 
@@ -769,7 +771,7 @@
 
 ;; boy
 (define-type ONT::male-child
-    :wordnet-sense-keys ("man%1:18:00" "adult_male%1:18:00")
+    :wordnet-sense-keys ("boy%1:18:00")
     :parent ONT::male-person
     )
 
@@ -779,11 +781,40 @@
     :parent ONT::family-relation
     )
 
+;; nationality, regional identity
+(define-type ont::identity-and-origin
+ :parent ont::person-reln
+)
+
+;; american, british, chinese etc
+(define-type ont::nationality
+ :parent ont::identity-and-origin
+ :wordnet-sense-keys ("american%1:18:00" "british%1:18:00" "chinese%1:10:00" "danish%1:10:00" "dutch%1:18:00" "russian%1:18:00")
+)
+
+;; north american, south american, asian etc
+(define-type ont::regional-identity
+ :parent ont::identity-and-origin
+ :wordnet-sense-keys ("north_american%1:18:00" "asian%1:18:00" "european%1:18:00")
+)
+
+;; foreigner 
+(define-type ont::foreigner
+ :parent ont::identity-and-origin
+ :wordnet-sense-keys ("foreigner%1:18:00")
+)
+
 ;; citizen, inhabitant, resident
 (define-type ONT::inhabitant
-    :wordnet-sense-keys ("indweller%1:18:00" "denizen%1:18:00" "dweller%1:18:00" "habitant%1:18:00" "inhabitant%1:18:00" "citizen%1:18:00")
-    :parent ONT::person-reln
-    )
+    :wordnet-sense-keys ("indweller%1:18:00" "denizen%1:18:00" "dweller%1:18:00" "habitant%1:18:00" "inhabitant%1:18:00" "citizen%1:18:00" "national%1:18:00" "native%1:18:01")
+    :parent ont::identity-and-origin
+)
+
+;; hindu, buddhist, christian
+(define-type ont::religious-identity
+ :parent ont::identity-and-origin
+ :wordnet-sense-keys ("hindu%1:18:01" "buddhist%1:18:00" "christian%1:18:00")
+)
 
 ;; sender, receiver, caller
 (define-type ONT::communication-party
@@ -802,6 +833,8 @@
     :wordnet-sense-keys ("entrant%1:18:02")
     :parent ONT::person
     )
+
+
 
 ;; owner, possessor
 (define-type ONT::possessor-reln
@@ -1309,7 +1342,7 @@
 (define-type ONT::Corner
     :parent ONT::LOCATION-by-description
     :wordnet-sense-keys ("corner%1:15:02" "corner%1:06:00")
-    :sem (F::Phys-obj (F::spatial-abstraction (? sa1 F::spatial-point)))
+    :sem (F::Phys-obj (F::spatial-abstraction (? sa1 F::spatial-point)) (f::container +))
     :arguments ((:OPTIONAL ONT::FIGURE (F::PHYS-OBJ (F::FORM F::OBJECT) (F::SPATIAL-ABSTRACTION (? SA F::STRIP F::SPATIAL-REGION))))
 		)
     )
@@ -1703,7 +1736,7 @@
 (define-type ONT::body-part
     :wordnet-sense-keys ("body_part%1:08:00" "organ%1:08:00" )
     :parent ONT::anatomy
-    :sem (F::Phys-obj (F::origin F::living) (f::intentional -) (f::form f::object) (f::object-function f::body-part))
+    :sem (F::Phys-obj (F::origin F::living) (f::intentional -) (f::form f::object) (f::object-function f::body-part) (f::container +))
  ;;; too strong, but better than unconstrained
     :arguments ((:OPTIONAL ONT::FIGURE (F::Phys-obj (F::origin F::living) (f::form f::object)))
 		)
@@ -1907,7 +1940,6 @@
 ;; laptop, pc
 (define-type ONT::computer-type
     :parent ONT::computer
-    
     )
 
 ;; a physical arrangement of components, e.g. a stereo system
@@ -2366,7 +2398,6 @@
 (define-type ONT::DAIRY
     :parent ONT::FOOD
     :wordnet-sense-keys ("dairy_product%1:13:00")
-
     )
 
 (define-type ONT::BEVERAGES

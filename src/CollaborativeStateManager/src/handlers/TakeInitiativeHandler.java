@@ -8,6 +8,7 @@ import java.util.*;
 import extractors.OntologyReader;
 import extractors.TermExtractor;
 import plans.GoalPlanner;
+import plans.Messages;
 import states.Goal;
 
 public class TakeInitiativeHandler extends MessageHandler {
@@ -35,7 +36,7 @@ public class TakeInitiativeHandler extends MessageHandler {
 		if (goalObject == null)
 		{
 			System.out.println("Goal parameter not set");
-			return missingGoalToModify("NIL", context);
+			return Messages.missingGoalToModify("NIL", context);
 		}
 		String goalWhat = goalObject.stringValue();
 		
@@ -77,7 +78,7 @@ public class TakeInitiativeHandler extends MessageHandler {
 		if (goalLF == null)
 		{
 			System.out.println("No such goal in planner");
-			return missingGoalToModify(goalWhat, context);
+			return Messages.missingGoalToModify(goalWhat, context);
 		}
 		
 		

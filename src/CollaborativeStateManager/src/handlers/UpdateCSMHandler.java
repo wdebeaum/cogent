@@ -473,10 +473,13 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 			if (g instanceof Action)
 			{
 				g.setAccepted();
-				goalPlanner.setActiveGoal(g);
-				System.out.println("G id: " + g.getId());
-				System.out.println("Action " + goalName + " accepted.");
-				System.out.println("Active goal now: " + goalName);
+				if (!goalPlanner.hasAmbiguousActiveGoal())
+				{
+					goalPlanner.setActiveGoal(g);
+					System.out.println("G id: " + g.getId());
+					System.out.println("Action " + goalName + " accepted.");
+					System.out.println("Active goal now: " + goalName);
+				}
 			}
 			else if (g instanceof Elaboration)
 			{
@@ -485,8 +488,13 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 			}
 			else
 			{
-				goalPlanner.setActiveGoal(g);
-				System.out.println("Active goal now: " + goalName);
+				g.setAccepted();
+				if (!goalPlanner.hasAmbiguousActiveGoal())
+				{
+					goalPlanner.setActiveGoal(g);
+					System.out.println("Active goal now: " + goalName);
+				}
+				
 			}			
 		}
 		else if (acceptContent.get(0).stringValue().toUpperCase().contains("ASK"))

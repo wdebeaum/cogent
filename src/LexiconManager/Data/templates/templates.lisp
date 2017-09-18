@@ -913,7 +913,7 @@
       (propositional-equal-templ
        (ARGUMENTS
       	(LSUBJ (% W::NP (W::agr ?agr) (sem ?sem) (w::gerund -) (w::subcat-map ont::formal)) ONT::neutral)
-	(LOBJ (% W::CP) ONT::neutral1)
+	(LOBJ (% W::CP (w::ctype w::s-that)) ONT::neutral1)
 	))
 
       (neutral-neutral-equal-templ
@@ -2632,7 +2632,8 @@
     ))
   
   (binary-constraint-S-OR-NP-templ
-   (SYNTAX(W::SORT W::BINARY-CONSTRAINT) (W::ATYPE (? ATYPE W::PRE W::POST)))
+   ;(SYNTAX(W::SORT W::BINARY-CONSTRAINT) (W::ATYPE (? ATYPE W::PRE W::POST)))
+   (SYNTAX(W::SORT W::BINARY-CONSTRAINT) (W::ATYPE (? ATYPE W::PRE W::POST w::pre-vp)))
    (ARGUMENTS
     (ARGUMENT (% (? W::x W::S W::NP)) ONT::figure)
     (SUBCAT (:parameter xp (:default (% W::NP (W::case (? cas W::obj -))))) ONT::ground)
@@ -2810,7 +2811,8 @@
     ))
   
   (binary-constraint-NP-templ
-   (SYNTAX(W::SORT W::BINARY-CONSTRAINT) (W::ATYPE (? atype W::POST w::pre)))
+   ;(SYNTAX(W::SORT W::BINARY-CONSTRAINT) (W::ATYPE (? atype W::POST w::pre)))
+   (SYNTAX(W::SORT W::BINARY-CONSTRAINT) (W::ATYPE (? atype W::POST w::pre w::pre-vp)))
    (ARGUMENTS
     (ARGUMENT (% W::NP) ONT::figure)
     (SUBCAT (:parameter xp (:default (% W::NP (W::case (? cas W::obj -))))) ONT::ground)

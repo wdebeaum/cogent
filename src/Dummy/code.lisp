@@ -24,7 +24,7 @@
 	 (context (find-arg args :context))
 	 (result 
 	  (case (car content)
-	    ((adopt assertion)
+	    ((adopt assertion select)
 	     (let* ((head (find-lf-in-context-tmp context (find-arg-in-act content :what)))
                     (id (find-arg-in-act content :id))
 		    (headtype (find-arg head :instance-of))
@@ -215,3 +215,6 @@
 
 (defun restart-dummy nil
   (setq *replyCounter* 0))
+
+(defun send-initial-messages nil
+     nil)

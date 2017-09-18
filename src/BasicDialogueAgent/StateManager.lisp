@@ -885,46 +885,49 @@
     (trace-msg 1 "Executing ~S ..." (car act))
     (trace-msg 2 "~%~S" act)
     (setq act (instantiate-dstate-args act user))
-    (let ((ans (case (car act)
-		 (perform (mapcar #'(lambda (x) (execute-action x channel user uttnum))
-				  (cdr act)))
-		 (and (every #'(lambda (x) (execute-action x channel user uttnum))
-			     (cdr act)))
+    (let ((ans 
+	   (case (car act)
+	     (perform (mapcar #'(lambda (x) (execute-action x channel user uttnum))
+			      (cdr act)))
+	     (and (every #'(lambda (x) (execute-action x channel user uttnum))
+			 (cdr act)))
 
-		 ;; list of control meds
-		 (druglist
-		  (mapcar #'(lambda (b) (cadr (alarm-args b))) 
-			  (remove-if-not #'(lambda (a) (equal (alarm-start-state a) 'CONTROL-MED1))
-				       (user-alarms user))))
+	     ;; list of control meds
+	     (druglist
+	      (mapcar #'(lambda (b) (cadr (alarm-args b))) 
+		      (remove-if-not #'(lambda (a) (equal (alarm-start-state a) 'CONTROL-MED1))
+				     (user-alarms user))))
 
-		 ;; wait and check on user again after suggesting inhaler use
-	       (set-inhaler-alarm
-		(send-msg `(REQUEST :content (SET-ALARM :delay ,*wait-after-inhaler*
-		    :msg (ALARM :user ,(user-channel-id user) :test (nop) :args nil :start-state MS3-1))))
-		)
-	       (set-inhaler-alarm-2
-		(send-msg `(REQUEST :content (SET-ALARM :delay ,*wait-after-inhaler*
-		    :msg (ALARM :user ,(user-channel-id user) :test (nop) :args nil :start-state MS3-2))))
-		)
+	     ;; wait and check on user again after suggesting inhaler use
+	     (set-inhaler-alarm
+	      (send-msg `(REQUEST :content (SET-ALARM :delay ,*wait-after-inhaler*
+						      :msg (ALARM :user ,(user-channel-id user) :test (nop) :args nil :start-state MS3-1))))
+	      )
+	     (set-inhaler-alarm-2
+	      (send-msg `(REQUEST :content (SET-ALARM :delay ,*wait-after-inhaler*
+						      :msg (ALARM :user ,(user-channel-id user) :test (nop) :args nil :start-state MS3-2))))
+	      )
 
-	       (call-wizard-inhaler-failed
-		(call-wizard nil nil nil channel nil nil nil user uttnum))
+	     (call-wizard-inhaler-failed
+	      (call-wizard nil nil nil channel nil nil nil user uttnum))
 
-	       (record
-		(record-for-current-user act user))
-	       (say
-		(clear-pending-speech-acts  uttnum channel)
-		(setf (user-time-of-last-user-interaction user) (get-time-of-day))
-		(record-transcript user 'system-says act)
-		(prepare-reply (find-arg-in-act act :content) channel))
-	       (say-one-of 
-		(clear-pending-speech-acts  uttnum channel)
-		(setf (user-time-of-last-user-interaction user) (get-time-of-day))
-		(record-transcript user 'system-says act)
-		(prepare-reply (pick-one (find-arg-in-act act :content)) channel))
-	       (compound-say 
-		(clear-pending-speech-acts  uttnum channel)
-		(setf (user-time-of-last-user-interaction user) (get-time-of-day))
+	     (record
+	      (record-for-current-user act user))
+	     (set-result
+	      (set-result (cadr act)))
+	     (say
+	      (clear-pending-speech-acts  uttnum channel)
+	      (setf (user-time-of-last-user-interaction user) (get-time-of-day))
+	      (record-transcript user 'system-says act)
+	      (prepare-reply (find-arg-in-act act :content) channel))
+	     (say-one-of 
+	      (clear-pending-speech-acts  uttnum channel)
+	      (setf (user-time-of-last-user-interaction user) (get-time-of-day))
+	      (record-transcript user 'system-says act)
+	      (prepare-reply (pick-one (find-arg-in-act act :content)) channel))
+	     (compound-say 
+	      (clear-pending-speech-acts  uttnum channel)
+	      (setf (user-time-of-last-user-interaction user) (get-time-of-day))
 		(record-transcript user 'system-says act)
 		(prepare-reply (compound-say (find-arg-in-act act :content) (user-dstate-args user) user) channel))
 	       (say-one-of-next
@@ -961,6 +964,12 @@
 	       (invoke-ba 
 		(invoke-ba (cdr act) user channel uttnum)
 		nil)
+	       (invoke-csm
+		(if *external-CSM*
+		    (progn
+		      (invoke-ba (cdr act) user channel uttnum)
+		      nil)
+		    (invoke-csm act)))
 	       ((notify-ba request)
 		(notify (cdr act) user channel uttnum))
 	       (set-alarm
@@ -1002,14 +1011,22 @@
 	       (true (clear-pending-speech-acts  uttnum channel))
 	       (next (release-pending-speech-act))
 	       (otherwise
-		(format t "~% WARNING: action not known: ~S:" act)))))
-    (trace-msg 3 " result of execute-action is ~S" ans)
-    ans)))
+		(or (check-domain-specific-actions act)
+		    (format t "~% WARNING: action not known: ~S:" act)))
+	    )))
+	       
+      (trace-msg 3 " result of execute-action is ~S" ans)
+      ans)))
+
+;; this is dummy -- should be overwritten for domain specific actions
+(defun check-domain-specific-actions (act)
+  (declare (ignore act))
+  nil)
 
 ;;  BA invocation
 
 (defun invoke-BA (args user channel uttnum)
-  "here we invoke a backend aganet with a message and record the result for the followup state.
+  "here we invoke a backend agent with a message and record the result for the followup state.
     Since we are using send and wait we don't have syncronization problems"
   ;; clear clear any remaining input in the input stream
 ;  (clear-pending-speech-acts uttnum channel)
@@ -1068,7 +1085,8 @@
 
 (defun replace-feature-val-in-act (&key result act feature newval)
   (format t "~%replacing value: act = ~S feature = ~S value = ~S" act feature newval)
-  (im::match-vals nil result (replace-arg-in-act act feature newval)))
+  (when (consp act)
+    (im::match-vals nil result (replace-arg-in-act act feature newval))))
   
 (defun invoke-generator (msg user channel uttnum)
   "here we invoke the BA with a message and record the result for the followup state.
@@ -1134,10 +1152,13 @@
     ;; ending a segment
     (if (or (eq stateID 'segmentend) (null stateID))
 	(progn
-	  (trace-msg 2 "Segment ended")
+	  (trace-msg 2 "Segment ended: in package ~S" *package*)
 	  (pop-current-dstate user)
-	  (check-posted-alarms user channel)
-	  (release-pending-speech-act)
+	  ;; if we are in the DAGENT package we check alrms and pening speech acts
+	  ;;    otherwise, we are reusing the DAGENT code for other purposes!
+	  (when (eq *package* *dagent-package*)
+	    (check-posted-alarms user channel)
+	    (release-pending-speech-act))
 	  )
     ;; shifting to a new state
     (let ((newstate (find-state stateID)))
@@ -1160,6 +1181,29 @@
 	     
 	  (trace-msg 1 "~% Transferring to unknown state: ~S" stateID)))
     )))
+
+;;  Here's the code for pushing a subnetwork -- the result is returned in
+;;  the :RESULT slot, which can be set by the special function SET-RESULT
+
+;; note - this currently only works if actions are in a single state - needs to be generalized
+
+(defun push-with-subtree (&key root context state result)
+  (let ((input (cons (list 'ROOT root 'IGNORE)
+		     (remove-unused-context-with-root root context))))
+    (trace-msg 2 "Invoking subtree with ~S" input)
+    (invoke-state state 'push *current-user* nil nil input)
+    (if (null *saved-result*)
+	(format t "Warning: PUSH returning with no result")
+	(im::match-vals nil result *saved-result*))))
+    
+(defvar *saved-result* nil)
+
+(defun set-result (result)
+  (setq *saved-result* result)
+  t)
+
+(defun get-latest-result nil
+  *saved-result*)
 
       
 ;;  interactions with the Wizard

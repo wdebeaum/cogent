@@ -25,14 +25,16 @@
   :use (:common-lisp :util)
   :system (:depends-on (:util :dummy-code)))
 
-#||
 (dfc:defcomponent-method dfc:init-component :after ()
   (initialize)
-  )||#
+  )
 
 ;; Dummy run -- the real component is the domain specific agent
 (defun run ()
   (dfc:run-component :dummy)
   )
+
+(defun initialize ()
+  (send-initial-messages))
 
 (defvar *replyCounter* 0)
