@@ -90,14 +90,15 @@ public class Messages {
 		List<String> parentGoalTypes = ontologyReader.getParentGoals(attemptedGoalType);
 		List<Goal> possibleSolutionGoals = null;
 		
+		if (parentGoalTypes == null)
+			return missingActiveGoal(what, actType, context, goalPlanner, ontologyReader);
+
 		// Try act-specific goals first
 		if (parentActGoalTypes != null && !parentActGoalTypes.isEmpty())
 			possibleSolutionGoals =
 				goalPlanner.generatePossibleGoals(parentActGoalTypes);
 			
-		if (parentGoalTypes == null)
-			return missingActiveGoal(what, actType, context, goalPlanner, ontologyReader);
-		
+		// LG: FIXME: if this is ok, then why is the previous one needed?!?
 		if (possibleSolutionGoals == null)
 			possibleSolutionGoals =
 				goalPlanner.generatePossibleGoals(parentGoalTypes);
@@ -120,7 +121,7 @@ public class Messages {
 			// Temporary? Only add one 
 			break;
 		}
-		
+
 		return failureMessage(what, newContext,failureReason, adoptContentList);
 	}
 	
@@ -253,7 +254,10 @@ public class Messages {
     		reportContent.add(KQMLUtilities.removedDuplicates((KQMLList)context));
     	else
     		reportContent.add(new KQMLList());
-    	
+
+	//LG: debug
+	//System.out.println("Sending: " + reportContent);
+	
     	return reportContent;
     }
     

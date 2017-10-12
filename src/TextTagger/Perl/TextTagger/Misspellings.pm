@@ -20,8 +20,14 @@ my ($aspell_in, $aspell_out, $aspell_pid);
 
 sub init_misspellings {
   my $self = shift;
+  # give aspell back its own local-data-dir setting (see note in Makefile)
+  open $aspell_in, "-|", $TextTagger::Config::ASPELL, 'config', 'local-data-dir';
+  my $local_data_dir = <$aspell_in>;
+  close $aspell_in;
+  chomp $local_data_dir;
   $aspell_pid = open2($aspell_in, $aspell_out,
 		      $TextTagger::Config::ASPELL, 'pipe', '--encoding=utf-8',
+		      "--local-data-dir=$local_data_dir",
 		      ($self->{aspell_dict} ?
 		        ('--master=' . $self->{aspell_dict}) : ()));
   binmode $aspell_in, ':utf8';
@@ -53,8 +59,21 @@ sub tag_misspellings {
     $start--; # aspell uses 1-based character indices
     # split correction options
     my @corrections = split(/, /, $corrections);
+    print STDERR Data::Dumper->Dump([$misspelled_word, \@corrections], [qw(misspelled_word *raw_corrections)])
+      if ($debug);
     # simple case/dash variants don't count as misspellings to us
     my $norm_missp_word = normalize($misspelled_word);
+    # remove "corrections" that are just space/dash insertions, when we have
+    # other options (they're usually more trouble than they're worth)
+    my @unsplit_corrections =
+      grep {
+	my $norm_no_space = normalize($_);
+	$norm_no_space =~ s/\s//g;
+	$norm_missp_word ne $norm_no_space or $_ !~ /[\s-]/
+      } @corrections;
+    @corrections = @unsplit_corrections if (@unsplit_corrections);
+    # if any "corrections" remain that are just case changes, skip this whole
+    # word because it isn't really misspelled
     next if (grep { $norm_missp_word eq normalize($_) } @corrections);
     # split words within corrections
     @corrections = map { [split(/\s|-/)] } @corrections;

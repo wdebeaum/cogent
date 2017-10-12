@@ -251,7 +251,7 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 		if (goalPlanner.createGoalFromAct("PROPOSE",proposeContent, (KQMLList)context))
 			System.out.println("Goal successfully created from act");
 		else
-			System.out.println("Failed to create goal from act");
+			System.out.println("Failed to create goal from act or not valid goal");
 		
 		return null;
 	}

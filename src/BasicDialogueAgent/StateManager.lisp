@@ -1188,8 +1188,9 @@
 ;; note - this currently only works if actions are in a single state - needs to be generalized
 
 (defun push-with-subtree (&key root context state result)
-  (let ((input (cons (list 'ROOT root 'IGNORE)
-		     (remove-unused-context-with-root root context))))
+  (let* ((c (remove-unused-context-with-root root context))
+	 (input (cons (list 'ROOT root 'IGNORE :context c)
+		     c)))
     (trace-msg 2 "Invoking subtree with ~S" input)
     (invoke-state state 'push *current-user* nil nil input)
     (if (null *saved-result*)

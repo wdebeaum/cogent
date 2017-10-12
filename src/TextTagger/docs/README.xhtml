@@ -1266,7 +1266,7 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
 
 <div class="section">
 <h4>Lookup</h4>
-<p>At run time, the Drum tagger takes input from a number of different other taggers, in order to get word and sentence segmentation and part of speech options, as well as alternative spellings<!-- including VariantLists --> for some words. It converts most of these input tags to simple lattice entries, containing only start and end character offsets and an unnormalized word. The singular form of each word that was tagged as a plural noun is also added to the lattice (the word is "depluralized"). As a special case, if an input tag changes a word that's all-caps except for a final "s" to all-lower-case, we change it back in the lattice. For example the input "GAPs" might get a tag that spells it "gaps", and we'd change it back to "GAPs". This affects scoring later on.</p>
+<p>At run time, the Drum tagger takes input from a number of different other taggers, in order to get word and sentence segmentation and part of speech options, as well as alternative spellings<!-- including VariantLists --> for some words. It converts most of these input tags to simple lattice entries, containing only start and end character offsets and an unnormalized word. The citation form of each word that was tagged by the Specialist tagger is also added to the lattice. This is mostly to get the singular form of plurals ("depluralizing"), but it also includes words that were already singular with minor spelling differences (e.g. input "lipooxygenase" vs. citation form "lipoxygenase"). As a special case, if an input tag changes a word that's all-caps except for a final "s" to all-lower-case, we change it back in the lattice. For example the input "GAPs" might get a tag that spells it "gaps", and we'd change it back to "GAPs". This affects scoring later on.</p>
 
 <p>This lattice is then matched against the normalized terms from the table (by <code>terms2.cpp</code>). We recursively construct each possible term from contiguous lattice entries, subject to length limits in number of characters (100), and number of lattice entries (20). Each constructed term is normalized, and then looked up in the table.<!-- We don't normalize each lattice entry first, because some of the things normalization removes would come between entries, so we have to normalize the constructed term anyway. --> The table is large enough that we don't want to keep all of it in memory, so we keep it on disk, with a small in-memory index associating every 100th term with its byte offset in the table file. We look up the term in the index to find which 100-term block it would be in, and then read from the start of that block to the search term or the end of the block, whichever comes first. We also use an in-memory Bloom filter to avoid using the disk (or the index) at all most of the time, in the common case where a constructed term is not in the table.</p>
 
@@ -1534,6 +1534,13 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
  <td>CSV</td>
  <td>PHARMACOLOGIC-SUBSTANCE</td>
  <td>Drugs and chemicals. We use the PubChem CIDs instead of the native HMS LINCS IDs, which is why the ID prefix is "PC".</td>
+</tr>
+<tr>
+ <td><a href="http://pir.georgetown.edu/pro/">Protein Ontology</a></td>
+ <td>PR</td>
+ <td>OBO</td>
+ <td>PROTEIN</td>
+ <td>"PRO provides an ontological representation of protein-related entities by explicitly defining them and showing the relationships between them. Each PRO term represents a distinct class of entities (including specific modified forms, orthologous isoforms, and protein complexes) ranging from the taxon-neutral to the taxon-specific (e.g. the entity representing all protein products of the human SMAD2 gene is described in PR:Q15796; one particular human SMAD2 protein form, phosphorylated on the last two serines of a conserved C-terminal SSxS motif is defined by PR:000025934)." For now, we only use human proteins whose IDs have the PR: prefix, and are not copied from UniProt.</td>
 </tr>
 <tr>
  <td><a href="https://code.google.com/p/unit-ontology/">Units of Measurement Ontology</a></td>

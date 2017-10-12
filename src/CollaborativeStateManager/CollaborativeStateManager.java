@@ -298,7 +298,9 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 			}
 			if (responseContent != null)
 			{
-				sendContentViaPerformative("TELL", "DAGENT", responseContent, replyWith);
+			    // LG debug info
+			    // System.out.println("CSM response: " + responseContent);
+			    sendContentViaPerformative("TELL", "DAGENT", responseContent, replyWith);
 			}
 			
 		}

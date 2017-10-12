@@ -2,7 +2,7 @@
 # Makefile for TextTagger
 #
 # William de Beaumont <wbeaumont@ihmc.us> 2008/3/6
-# $Id: Makefile,v 1.103 2017/09/08 20:29:30 wdebeaum Exp $
+# $Id: Makefile,v 1.107 2017/10/09 18:02:51 wdebeaum Exp $
 #
 
 MODULE = TextTagger
@@ -163,9 +163,9 @@ endif
 #
 ifneq (,$(wildcard Perl/TextTagger/Drum.pm))
 
-all:: drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.tsv go_protmods.tsv
+all:: drum-terms.tsv drum-dsl/COMPLETE specialist.tsv drum-dbxrefs.tsv go_protmods.tsv
 
-install:: mirna-species.tsv drum-terms.tsv drum-dsl specialist.tsv drum-dbxrefs.tsv go_protmods.tsv
+install:: mirna-species.tsv drum-terms.tsv drum-dsl/COMPLETE specialist.tsv drum-dbxrefs.tsv go_protmods.tsv
 	$(INSTALL_DATA) mirna-species.tsv $(etcdir)/$(MODULE)
 	$(INSTALL_DATA) drum-terms.tsv $(etcdir)/$(MODULE)
 	$(INSTALL_DATA) specialist.tsv $(etcdir)/$(MODULE)
@@ -190,7 +190,7 @@ drum-dbxrefs.tsv: get-uniprot-dbxrefs.pl downloads/uniprot_sprot.dat.gz uniprot-
 	gunzip -c downloads/uniprot_sprot.dat.gz \
 	| ./$< >$@
 
-OBO_FILES:=$(addprefix downloads/,bioentities.obo BrendaTissueOBO cellosaurus.obo chebi.obo cl-basic.obo efo.obo go.obo unit.obo)
+OBO_FILES:=$(addprefix downloads/,bioentities.obo BrendaTissueOBO cellosaurus.obo chebi.obo cl-basic.obo efo.obo go.obo pr.obo unit.obo)
 # psi-mi25.obo so-xp.obo
 
 obo-terms.tsv: get-obo-terms.pl $(OBO_FILES) Makefile
@@ -253,18 +253,34 @@ ifeq (,$(TEXTTAGGER_aspell))
 $(error aspell not configured)
 endif
 
-all:: specialist.aspell
+all:: drum.aspell
 
-install:: specialist.aspell
-	$(INSTALL_DATA) specialist.aspell $(etcdir)/$(MODULE)
+install:: drum.aspell
+	$(INSTALL_DATA) $< $(etcdir)/$(MODULE)
 
+# NOTE: We give aspell back its own default setting for local-data-dir because
+# it actually doesn't work on Debian without this; it fails to find the "en"
+# language data file in that directory. (Why, Debian, why?)
 specialist.aspell: downloads/inflection.table
 	cut -d'|' -f1 <$< |perl -CSD -p -e 's/\W+/\n/g;' |sort |uniq \
-	|$(TEXTTAGGER_aspell) --encoding=utf-8 --lang=en create master ./$@ \
+	|$(TEXTTAGGER_aspell) \
+	  --local-data-dir="`$(TEXTTAGGER_aspell) config local-data-dir`" \
+	  --encoding=utf-8 --lang=en create master ./$@ \
 	2>specialist.aspell.err
+
+drum.aspell: downloads/inflection.table drum-terms.tsv
+	( cut -d'|' -f1 <downloads/inflection.table && \
+	  cut -f1 <drum-terms.tsv \
+	) | perl -CSD -p -e 's/\W+/\n/g;' |sort |uniq \
+	| perl -n -e 'print unless (length($$_) > 100);' \
+	| $(TEXTTAGGER_aspell) \
+	  --local-data-dir="`$(TEXTTAGGER_aspell) config local-data-dir`" \
+	  --encoding=utf-8 --lang=en create master ./$@ \
+	2>drum.aspell.err
 
 clean::
 	rm -rf specialist.aspell specialist.aspell.err
+	rm -rf drum.aspell drum.aspell.err
 
 endif
 
@@ -293,6 +309,9 @@ downloads/cellosaurus.obo:
 
 downloads/efo.obo:
 	$(call download_sourceforge,"http://sourceforge.net/p/efo/code/HEAD/tree/trunk/src/efoinobo/efo.obo")
+
+downloads/pr.obo:
+	$(call download_compressed,"http://purl.obolibrary.org/obo/pr.obo")
 
 downloads/unit.obo:
 	$(call download_compressed,"https://raw.githubusercontent.com/bio-ontology-research-group/unit-ontology/master/unit.obo")
@@ -373,6 +392,10 @@ drum-dsl/MI/COMPLETE: downloads/psi-mi25.obo obo-to-dsl.pl
 	./obo-to-dsl.pl <$<
 	touch $@
 
+drum-dsl/PR/COMPLETE: downloads/pr.obo obo-to-dsl.pl
+	./obo-to-dsl.pl PR <$<
+	touch $@
+
 drum-dsl/SO/COMPLETE: downloads/so-xp.obo obo-to-dsl.pl
 	./obo-to-dsl.pl <$<
 	touch $@
@@ -381,7 +404,8 @@ drum-dsl/UO/COMPLETE: downloads/unit.obo obo-to-dsl.pl
 	./obo-to-dsl.pl <$<
 	touch $@
 
-drum-dsl: drum-dsl/BE/COMPLETE drum-dsl/BTO/COMPLETE drum-dsl/CHEBI/COMPLETE drum-dsl/CO/COMPLETE drum-dsl/EFO/COMPLETE drum-dsl/GO/COMPLETE drum-dsl/UO/COMPLETE
+drum-dsl/COMPLETE: drum-dsl/BE/COMPLETE drum-dsl/BTO/COMPLETE drum-dsl/CHEBI/COMPLETE drum-dsl/CO/COMPLETE drum-dsl/EFO/COMPLETE drum-dsl/GO/COMPLETE drum-dsl/PR/COMPLETE drum-dsl/UO/COMPLETE ncit-terms.tsv
+	touch $@
 
 # drum-dsl/MI/COMPLETE
 # drum-dsl/SO/COMPLETE 

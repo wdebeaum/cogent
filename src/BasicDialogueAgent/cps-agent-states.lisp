@@ -956,7 +956,7 @@ ONT::INTERACT
 	  :pattern '((ANSWER :value YES)
 		     (ont::eval (find-attr :result ?context :feature POSSIBLE-GOAL-context))
 		     (ont::eval (find-attr :result ?!poss-goal :feature possible-goal))
-		     -right-guess-on-goal>
+		     -right-guess-on-goal1>
 		     (RECORD POSSIBLE-GOAL nil) 
 		     (RECORD POSSIBLE-GOAL-ID nil)
 		     (INVOKE-BA :msg (EVALUATE 
@@ -969,7 +969,7 @@ ONT::INTERACT
 	 (transition
 	  :description "no" 
 	  :pattern '((ANSWER :value NO)
-		     -propose-cps-act>
+		     -propose-cps-act1>
 		     (RECORD PROPOSAL-ON-TABLE nil)
 		     (RECORD POSSIBLE-GOAL nil)
 		     (RECORD POSSIBLE-GOAL-ID nil)
@@ -1387,7 +1387,7 @@ ONT::INTERACT
 	  :pattern '((ONT::SPEECHACT ?!sa (? x ONT::PROPOSE ONT::REQUEST ONT::REQUEST-COMMENT ONt::FRAGMENT) :what ?!what)
 		     (?!spec ?!what ONT::SELECT :agent ?!agent)
 		     (ONT::PRO ?!agent ONT::PERSON :REFERS-TO ONT::SYS)
-		     -select-goal>
+		     -select-goal1>
 		     ;;  NEED TO FIX BELOW!!
 		     (INVOKE-CSM :msg (PICK-ACTIVE-GOAL))
 		     )
