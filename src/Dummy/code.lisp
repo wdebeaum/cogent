@@ -24,7 +24,7 @@
 	 (context (find-arg args :context))
 	 (result 
 	  (case (car content)
-	    ((adopt assertion select)
+	    ((adopt assertion select abandon)
 	     (let* ((head (find-lf-in-context-tmp context (find-arg-in-act content :what)))
                     (id (find-arg-in-act content :id))
 		    (headtype (find-arg head :instance-of))
@@ -205,13 +205,19 @@
        
       
 (defun find-lf-in-context (context id)
-  (find id context :key #'cadr))
+  (if (consp context) 
+      (find id context :key #'cadr)
+    nil)
+  )
 
 (defun find-lf-in-context-tmp (context id)  ; id not used
-  (find-if #'(lambda (x) (member (find-arg x :instance-of)
+  (if (consp context) 
+      (find-if #'(lambda (x) (member (find-arg x :instance-of)
 				 '(ONT::CREATE ONT::PUT-B6-ON-THE-TABLE ONT::Please-put-B7-on-B6 ONT::PUT
 				   ONT::EXECUTE)))
-		 context))
+	       context)
+    nil)
+  )
 
 (defun restart-dummy nil
   (setq *replyCounter* 0))

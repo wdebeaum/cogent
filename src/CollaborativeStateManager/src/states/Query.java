@@ -13,6 +13,7 @@ public class Query extends Goal {
 	KQMLList neutralTerm;
 	String neutralSymbol;
 	KQMLList originalAskTerm;
+	boolean answered;
 	
 	public Query(KQMLList term, KQMLList context) {
 		this(term, null, context);
@@ -26,12 +27,13 @@ public class Query extends Goal {
 		
 		originalAskTerm = term;
 		String newId = IDHandler.getNewID();
+		answered = false;
 
-    	KQMLList askRelnContent = new KQMLList();
-    	askRelnContent.add("ont::RELN");
-    	askRelnContent.add(newId);
-    	askRelnContent.add(":instance-of");
-    	askRelnContent.add("ONT::IDENTIFY");
+	    	KQMLList askRelnContent = new KQMLList();
+	    	askRelnContent.add("ont::RELN");
+	    	askRelnContent.add(newId);
+	    	askRelnContent.add(":instance-of");
+	    	askRelnContent.add("ONT::IDENTIFY");
 		KQMLObject whatObject = term.getKeywordArg(":WHAT");
 		KQMLObject queryObject = term.getKeywordArg(":QUERY");
 		
@@ -103,9 +105,19 @@ public class Query extends Goal {
 		
 		return toReturn;
 	}
+	
+	
 
 	public KQMLList getOriginalAskTerm() {
 		return originalAskTerm;
+	}
+
+	public boolean isAnswered() {
+		return answered;
+	}
+
+	public void setAnswered(boolean answered) {
+		this.answered = answered;
 	}
 
 	

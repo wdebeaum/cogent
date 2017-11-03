@@ -24,11 +24,14 @@ SRCS = 	CollaborativeStateManager.java \
 	src/plans/GoalPlanner.java \
 	src/states/Action.java \
 	src/utilities/KQMLUtilities.java \
+	src/utilities/KQMLContentContext.java \
 	src/handlers/ReferenceHandler.java \
 	src/states/Query.java \
 	src/states/Elaboration.java \
 	src/plans/GoalAdder.java \
 	src/plans/Messages.java \
+	src/plans/GoalSelector.java \
+	src/plans/GoalRemover.java \
 
 CLASSES = $(SRCS:.java=.class) 
 

@@ -116,7 +116,7 @@
 
 ;;  DM settings
 (setq dagent::*silent-failures* nil)  ;; don't ignore utterance failure
-(setq dagent::*using-alarms* nil)   ;; no alarms
+(setq dagent::*using-alarms* t)   ;; no alarms
 (setq dagent::*disabled-wizard* t)  ;; no wizard
 (dagent::trace-on 1)
 

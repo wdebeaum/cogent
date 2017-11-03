@@ -724,10 +724,12 @@
 	    (when (user-wizard-response-pending user) 
 	      (setf (user-wizard-response-pending user) nil)
 	      (send-msg `(REQUEST :content (WIZARDCANCEL :userchannel ,channel))))
-	    (mapcar #'(lambda (a) (execute-action a channel user uttnum)) 
-		    (mapcar #'(lambda (x) (add-terms-to-act-if-necessary x terms))
-			    (im::match-result-output (car action))
-			    ))
+	    ;;(mapcar #'(lambda (a) (execute-action a channel user uttnum)) 
+	    (execute-action-sequence
+	     (mapcar #'(lambda (x) (add-terms-to-act-if-necessary x terms))
+		     (im::match-result-output (car action))
+		     )
+	      channel user uttnum)
 	    (record-success user)
 	    (invoke-state next nil user (user-dstate-args user) uttnum)  ;; pass along args 
 	    (when *last-internal-response*
@@ -872,6 +874,14 @@
 	  (find-first-transition-match lfs (cdr transitions))))
     ))
 
+(defun execute-action-sequence (seq channel user uttnum)
+  (let ((bndgs (execute-action (car seq) channel user uttnum)))
+    (if (cdr seq)
+	(execute-action-sequence
+	 (if bndgs (im::subst-in (cdr seq) bndgs)
+	     (cdr seq))
+	 channel user uttnum))))
+
 (defun clear-pending-speech-acts (uttnum channel)
   "we send a msg to the IM to clear any pending speech acts"
   (send-msg '(request :content (clear-speech-acts))))
@@ -889,9 +899,8 @@
 	   (case (car act)
 	     (perform (mapcar #'(lambda (x) (execute-action x channel user uttnum))
 			      (cdr act)))
-	     (and (every #'(lambda (x) (execute-action x channel user uttnum))
-			 (cdr act)))
-
+	     (and (execute-action-sequence (cdr act) channel user uttnum))
+	     
 	     ;; list of control meds
 	     (druglist
 	      (mapcar #'(lambda (b) (cadr (alarm-args b))) 
@@ -1025,6 +1034,8 @@
 
 ;;  BA invocation
 
+(defvar *suppress-context-on-what-next* nil)
+
 (defun invoke-BA (args user channel uttnum)
   "here we invoke a backend agent with a message and record the result for the followup state.
     Since we are using send and wait we don't have syncronization problems"
@@ -1032,12 +1043,18 @@
 ;  (clear-pending-speech-acts uttnum channel)
   (setq *interpretable-utt* t)
   (setf (user-time-of-last-BA-interaction user) (get-time-of-day))
-  (let* ((msg (instantiate-dstate-args (find-arg args :msg) user))
+  (let* ((msg1 (instantiate-dstate-args (find-arg args :msg) user))
+	 (msg (if *suppress-context-on-what-next* 
+		  (remove-context-if-what-next msg1)
+		  msg1))
 	 (x (send-status `(WAITING :on ,(car msg))))
 	 (reply (send-and-wait `(REQUEST :content ,msg)))
 	 (content (find-arg-in-act reply :content))
 	 (context (find-arg-in-act reply :context))
-	 (converted-response (append (list* 'BA-RESPONSE 'X (car reply) :psact content) (list :content content :context context))))
+	 (xx (format t "~%reply was ~S:" reply))
+	 (converted-response 
+	  (append (list* 'BA-RESPONSE 'X (car reply) :psact content)
+		  (list :content content :context context))))
     (declare (ignore x))
     ;; (send-status '(READY GOT-REPLY)) ; now OK turns the light green
     ;;(converted-response (list 'BA-RESPONSE 'X (car reply) :content content :context context) )) ; probably the same as (list* 'BA-RESPONSE 'X reply) ?
@@ -1047,6 +1064,10 @@
 	(format t "~%WARNING: BA returned uninterpretable response: ~S:" reply))
     (trace-msg 3 "~% *last-internal-response* is ~S~%" *last-internal-response*)	  
    ))
+
+(defun suppress-context-on-what-next (msg)
+  (format t "Supressing context in ~S" msg)
+  msg)
 
 (defun notify (args user channel uttnum)
   "here we invoke the BA with a message but don't expect a response"
@@ -1200,6 +1221,7 @@
 (defvar *saved-result* nil)
 
 (defun set-result (result)
+  (trace-msg 2 "~%Saving result for pop: ~S" result)
   (setq *saved-result* result)
   t)
 

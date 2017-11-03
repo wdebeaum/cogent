@@ -645,7 +645,7 @@
 
 (define-type ONT::LEVEL
   :comment "words that act as predicates that return the value on a scale/domain: What is the X on this scale?  Note: We exclude words that are identical to the names of the scales they pertain to (e.g., What is the height on the height scale?)"
- :wordnet-sense-keys ("level%1:26:00")
+ :wordnet-sense-keys ("level%1:26:00" "level%1:07:00")
  :sem (F::Abstr-obj (F::Scale Ont::LINEAR-SCALE))
 ; :parent ONT::ordered-DOMAIN
  :parent ONT::ABSTRACT-OBJECT
@@ -1313,7 +1313,8 @@
 (define-type ont::value
  :wordnet-sense-keys ("value%1:07:00")
  :parent ONT::abstract-object-nontemporal
-  :arguments ((:REQUIRED ONT::FIGURE (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
+  :arguments (;(:REQUIRED ONT::FIGURE (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
+	      (:REQUIRED ont::FIGURE ((? lo f::phys-obj f::abstr-obj)))
               (:REQUIRED ONT::GROUND (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
               )
 )
@@ -1324,8 +1325,10 @@
  :wordnet-sense-keys ("change%1:21:02" "return%1:21:00" "issue%1:21:00" "take%1:21:00" "takings%1:21:00" "proceeds%1:21:00" "yield%1:21:00" "payoff%1:21:02")
  :wordnet-sense-keys ("change%1:21:02" "return%1:21:00" "issue%1:21:00" "take%1:21:00" "takings%1:21:00" "proceeds%1:21:00" "yield%1:21:00" "payoff%1:21:02")
  :parent ONT::value
-  :arguments ((:REQUIRED ONT::FIGURE (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
-	      (:REQUIRED ONT::GROUND (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
+ :arguments (
+	     ;(:REQUIRED ONT::FIGURE (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
+	     (:REQUIRED ont::FIGURE ((? lo f::phys-obj f::abstr-obj)))
+	     (:REQUIRED ONT::GROUND (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
 	      )
   )
 

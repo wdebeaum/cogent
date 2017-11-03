@@ -2,8 +2,11 @@ package handlers;
 
 import java.util.*;
 
+import extractors.OntologyReader;
 import extractors.TermExtractor;
 import plans.GoalPlanner;
+import plans.GoalRemover;
+import plans.GoalSelector;
 import states.Action;
 import states.Elaboration;
 import states.Goal;
@@ -23,6 +26,8 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 	String updateType;
 	String activeGoal = null;
 	GoalPlanner goalPlanner;
+	GoalSelector goalSelector;
+	GoalRemover goalRemover;
 	KQMLObject replyWith;
 	
 	public UpdateCSMHandler(KQMLPerformative msg, KQMLList content, 
@@ -30,6 +35,8 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 			GoalPlanner goalPlanner, CollaborativeStateManager csm) {
 		super(msg, content, referenceHandler, csm);
 		this.goalPlanner = goalPlanner;
+		this.goalSelector = new GoalSelector(goalPlanner);
+		this.goalRemover = new GoalRemover(goalPlanner, goalSelector);
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -68,14 +75,15 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 		updateType = innerContent.get(0).stringValue();
 		context = content.getKeywordArg(":context");	
 		
+		if (KQMLUtilities.isKQMLNull(context))
+			context = new KQMLList();
+		
 		KQMLObject activeGoalObject = innerContent.getKeywordArg(":active-goal");
 		
-		if ((activeGoalObject != null) &&
-		    !activeGoalObject.stringValue().equalsIgnoreCase("nil") &&
-		    !activeGoalObject.stringValue().equals("-"))
-		    {
+		
+		if (!KQMLUtilities.isKQMLNull(activeGoalObject))
 			activeGoal = activeGoalObject.stringValue();
-		    }
+		
 
 		
 		switch (updateType.toLowerCase())
@@ -112,6 +120,7 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 			return handleStatusReport();
 		case "answer":
 			return handleAnswer();
+
 			
 		}
 		
@@ -120,6 +129,8 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 		return null;
 		
 	}
+	
+
 	
 	private KQMLList handleStatusReport() {
 		KQMLObject goalSymbolObject = innerContent.getKeywordArg(":goal");
@@ -414,11 +425,9 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 		KQMLList acceptContent = (KQMLList)(innerContent.getKeywordArg(":CONTENT"));
 		KQMLObject effectContent = innerContent.getKeywordArg(":EFFECT");
 		System.out.println("Received accept message");
-		if (acceptContent == null)
-		{
-			System.out.println("No inner content parameter");
-			return null;
-		}
+		String cpsAct = acceptContent.get(0).stringValue();
+
+		
 		KQMLObject whatObject = acceptContent.getKeywordArg(":WHAT");
 
 		
@@ -437,6 +446,24 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 		String id = null;
 		if (idObject != null)
 			id = idObject.stringValue();
+		
+		// Handle ABANDON
+		if (cpsAct.equalsIgnoreCase("ABANDON"))
+		{
+			Goal goalToRemove = goalPlanner.getGoalById(id);
+			if (goalToRemove == null)
+			{
+				System.out.println("No such goal with ID " + id + " to remove.");
+				return null;
+			}
+			else
+			{
+				goalRemover.abandonGoal(goalToRemove);
+
+				return null;
+			}
+		}
+		
 		String asType = "GOAL";
 		String ofSymbol = "";
 		if (asObject != null)

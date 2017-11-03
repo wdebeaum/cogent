@@ -22,6 +22,7 @@ public class Goal {
 	boolean failed;
 	boolean completed;
 	boolean rejected;
+	boolean abandoned;
 	boolean systemTookInitiative;
 	List<KQMLList> failureMessages;
 	boolean initiativeSpecified;
@@ -43,6 +44,7 @@ public class Goal {
 		this.parent = parent;
 		accepted = false;
 		failed = false;
+		abandoned = false;
 		completed = false;
 		systemTookInitiative = false;
 		initiativeSpecified = false;
@@ -293,6 +295,23 @@ public class Goal {
 			return null;
 		
 		return resultObject.stringValue();
+	}
+
+	public boolean isAbandoned() {
+		return abandoned;
+	}
+
+	public void abandon() {
+		this.abandoned = true;
+		for (Goal child : childGoals)
+		{
+			child.abandon();
+		}
+	}
+	
+	public boolean isValidGoal()
+	{
+		return !isAbandoned() && !isFailed() && !isCompleted();
 	}
 	
 }

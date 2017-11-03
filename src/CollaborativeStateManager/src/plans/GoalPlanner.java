@@ -68,7 +68,7 @@ public class GoalPlanner {
 			upperCaseParentVariableName = parentVariableName.toUpperCase();
 		
 		Goal parentGoal = getGoal(upperCaseParentVariableName);
-		if (parentGoal != null && parentGoal.isFailed())
+		if (parentGoal != null && (parentGoal.isFailed() || parentGoal.isAbandoned()))
 		{
 			System.out.println("Replacing " + parentGoal.getVariableName() + 
 					" with " + goal.getVariableName() + " and term: " + 
@@ -152,58 +152,7 @@ public class GoalPlanner {
 		return result;
 	}
 	
-	public Goal getGoalByDescription(KQMLList term, KQMLList context)
-	{
-		String instanceOf = KQMLUtilities.getArgumentAsString(term,":INSTANCE-OF");
-		String affectedResultInstanceOf = KQMLUtilities.getLinkedArgumentsAsString(term,context,
-										":AFFECTED-RESULT",":INSTANCE-OF");
-		
-		HashSet<Goal> selection = new HashSet<Goal>();
-		selection.addAll(idGoalMapping.values());
-		Iterator<Goal> it = selection.iterator();
-		
-		// First pass - remove failed goals
-		while (it.hasNext())
-		{
-			Goal currentGoal = it.next();
-			if (currentGoal.isFailed() || currentGoal.isCompleted())
-				it.remove();
-		}
-		
-		it = selection.iterator();		
-		
-		// Second pass with goal type
-		while (it.hasNext())
-		{
-			Goal currentGoal = it.next();
-			if (currentGoal.getArgumentAsString(":INSTANCE-OF") == null ||
-					!currentGoal.getArgumentAsString(":INSTANCE-OF").equals(instanceOf))
-				it.remove();
-		}
-		
-		it = selection.iterator();
 
-		// Third pass with affected-result goal type
-		if (affectedResultInstanceOf != null)
-		{
-			while (it.hasNext())
-			{
-				Goal currentGoal = it.next();
-				String currentAffRes = KQMLUtilities.getLinkedArgumentsAsString(currentGoal.getKQMLTerm(),
-										currentGoal.getOriginalContext(), ":AFFECTED-RESULT",":INSTANCE-OF");
-				if (currentAffRes == null || 
-						!currentAffRes.equals(affectedResultInstanceOf))
-					it.remove();
-			}
-		}
-		
-		
-		if (selection.size() == 1)
-			for (Goal g : selection)
-				return g;
-		
-		return null;
-	}
 	
 	public KQMLList modify(Goal newGoal, String oldGoalName, boolean strict)
 	{
@@ -412,7 +361,7 @@ public class GoalPlanner {
 		HashSet<Goal> ambiguousGoals = new HashSet<Goal>();
 		for (Entry<Goal,Goal> e : goalConnections.entrySet())
 		{
-			if (e.getValue() == null && !e.getKey().isCompleted() && !e.getKey().isFailed())
+			if (e.getValue() != null && e.getValue().isValidGoal())
 				ambiguousGoals.add(e.getKey());
 		}
 		
@@ -560,21 +509,17 @@ public class GoalPlanner {
 		return parent;
 	}
 	
-	public synchronized void setCompleted(Goal goal)
-	{
-		goal.setCompleted(true);
-		System.out.println("Completed goal " + goal.getVariableName());
-		
-		if (goal.getParent() != null)
+	public void setParentGoalToActive(Goal completedOrAbandonedGoal) {
+		if (completedOrAbandonedGoal.getParent() != null)
 		{
 
-			boolean succeeded = setActiveGoal(goal.getParent());
+			boolean succeeded = setActiveGoal(completedOrAbandonedGoal.getParent());
 			if (succeeded)
 				System.out.println("Set active goal to " +
-					goal.getParent().getVariableName());
+						completedOrAbandonedGoal.getParent().getVariableName());
 			else
 				System.out.println("Failed to set active goal to " +
-						goal.getParent().getVariableName());
+						completedOrAbandonedGoal.getParent().getVariableName());
 		}
         else
         {
@@ -583,7 +528,7 @@ public class GoalPlanner {
 	        	Goal lastAcceptableGoal = null;
 	        	for (Goal g : topLevelGoals)
 	        	{
-	        		if (!g.isFailed() && !g.isCompleted())
+	        		if (g.isValidGoal())
 	        		{
 	        			numberOfNewPossibleGoals++;
 	        			lastAcceptableGoal = g;
@@ -600,6 +545,15 @@ public class GoalPlanner {
 	        		ambiguousActiveGoal = true;
 	        	}
         }
+	}
+	
+	public synchronized void setCompleted(Goal goal)
+	{
+		goal.setCompleted(true);
+		System.out.println("Completed goal " + goal.getVariableName());
+		
+		setParentGoalToActive(goal);
+		
 	}
 	
 	public boolean createAskFromAct(String cpsa, KQMLList act, KQMLList context)
@@ -708,8 +662,24 @@ public class GoalPlanner {
 		}
 		else if (act.get(0).stringValue().equalsIgnoreCase("ANSWER"))
 		{
+			// This should probably be moved out of this function soon
 			type = "ANSWER";
-			System.out.println("This is an answer");
+			
+			if (act.getKeywordArg(":TO") != null)
+			{
+				String toId = act.getKeywordArg(":TO").stringValue();
+				System.out.println("This is an answer to query " + toId);
+				Goal toGoal = getGoalById(toId);
+				if (toGoal == null)
+					System.out.println("Query " + toId + " not found");
+				else if (!(toGoal instanceof Query))
+					System.out.println("Goal " + toId + " is not a query");
+				else
+				{
+					System.out.println("Answer successful");
+					((Query)toGoal).setAnswered(true);
+				}
+			}
 			return false;
 		}
 		String parent = null;
@@ -858,6 +828,10 @@ public class GoalPlanner {
 
 	public boolean hasAmbiguousActiveGoal() {
 		return ambiguousActiveGoal;
+	}
+
+	public HashMap<String, Goal> getIdGoalMapping() {
+		return idGoalMapping;
 	}
 	
 	
