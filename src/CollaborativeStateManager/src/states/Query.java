@@ -113,7 +113,7 @@ public class Query extends Goal {
 	}
 
 	public boolean isAnswered() {
-		return answered;
+		return answered || completed;
 	}
 
 	public void setAnswered(boolean answered) {

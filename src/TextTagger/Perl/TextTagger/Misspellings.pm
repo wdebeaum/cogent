@@ -20,6 +20,8 @@ my ($aspell_in, $aspell_out, $aspell_pid);
 
 sub init_misspellings {
   my $self = shift;
+  die "aspell not configured. Please install aspell and re-run the configure script."
+    if ($TextTagger::Config::ASPELL eq '');
   # give aspell back its own local-data-dir setting (see note in Makefile)
   open $aspell_in, "-|", $TextTagger::Config::ASPELL, 'config', 'local-data-dir';
   my $local_data_dir = <$aspell_in>;

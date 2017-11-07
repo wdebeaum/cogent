@@ -285,6 +285,7 @@ ONT::INTERACT
 	  :pattern '((ONT::SPEECHACT ?!sa ONT::ACCEPT)
 		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
 				 :feature PROPOSAL-ON-TABLE))
+		     (ont::eval (extract-feature-from-act :result nil :expr ?!content :feature :query))
 		     -user-response1>
 		     (UPDATE-CSM (ACCEPTED :content ?!content :context ?!context))
 		     (NOTIFY-BA :msg-type REQUEST
@@ -354,6 +355,24 @@ ONT::INTERACT
 		     ; :content (ONT::REQUEST :content (ONT::PROPOSE-GOAL :agent ONT::USER)))
 		     )
 	  :destination 'what-next-initiative-on-new-goal ;'segmentend ;'propose-cps-act
+	  )
+
+	 (transition
+	  :description "ok/good as an answer to an ask-if (could also be an ask-wh)"
+	  :pattern '((ONT::SPEECHACT ?!sa ONT::ACCEPT)
+		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
+				 :feature PROPOSAL-ON-TABLE))
+		     (ont::eval (extract-feature-from-act :result ?!query :expr ?!content :feature :query))
+		     ;(ont::eval (generate-AKRL-context :what ?ans :result ?akrl-context)) ; no context
+		     (ont::eval (find-attr :result ?goal :feature ACTIVE-GOAL))
+		     -user-response1b-askif-ok> 
+		     (RECORD CPS-HYPOTHESIS (ANSWER :content ONT::TRUE :context nil :active-goal ?goal))
+		     (INVOKE-CSM :msg (INTERPRET-SPEECH-ACT
+				      :content (ANSWER :content ONT::TRUE
+							:context nil
+							:active-goal ?goal)))
+		     )
+	  :destination 'handle-csm-response
 	  )
 	 
 	 (transition
