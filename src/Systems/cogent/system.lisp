@@ -40,6 +40,7 @@
 ;(load "cps-states.lisp")
 
 ;;;; extractor rules
+(load "preprocessRules.lisp")
 (load "cogentRules.lisp")
 ;(load "symbolmapping.lisp")
 
