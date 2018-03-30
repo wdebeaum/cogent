@@ -558,7 +558,9 @@ ONT::INTERACT
 
 	 (transition
 	  :description "CSM returns a successful proposal interpretation"
-	  :pattern '((BA-RESPONSE X REPORT :psact (? act ADOPT ASSERTION ASSERT ASK-WH ASK-IF SELECT) :id ?!goal :as ?as 
+	  :pattern '((BA-RESPONSE X REPORT
+		      :psact (? act ADOPT ASSERTION ASSERT ASK-WH ASK-IF SELECT)
+		      :id ?!goal :as ?as 
 		      :content ?content :context ?new-akrl :alternative ?alt-as)
 		     ;;(BA-RESPONSE X ?!X :content ((? act ADOPT ASSERTION) :what ?!goal :as ?as :alternative ?alt-as) :context ?new-akrl)
 		     (ont::eval (find-attr :result nil :feature possible-goal))
@@ -634,7 +636,7 @@ ONT::INTERACT
 		     (ont::eval  (extract-goal-description :cps-act ?!possible-goal :context ?context :result ?goal-description :goal-id ?goal-id))
 		     (ont::eval (find-attr :result ?orig-cps-hyp :feature CPS-HYPOTHESIS))
 		     -intention-failure-with-guess>
-		     (RECORD FAILURE (FAILED-TO-INTERPRET :WHAT ?!content :REASON (MISSING-ACTIVE-GOAL) :POSSIBLE-SOLUTIONS (?!possible-goal) :context ?context))
+		     (RECORD FAILURE (FAILED-TO-INTERPRET :WHAT ?!content :REASON (MISSING-ACTIVE-GOAL) :POSSIBLE-RESOLUTION (?!possible-goal) :context ?context))
 		     (RECORD POSSIBLE-GOAL ?!possible-goal)
 		     (RECORD POSSIBLE-GOAL-ID ?goal-id)
 		     (RECORD POSSIBLE-GOAL-CONTEXT ?goal-description)
@@ -691,6 +693,31 @@ ONT::INTERACT
 	  :destination '-process-answer-about-additional-goal
 	  )
 
+	 (transition
+	  :description "ambiguous abandon, with choices"
+	  :pattern '((BA-RESPONSE  X REPORT :psact FAILURE :type FAILED-TO-INTERPRET :WHAT ?!content
+		      :REASON (AMBIGUOUS-ABANDON)
+		      :POSSIBLE-RESOLUTION ?!possible-res :context ?context)
+		     ; assume one ABANDON, one REJECT 
+		     ; :what might be nil
+		     (ont::eval (extract-element-from-list :result-id ?!abandon-id :result-what ?abandon-what :expr ?!possible-res :element ABANDON))
+		     (ont::eval (extract-element-from-list :result-id ?!reject-id :result-what ?reject-what :expr ?!possible-res :element REJECT))
+		     -intention-failure-ambiguous-abandon>
+		     (RECORD FAILURE (FAILED-TO-INTERPRET :WHAT ?!content :REASON (AMBIGUOUS-ABANDON) :POSSIBLE-RESOLUTION ?!possible-res :context ?context))
+		     (RECORD ABANDON-ID ?!abandon-id)
+		     (RECORD ABANDON-WHAT ?abandon-what)
+		     (RECORD REJECT-ID ?!reject-id)
+		     (RECORD REJECT-WHAT ?reject-what)
+		     (RECORD possible-res ?!possible-res)
+		     (RECORD possible-res-context ?context)
+		     ;(RECORD POSSIBLE-GOAL ?!possible-goal)
+		     ;(RECORD POSSIBLE-GOAL-ID ?goal-id)
+		     ;(RECORD POSSIBLE-GOAL-CONTEXT ?goal-description)
+		     ;(RECORD NEXT-CPS-HYPOTHESIS ?orig-cps-hyp)
+		     (clear-pending-speech-acts)) ; in preparation of saying something in clarify-goal		     )
+	  :destination 'clarify-abandon
+	  )
+	 
 	 (transition
 	  :description "CSM fails for some other reason"
 	  :pattern '((BA-RESPONSE  X REPORT :psact FAILURE :type ?!type :WHAT ?!content :REASON ?r :context ?context)
@@ -862,9 +889,45 @@ ONT::INTERACT
 
 	 ; *need to fix*: Currently the possible-resolution is ignored on further processing
 	 (transition
-	  :description "BA finds the goal unacceptable, possibly with a suggestion."
-	  :pattern '((BA-RESPONSE  X REPORT :psact UNACCEPTABLE :type ?!type :WHAT ?!content :REASON ?reason :possible-resolution ?poss :context ?context)
-		     -BA-failure-with-guess>
+	  :description "BA finds the goal unacceptable, with a suggestion."
+	  :pattern '((BA-RESPONSE X REPORT :psact UNACCEPTABLE :type ?!type
+		      :WHAT ?!content :REASON ?reason :possible-resolution ?poss :context ?context)
+		     (ont::eval (find-attr :result ?!alt :feature ALT-AS))
+		     -BA-unacceptable-with-guess>
+		     (RECORD REJECTED (UNACCEPTABLE :type ?!type :WHAT ?!content :REASON ?reason))
+		     (RECORD REJECTED-CONTEXT ?context)
+		     (RECORD PROPOSAL-ON-TABLE nil)
+		     (RECORD POSSIBLE-GOAL ?poss)
+		     (UPDATE-CSM (UNACCEPTABLE :type ?!type :WHAT ?!content :REASON ?reason :context ?context))
+		     (QUERY-CSM :content (ACTIVE-GOAL))
+		     ;(GENERATE :content (V UNACCEPTABLE) :context ?context)
+		     )
+	  :destination 'explore-alt-interp)
+	 
+	 (transition
+	  :description "BA finds the goal unacceptable, with no suggestion."
+	  :pattern '((BA-RESPONSE X REPORT :psact UNACCEPTABLE :type INVALID-ANSWER
+		      :WHAT ?!content :REASON ?reason :possible-resolution ?poss :context ?context)
+		     (ont::eval (find-attr :result nil :feature ALT-AS))
+		     (ont::eval (find-attr :result (?prop :content ?!ps-action :context ?ps-context) :feature query-on-table))
+		     -BA-unacceptable-invalid-answer-with-no-guess>
+		     ;(UPDATE-CSM (V REJECTED) :context ?context)
+		     (UPDATE-CSM (UNACCEPTABLE :type INVALID-ANSWER :WHAT ?!content :REASON ?reason :context ?context))
+		     (UPDATE-CSM (PROPOSED :content ?!ps-action :context ?ps-context))
+		     ;(QUERY-CSM :content (ACTIVE-GOAL))
+		     ;(GENERATE :content (V UNACCEPTABLE) :context ?context)
+		     (clear-pending-speech-acts)
+		     (GENERATE :content (UNACCEPTABLE :type INVALID-ANSWER :WHAT ?!content :REASON ?reason) :context ?context)
+		     (GENERATE :content ?!ps-action :context ?ps-context)		     
+		     )
+	  :destination 'set-answer-alarm) ;'answers)
+
+	 (transition
+	  :description "BA finds the goal unacceptable, with no suggestion."
+	  :pattern '((BA-RESPONSE X REPORT :psact UNACCEPTABLE :type ?!type
+		      :WHAT ?!content :REASON ?reason :possible-resolution ?poss :context ?context)
+		     (ont::eval (find-attr :result nil :feature ALT-AS))
+		     -BA-unacceptable-no-guess>
 		     (RECORD REJECTED (UNACCEPTABLE :type ?!type :WHAT ?!content :REASON ?reason))
 		     (RECORD REJECTED-CONTEXT ?context)
 		     (RECORD PROPOSAL-ON-TABLE nil)
@@ -874,7 +937,7 @@ ONT::INTERACT
 		     ;(GENERATE :content (V UNACCEPTABLE) :context ?context)
 		     )
 	  :destination 'explore-alt-interp)
-	 
+
 	 (transition
 	  :description "BA fails to understand"
 	  :pattern '((BA-RESPONSE  X REPORT :psact FAILURE :type ?!type ;(? x FAILED-TO-INTERPRET CANNOT-IDENTIFY-RELEVANCE)
@@ -1059,6 +1122,56 @@ ONT::INTERACT
 		     )
 	  :destination 'segmentend ;'propose-cps-act
 	  )
+	 )	
+	))
+
+(add-state 'clarify-abandon
+ (state :action '(GENERATE :content (ONT::CLARIFY-ABANDON :content (V abandon-id) :context (V possible-res-context))) ; "do you still want to do abandon-id?
+	:preprocessing-ids '(yes-no)
+	:implicit-confirm t
+	:transitions
+	(list
+	 (transition
+	  :description "yes"
+	  :pattern '((ANSWER :value YES)
+		     (ont::eval (find-attr :result ?context :feature POSSIBLE-RES-context))
+		     (ont::eval (find-attr :result ?!a-id :feature abandon-id))
+		     (ont::eval (find-attr :result ?a-what :feature abandon-what))
+		     -abandon-yes>
+		     (UPDATE-CSM (PROPOSED :content (ABANDON :ID ?!a-id :what ?a-what)
+				  :context ?context))
+		     (RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE-GOAL
+						:content (ABANDON :ID ?!a-id :what ?a-what)
+						:context ?context))
+		     (INVOKE-BA :msg (EVALUATE 
+				      :content (ABANDON :ID ?!a-id :what ?a-what)
+				      :context ?context))
+		     )
+	  :destination 'propose-cps-act-response)
+
+	 (transition
+	  :description "no" 
+	  :pattern '((ANSWER :value NO)
+		     (ont::eval (find-attr :result ?context :feature POSSIBLE-RES-context))
+		     (ont::eval (find-attr :result ?!r-id :feature reject-id))
+		     (ont::eval (find-attr :result ?r-what :feature reject-what))
+		     -abandon-no>
+		     (UPDATE-CSM (REJECTED :content (dummy :ID ?!r-id :what ?r-what) :context ?context))
+		     (clear-pending-speech-acts)
+		     (GENERATE
+		      :content (ONT::REQUEST :content (ONT::PROPOSE-GOAL :agent ONT::USER)))
+		     #|
+		     (RECORD PROPOSAL-ON-TABLE nil)
+		     (NOTIFY-BA :msg-type TELL
+				:msg (REPORT :content (REJECTED :what ?!content) :context ?!context))
+		     (QUERY-CSM :content (ACTIVE-GOAL))
+		     )
+	  :destination 'what-next-initiative-on-new-goal ;'segmentend ;'propose-cps-act
+		     |#
+		     )
+	  :destination 'segmentend ;'propose-cps-act
+	  )
+
 	 )	
 	))
 
@@ -1337,7 +1450,7 @@ ONT::INTERACT
 		     (GENERATE
 		      :content (ONT::PROPOSE :content ?!ps-action) :context ?context)
 		     )
-	  :destination 'answers 
+	  :destination 'set-answer-alarm ;'answers 
 	  )
 
 	 (transition
@@ -1348,13 +1461,14 @@ ONT::INTERACT
 		     -ba-propose-psact-propose>
 		     (UPDATE-CSM (PROPOSED :content ?!ps-action :context ?context))
 		     (RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE :content ?!ps-action :context ?context))
+		     (RECORD QUERY-ON-TABLE (ONT::PROPOSE :content ?!ps-action :context ?context))
 		     (RECORD ACTIVE-GOAL ?!goal)
 		     (RECORD ACTIVE-CONTEXT ?context)
 		     (GENERATE
 		      :content (ONT::PROPOSE :content ?!ps-action) :context ?context)
 		     )
 ;	  :destination 'proposal-response)
-	  :destination 'answers ;'segmentend ;;'propose-cps-act
+	  :destination 'set-answer-alarm ;'answers ;'segmentend ;;'propose-cps-act
 	  )
 
 	  (transition
@@ -1371,7 +1485,7 @@ ONT::INTERACT
 		     (GENERATE
 		      :content ?!ps-action :context ?context)
 		     )
-	  :destination 'answers 
+	  :destination 'set-answer-alarm ;'answers 
 	  )
 	 
 	 (transition
@@ -1558,7 +1672,7 @@ ONT::INTERACT
 		      :context ?context)
 		     )
 ;	  :destination 'initiate-csm-goal-response)
-	  :destination 'answers ;'propose-cps-act
+	  :destination 'set-answer-alarm ;'answers ;'propose-cps-act
 	  )
 
 	 (transition
@@ -1774,6 +1888,23 @@ ONT::INTERACT
 	 )
 	))
 
+(add-state 'set-answer-alarm
+ (state :action '(continue)
+	:transitions
+	(list
+	 (transition
+	  :description "system is going to wait for user"
+	  :pattern '((continue :arg ?!dummy)
+		     -answer-wait>
+		     (RECORD goal-status ONT::WAITING-FOR-USER-ANSWER)
+		     (RECORD WAITING ONT::WAITING-FOR-USER-ANSWER)
+		     (SET-ALARM :delay .005 :msg (ONT::WAITING-FOR-USER-ANSWER))
+		     )
+	  :destination 'answers
+	  )
+	 )
+	))
+
 ;; here we are setting alarms if we haven't been waiting, and notify the user if we have been waiting
 (add-state 'check-timeout-status
  (state :action '(continue)
@@ -1864,6 +1995,23 @@ ONT::INTERACT
 	  :destination 'segmentend
 	  )
 
+	 (transition
+	  :description "system has been waiting for user for the determined threshold of time"
+	  :pattern '((ALARM ?!x ONT::WAITING-FOR-USER-ANSWER)
+		     ;;(ont::eval (find-attr :result WAITING-FOR-USER :feature TIMEOUT-TYPE))
+		     (ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
+		     (ont::eval (find-attr :result ?active-context :feature ACTIVE-context))
+		     (ont::eval (find-attr :result (? waiting ONT::WAITING-FOR-USER-ANSWER) :feature WAITING))
+		     -no-interaction-waiting-answer>
+		     (GENERATE
+		      :content (ONT::TELL :content (ONT::WAITING :agent *SYS* :id ?!active))
+		      :context ?active-context)
+		     (SET-ALARM :delay .01 :msg (ONT::WAITING-FOR-USER-ANSWER))  ;; Set alarm for a longr period of time before asking again
+		     )
+	  :destination 'answers
+	  )
+	 
+	 
 	 ;; received alarm for working on it -- recheck with BA
 	 (transition
 	  :description "system has been working on it for the determined threshold of time"

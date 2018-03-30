@@ -685,7 +685,7 @@
 ;;; from locations involved
 ;;; Source/goal are typi
 (define-type ONT::Transfer
- :wordnet-sense-keys ("change%2:38:00" "transfer%2:38:02" "transfer%2:40:00" "displace%2:38:02")
+ :wordnet-sense-keys ("change%2:38:00" "transfer%2:38:02" "transfer%2:40:00")
  :parent ont::giving
  :sem (F::Situation (F::Cause F::Agentive))
  )
@@ -1019,7 +1019,7 @@
 						  ;; Myrosia 2008/16/07 added origin non-living to account for "break a path", "break a stone"
 						  ;(f::origin (? o  f::artifact f::non-living)) ; living: break a leg
 						  ))
-		(:optional ONT::Result (F::Phys-obj (f::form f::object) (f::origin f::artifact)))
+		(:optional ONT::Result (F::abstr-obj (f::type ont::resulting-object)));;(F::Phys-obj (f::form f::object) (f::origin f::artifact)))
 		(:optional ONT::agent)
 ;		(:optional ont::instrument (f::phys-obj))
 		)
@@ -1234,7 +1234,8 @@
 
 ;; look up
 (define-type ONT::look-up
- :parent ONT::seek
+  :wordnet-sense-keys ("look_up%2:32:00")
+  :parent ONT::seek
  )
 
 
@@ -2524,7 +2525,7 @@
 
 (define-type ont::enable
   :parent ont::cause-effect
-  :arguments ((:optional ont::affected ((? tp f::phys-obj f::abstr-obj)))
+  :arguments ((:optional ont::affected ((? tp f::phys-obj f::abstr-obj f::situation))) ; f::situation: e.g. condition
 	      )
   )
 
@@ -2560,7 +2561,8 @@
  :wordnet-sense-keys ("have%2:30:00" "have%2:36:00" "have%2:32:00" "have%2:40:02" "have%2:29:00")
  :parent ONT::CAUSE-EFFECT
  :sem (F::situation (F::Aspect F::Dynamic))
- :arguments ((:REQUIRED ONT::AFFECTED ((? AFF F::PHYS-OBJ F::ABSTR-OBJ)))
+ :arguments ((:REQUIRED ONT::AGENT ((? ag F::PHYS-OBJ F::ABSTR-OBJ) (f::intentional +) )) ; exclude "the structure has blocks painted red"
+	     (:REQUIRED ONT::AFFECTED ((? AFF F::PHYS-OBJ F::ABSTR-OBJ)))
 	     (:REQUIRED ONT::formal (f::situation (f::type ont::event-of-action)))
              ;(:ESSENTIAL ONT::Stative ((? stts F::situation)))
              )
@@ -3189,7 +3191,7 @@
  )
 
 (define-type ONT::decrease
- :wordnet-sense-keys ("decrease%2:30:00" "decrease%2:30:01" "diminish%2:30:00" "lessen%2:30:00" "fall%2:30:06" "weaken%2:30:01")
+ :wordnet-sense-keys ("decrease%2:30:00" "decrease%2:30:01" "diminish%2:30:00" "lessen%2:30:00" "fall%2:30:06" "weaken%2:30:01" "mitigate%2:32:00")
  :parent ONT::change-magnitude
  )
 
@@ -3300,7 +3302,8 @@
  )
 
 (define-type ONT::listing
- :parent ONT::visual-display
+; :parent ONT::visual-display
+ :parent ONT::representative
  :sem (F::Situation (F::Cause F::Agentive))
  :arguments ((:OPTIONAL ONT::Agent)
              )
@@ -3446,7 +3449,7 @@
 
 (define-type ONT::exchange
  :parent ONT::arranging
- :wordnet-sense-keys ("exchange%2:40:00" "exchange%2:30:00" "exchange%2:40:02" "transpose%2:30:00" "transpose%2:30:02" "transpose%2:36:00" "transpose%2:30:01")
+ :wordnet-sense-keys ("exchange%2:40:00" "exchange%2:30:00" "exchange%2:40:02" "transpose%2:30:00" "transpose%2:30:02" "transpose%2:36:00" "transpose%2:30:01" "transpose%2:30:03")
  )
 
 (define-type ONT::set-up-device

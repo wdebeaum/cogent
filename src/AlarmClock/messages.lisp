@@ -103,12 +103,14 @@
     ))
 
 (defun set-alarm (message args)
-    (declare (ignore message))
+  (declare (ignore message))
   (let ((delay (get-keyword-arg args :delay)))
     (if delay
       (set-relative-alarm (get-keyword-arg args :msg) delay)
       (apply #'set-absolute-alarm args)
-      )))
+      ))
+  (format *error-output* "~&alarms (after set): ~S~%" *alarms*)
+  )
 (defcomponent-handler
   '(request &key :content (set-alarm . *))
   #'set-alarm
@@ -117,13 +119,15 @@
 (defun remove-alarm (message args)
   "Remove the alarm we just sent a message about from *alarms* so we don't send
    it again."
-    (declare (ignore message))
+  (declare (ignore message))
   (setf *alarms*
         (remove (get-keyword-arg args :msg) *alarms*
 	        :key #'cdr
 		:test #'equalp
 		:count 1
-		)))
+		))
+  (format *error-output* "~&alarms (after remove): ~S~%" *alarms*)
+  )
 (defcomponent-handler
   '(tell &key :content (alarm . *))
   #'remove-alarm
@@ -132,16 +136,18 @@
 (defun clear-alarms (msg)
   "Cancel all alarms, or if a pattern is given, those whose messages match the
    pattern."
+  (format *error-output* "~&clear-alarms: ~S~%" msg)
   (let ((pattern (find-arg-in-act msg :pattern)))
     (setf *alarms*
-          (if pattern
-	    nil
-	    (delete pattern *alarms* :test #'dfc::match-msg-pattern))))
+	  (when pattern
+	    (remove pattern *alarms* :test #'(lambda (p a) (dfc::match-msg-pattern p (cdr a)))))))
+  (format *error-output* "~&alarms (after clear): ~S~%" *alarms*)
   (update-alarm-process)
   )
 (defcomponent-handler
-  '(tell &key :content (clear-alarms))
-  #'clear-alarms
+  '(request &key :content (clear-alarms . *))
+  #'(lambda (msg args)
+      (apply #'clear-alarms (list (find-arg-in-act msg :content))))
   :subscribe t)
 
 (defcomponent-handler
@@ -149,3 +155,10 @@
   #'update-alarm-process
   :subscribe t)
 
+(defcomponent-handler
+  '(tell &key :content (start-conversation . *))
+     #'(lambda (msg args)
+         (declare (ignore msg))
+         (clear-alarms nil)
+      )
+    :subscribe t)

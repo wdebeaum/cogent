@@ -632,6 +632,7 @@
 (defun handle-input-message (msg)
   "this handles spontaneous report from the BA or other components"
   (let* ((msg-content (find-arg-in-act msg :content))  ;; this should be a REPORT
+	 (sender (find-arg-in-act msg :sender))
 	 (content (find-arg-in-act msg-content :content))
 	 (user (lookup-user 'desktop))
 	 (dstate (current-dstate user))
@@ -640,24 +641,24 @@
 	 (context)
 	 (lfs (list content))
 	 (hyps))
-	     
-      (if dstate
-      (when (not (process-lf-in-state lfs hyps context newchannel nil user uttnum))
-	(if (state-implicit-confirm dstate)
-	    ;; clear the state and start again
-	    (progn
-	      (if (consp (state-implicit-confirm dstate))
-		  (mapcar #'execute-action (state-implicit-confirm dstate)))
-	      (trace-msg 2 "~%Popping state ~S to try triggers"
-			 (state-id (current-dstate user)))
-	      (go-to-restart-state user)
-	      (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum))
-	    ;; we failed to interpret utterance, release send part of input and try again
-	    (release-pending-speech-act))
-	)
+    (when (not (member sender '(graphviz dagent imagedisplay)))
+      (if dstate 
+	  (when (not (process-lf-in-state lfs hyps context newchannel nil user uttnum))
+	    (if (state-implicit-confirm dstate)
+		;; clear the state and start again
+		(progn
+		  (if (consp (state-implicit-confirm dstate))
+		      (mapcar #'execute-action (state-implicit-confirm dstate)))
+		  (trace-msg 2 "~%Popping state ~S to try triggers"
+			     (state-id (current-dstate user)))
+		  (go-to-restart-state user)
+		  (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum))
+		;; we failed to interpret utterance, release send part of input and try again
+		(release-pending-speech-act))
+	    )
       ;;(uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) nil user uttnum)))
-      (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum)))
-  )
+	  (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum)))
+  ))
 
 (defun make-mods-unique (lf)
   "If an LF has multiple MOD features, we add digits to the second and thrid, etc"
@@ -1045,7 +1046,7 @@
   (setf (user-time-of-last-BA-interaction user) (get-time-of-day))
   (let* ((msg1 (instantiate-dstate-args (find-arg args :msg) user))
 	 (msg (if *suppress-context-on-what-next* 
-		  (remove-context-if-what-next msg1)
+		  (remove-context-in-what-next msg1)
 		  msg1))
 	 (x (send-status `(WAITING :on ,(car msg))))
 	 (reply (send-and-wait `(REQUEST :content ,msg)))
@@ -1065,8 +1066,8 @@
     (trace-msg 3 "~% *last-internal-response* is ~S~%" *last-internal-response*)	  
    ))
 
-(defun suppress-context-on-what-next (msg)
-  (format t "Supressing context in ~S" msg)
+(defun remove-context-in-what-next (msg)
+  (remove-arg-in-act msg :context)
   msg)
 
 (defun notify (args user channel uttnum)
@@ -1108,18 +1109,130 @@
   (format t "~%replacing value: act = ~S feature = ~S value = ~S" act feature newval)
   (when (consp act)
     (im::match-vals nil result (replace-arg-in-act act feature newval))))
-  
+
+(defun extract-element-from-list (&key result-id result-what expr element)
+  (let ((res (assoc element expr)))
+    ;(format t "~%extracting features: expr = ~S element = ~S result = ~S" expr element (find-arg-in-act res :id))
+    (append (im::match-vals nil result-id (find-arg-in-act res :id))
+	    (im::match-vals nil result-what (find-arg-in-act res :what))
+	    )
+    ))
+
 (defun invoke-generator (msg user channel uttnum)
-  "here we invoke the BA with a message and record the result for the followup state.
-    Since we are using send and wait we don't have syncronization problems"
+  "here we send out a message to the generator module, and also set up
+    the context for the parser for processing the answer"
   (setf (user-time-of-last-user-interaction user) (get-time-of-day))
-  (let ((expanded-msg (expand-args msg)))
+  (let ((expanded-msg (quick-generator (expand-args msg))))
     (Format t "~%~%==========================~% System generating: ~S ~%========================~%" expanded-msg)
     ;;  we clear any remaining input as we generate  ;;; we don't because it might just be responding with an "ok" and we want to process the next speech act
 ;    (clear-pending-speech-acts uttnum channel)  
-;    (setq *interpretable-utt* t)
+					;    (setq *interpretable-utt* t)
+    (prep-parser-if-necessary (find-arg msg :content))
     (send-msg `(REQUEST :content ,(cons 'GENERATE expanded-msg)))))
 
+(defvar *use-quick-generator* nil)
+
+(defun quick-generator (msg)
+  (if (not *use-quick-generator*)
+      msg
+      (let ((content (find-arg msg :content))
+	  (context (find-arg msg :context)))
+      (case (car content)
+	((ask-if ont::ask-if)
+	 (let* ((query (find-lf-in-context (find-arg-in-act content :query) context))
+		(code (find-arg query :code))
+		(arg (find-arg query :arg)))
+	   (if code
+	       ;; pre anticipated conditions using codes
+	       (let ((strng (case code
+			      (pct? "Shall we look at percentage of children who are malnourished (:PCT_MALNOUR_CHILD)?")
+			      (do-baseline? (format nil "Do you want me to compute a baseline analysis for ~A?" (if arg (gen-description arg)
+														   "Sudan")))
+			      (run-plan? (format nil "I can estimate this effect using the following plan. Is it OK?"))
+			      (displayed (format nil "Here is a graph of causal infleunces."))
+			      (execute-plan? "Here are the influences. Shall I try to quantity the effect?")
+			      (otherwise "My tongue is tied, I don't know what to say"))))
+		 (list :content strng))
+	       (list :content "My tongue is tied, I don't know what to say"))))
+	(ONT::CLARIFY-GOAL
+	 (list :content "What are you trying to do?"))
+	((ask-wh ont::ask-wh)
+	 (let ((query (find-lf-in-context (find-arg-in-act content :query) context))
+	       (what (find-lf-in-context (find-arg-in-act content :what) context)))
+	   (if (not (and query what))
+	       msg
+	       (let ((ground (find-lf-in-context (find-arg query :ground) context)))
+		 (list :content (concatenate 'string "What is the value of " (symbol-name (find-arg what :instance-of))
+					     " associated with " (or (symbol-name (find-arg ground :instance-of))
+								     (symbol-name (find-arg query :instance-of)))))))))
+	((ont::request request)
+	 (let ((content1 (find-arg-in-act content :content)))
+	   
+	   (when (Consp content1)
+	     (case (car content1)
+	       (ONT::PROPOSE-GOAL
+		(list :content "What do you want to do?"))
+	       )
+	       msg)
+	   ))
+	 
+	((ont::accept accept)
+	 (list :content (pick-one '("OK" "Sure"))))
+
+	(ont::answer
+	 (let ((value (find-arg-in-act content :value)))
+	   (list :content value)))
+	
+	((unacceptable ont::unacceptable)
+	 (list :content (pick-one `("Sorry, I didn't understand" "I didn't get that" "I didn't understand what you said"))))
+
+	((tell ont::tell)
+	 (let ((content1 (find-arg-in-act content :content)))
+	   (if (and (Consp content1) (eq (car content1) 'ONT::FAIL))
+	       (list :content (pick-one `("Sorry, I didn't understand" "I didn't get that" "I didn't understand what you said"))
+		     )
+	       msg)
+	   ))
+	
+	((assertion ont::assertion)
+	 (let ((what (find-lf-in-context (find-arg-in-act content :what) context)))
+	   (case (find-arg what :instance-of)
+	     ((ont::results results)
+	      (let ((value (find-arg what :value)))
+		(list :content (concatenate 'string "The results are " (format nil "~S" value)))))
+	     (displayed
+	      (list :content (format nil "Here is a graph of causal influences.")))
+	     (execute-plan?
+	      (list :content "I'll execute the plan"))
+	     )))
+	     
+	
+	(otherwise
+	 msg))))
+  )
+
+(defun gen-description (arg)
+  (if (symbolp arg)
+      (case arg
+	(:ss "South Sudan")
+	(:sd "Sudan")
+	(otherwise (symbol-name arg))
+	)
+      "UNKNOWN"))
+      
+
+(defun prep-parser-if-necessary (speechact)
+  (let ((act (if (eq (car speechact) 'ONT::PROPOSE)
+		 (find-arg-in-act speechact :content)
+	       speechact)))
+    (case (car act)
+      (ASK-IF
+       (send-msg '(request :content (adjust-cost-table :mods ((SA_RESPONSE 1))))))
+      (ASK-WH
+       (send-msg '(request :content (adjust-cost-table :mods ((SA_IDENTIFY 1) (SA_FRAGMENT 1.5))))))
+      ))
+  )
+					  
 (defun expand-args (msg)
   "this examines the msg for variables that store the CPS state and replaces them with the values"
   (when msg  

@@ -2672,6 +2672,7 @@
  ;:parent ont::abstract-object-nontemporal
  :parent ont::phys-object
 ;  :sem (F::Abstr-obj (f::group +)) ; group feature not defined for abstract objects
+  :sem (F::phys-obj (f::container +)) 
   :arguments ((:OPTIONAL ONT::FIGURE)
               )
   )
@@ -2705,7 +2706,7 @@
  :wordnet-sense-keys ("social_group%1:14:00")
   :parent ont::group-object
   ;:sem (F::Abstr-obj (F::information F::information-content) (f::intentional +) (F::Object-Function F::Occupation) (F::Container -))
-  :sem (F::phys-obj (f::intentional +) (F::Object-Function F::Occupation) (F::Container -))
+  :sem (F::phys-obj (f::intentional +) (F::Object-Function F::Occupation)) ; (F::Container -)) GROUP-OBJECT has container +
   :arguments ((:OPTIONAL ONT::FIGURE ((? lof f::phys-obj f::abstr-obj))))
   )
 
@@ -2856,7 +2857,7 @@
 ;; a number/amount/quantity of X
 (define-type ONT::QUANTITY
  :wordnet-sense-keys ("measure%1:03:00" "quantity%1:03:00" "amount%1:03:00")
-; :parent ONT::DOMAIN-PROPERTY
+ ;:parent ONT::ORDERED-DOMAIN
  :parent ONT::GROUP-OBJECT
  :arguments ((:ESSENTIAL ONT::FIGURE)
              )

@@ -8,7 +8,7 @@
 ;;; ===========ONT::DOMAIN
 ;;; A domain is a single-valued function                                                                            
 (define-type ONT::DOMAIN
- :parent ONT::ABSTRACT-object
+ :parent ONT::TANGIBLE-ABSTRACT-object
  :wordnet-sense-keys ("attribute%1:03:00")
  :comment "Nouns that name domain/scales, and can serve as relational nouns (e.g., the COLOR of the box)"
  :arguments ((:REQUIRED ONT::FIGURE)
@@ -396,6 +396,21 @@
  :parent ont::evaluation-scale 
  :wordnet-sense-keys ("reliability%1:07:00" "trustworthiness%1:07:00")
  ;; WORDS: reliability
+)
+
+(define-type ont::safety-scale
+ :parent ont::evaluation-scale 
+)
+
+(define-type ont::safe-scale
+ :parent ont::safety-scale 
+ :wordnet-sense-keys ("safety%1:26:00")
+ ;; WORDS: safety, security
+)
+
+(define-type ont::unsafe-scale
+ :parent ont::safety-scale 
+ :wordnet-sense-keys ("insecurity%1:26:00") ; danger?
 )
 
 (define-type ont::suitability-scale
@@ -889,8 +904,8 @@
 
 (define-type ont::confidentiality-scale
  :parent ont::status-property-scale 
-:wordnet-sense-keys ("privacy%1:07:00" "privacy%1:26:02" "security%1:26:00")
- ;; WORDS: privacy, security
+:wordnet-sense-keys ("privacy%1:07:00" "privacy%1:26:02")
+ ;; WORDS: privacy
 )
 
 
@@ -1180,7 +1195,17 @@
 
 (define-type ont::cleanliness-scale
  :parent ont::state-of-affairs-scale 
+)
+
+(define-type ont::clean-scale
+ :parent ont::cleanliness-scale 
  :wordnet-sense-keys ("cleanliness%1:26:00" "cleanliness%1:07:00")
+ ;; WORDS: cleanliness
+)
+
+(define-type ont::unclean-scale
+ :parent ont::cleanliness-scale 
+ :wordnet-sense-keys ("dirtiness%1:26:00")
  ;; WORDS: cleanliness
 )
 

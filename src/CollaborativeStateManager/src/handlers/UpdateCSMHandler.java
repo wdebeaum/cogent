@@ -317,21 +317,31 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 			goalName = goalNameObject.stringValue();
 		
 
-		// This was a specific goal that failed
+		// This was a specific accepted goal that failed
 		if (goalName != null && goalPlanner.hasGoal(goalName))
 		{
-			goalPlanner.getGoal(goalName).setFailed(true);
+			Goal goalToFail = goalPlanner.getGoal(goalName);
+			goalToFail.setFailed(true);
+			if (goalToFail instanceof Query)
+				goalPlanner.setParentGoalToActive(goalToFail);
 			System.out.println("Set goal + " + goalName + " as failed");
+			
 			return null;
 		}
 		
-		// ... or, this was a new goal that was part of an existing goal
+		// ... or, this was a new goal that was part of an existing goal,
+		// or it was part of a CPS act
 		
 		KQMLObject failedAsObject = innerContent.getKeywordArg(":AS");
 		
 		if (failedAsObject != null && failedAsObject instanceof KQMLList)
 		{
 			KQMLList failedAsList = (KQMLList)failedAsObject;
+			if (failedAsList.getKeywordArg(":OF") == null)
+			{
+				System.out.println("No parent goal to fail");
+				return null;
+			}
 			String parentGoalName = failedAsList.getKeywordArg(":OF").stringValue();
 			if (goalPlanner.hasGoal(parentGoalName))
 			{

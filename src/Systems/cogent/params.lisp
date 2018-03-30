@@ -69,7 +69,7 @@
 	     (ont::SA_request 1) 
 	     (ont::SA_YN-QUESTION 1) 
 	     (w::ADJP 1.2) 
-	     (w::advblp 1.3)
+	     (w::advbl 1.3)
 	     (ont::SA_CONFIRM 1) 
 	     (ont::SA_WH-QUESTION 1) 
 	     (ont::SA_TELL 1)

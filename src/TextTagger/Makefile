@@ -2,7 +2,7 @@
 # Makefile for TextTagger
 #
 # William de Beaumont <wbeaumont@ihmc.us> 2008/3/6
-# $Id: Makefile,v 1.108 2017/11/07 17:25:14 wdebeaum Exp $
+# $Id: Makefile,v 1.111 2018/01/22 21:02:14 wdebeaum Exp $
 #
 
 MODULE = TextTagger
@@ -81,6 +81,26 @@ clean::
 
 terms.txt: make-terms-dot-txt.sh
 	./make-terms-dot-txt.sh $(TEXTTAGGER_geonames)
+endif
+
+ifneq (,$(wildcard get-countries-tsv.pl))
+all:: countries.tsv
+
+install:: countries.tsv
+	$(INSTALL_DATA) $< $(etcdir)/$(MODULE)
+
+clean::
+	rm -rf countries.tsv
+
+countries.tsv: get-countries-tsv.pl downloads/countries.json
+	./$^ >$@
+
+downloads/MADE:
+	mkdir -p downloads
+	touch $@
+
+downloads/countries.json: downloads/MADE
+	curl -L -o $@ "https://raw.githubusercontent.com/mledoze/countries/master/countries.json"
 endif
 
 # blech, some installed files are needed by get-wn-multiwords.pl
@@ -404,11 +424,12 @@ drum-dsl/UO/COMPLETE: downloads/unit.obo obo-to-dsl.pl
 	./obo-to-dsl.pl <$<
 	touch $@
 
-drum-dsl/COMPLETE: drum-dsl/BE/COMPLETE drum-dsl/BTO/COMPLETE drum-dsl/CHEBI/COMPLETE drum-dsl/CO/COMPLETE drum-dsl/EFO/COMPLETE drum-dsl/GO/COMPLETE drum-dsl/PR/COMPLETE drum-dsl/UO/COMPLETE ncit-terms.tsv
+drum-dsl/COMPLETE: drum-dsl/BTO/COMPLETE drum-dsl/CHEBI/COMPLETE drum-dsl/CO/COMPLETE drum-dsl/EFO/COMPLETE drum-dsl/GO/COMPLETE drum-dsl/PR/COMPLETE drum-dsl/UO/COMPLETE ncit-terms.tsv
 	touch $@
 
 # drum-dsl/MI/COMPLETE
-# drum-dsl/SO/COMPLETE 
+# drum-dsl/SO/COMPLETE
+# drum-dsl/BE/COMPLETE
 
 clean::
 	rm -rf specialist.tsv drum-terms.tsv drum-dbxrefs.tsv obo-terms.tsv hgnc-terms.tsv uniprot-terms.tsv uniprot-subcell-terms.tsv nextprot-family-terms.tsv ncit-terms.tsv pfam-terms.tsv mesh-scr-terms.tsv drum-dsl

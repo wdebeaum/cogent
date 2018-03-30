@@ -728,9 +728,9 @@ sub KQMLUnkeywordify {
 my $symbol_component_re = qr/
   (?:
     # not pipequoted
-    [^\s'`"#\(\):\|\\]+ |
-    # pipequoted
-    \| (?: \\ [^\s'`"#\(\)] | [^\s'`"#\(\)\|\\] )+ \| 
+    [^,\s'`"#\(\):\|\\]+ |
+    # pipequoted (note that KQMLReader.java can't handle escaped pipes)
+    \| (?: (?! \\ \| ) [^\|] )+ \| 
   )
 /x;
 

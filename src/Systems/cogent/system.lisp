@@ -11,7 +11,7 @@
 (load #!TRIPS"src;Systems;core;system")
 
 (trips:def-trips-system :cogent
-  (:old-trips-component :lxm               #!TRIPS"src;LexiconManager;")
+  (:dfc-component	:lxm               #!TRIPS"src;LexiconManager;")
   (:dfc-component	:parser            #!TRIPS"src;Parser;")
   (:dfc-component       :im                #!TRIPS"src;NewIM;")
   (:dfc-component       :dagent            #!TRIPS"src;BasicDialogueAgent;")
