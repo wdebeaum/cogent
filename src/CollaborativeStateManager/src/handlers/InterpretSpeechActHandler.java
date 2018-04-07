@@ -131,7 +131,7 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 		Query queryToAnswer = null;
 		for (Query q : goalPlanner.getQueries()) {
 			if (q.getParent() != null && q.getParent().equals(currentAcceptedGoal) &&
-					!q.isAnswered()) {
+					!q.isAnswered() && !q.isFailed()) {
 				queryToAnswer = q;
 				break;
 			}
@@ -241,6 +241,40 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 			contributesList.add(contributesToGoal.getId());
 			assertionContent.add(contributesList);
 		}
+		
+//		List<String> implicitAcceptGoals = 
+//				ontologyReader.getImplicitAcceptsOfActType(ActType.ASSERTION);
+//		boolean implicitAccept = false;
+//		Goal lastProposedGoal = goalPlanner.getGoalUnderDiscussion();
+//		if (lastProposedGoal != null)
+//		{
+//			for (String goal : implicitAcceptGoals)
+//			{
+//				if (goal.equalsIgnoreCase(lastProposedGoal.getInstanceOf()))
+//				{
+//					implicitAccept = true;
+//					break;
+//				}
+//			}
+//		}
+//		
+//		if (implicitAccept)
+//		{
+//			Goal underDiscussion = goalPlanner.getGoalUnderDiscussion();
+//			KQMLList prereqContent;
+//			if (underDiscussion.getParent() != null)
+//				prereqContent = Messages.adoptContent(underDiscussion.getId(),
+//										underDiscussion.getVariableName(),
+//										"GOAL", null);
+//			else
+//				prereqContent = Messages.adoptContent(underDiscussion.getId(),
+//						underDiscussion.getVariableName(),
+//						"SUBGOAL", underDiscussion.getParent().getId());
+//			
+//			assertionContent.add(":PREREQ");
+//			assertionContent.add(prereqContent);
+//		}
+		
 
 		Action action = new Action(assertionRelnContent, new KQMLList());
 		action.setId(ee.getId());

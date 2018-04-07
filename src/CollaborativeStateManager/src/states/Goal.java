@@ -173,6 +173,14 @@ public class Goal {
 		return parent;
 	}
 	
+	public String getInstanceOf()
+	{
+		if (term.getKeywordArg(":INSTANCE-OF") != null)
+			return term.getKeywordArg(":INSTANCE-OF").stringValue();
+
+		return "";
+	}
+	
 	public void setParent(Goal newParent)
 	{
 		this.parent = newParent;

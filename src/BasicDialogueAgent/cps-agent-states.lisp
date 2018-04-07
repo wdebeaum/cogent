@@ -258,7 +258,8 @@ ONT::INTERACT
 		     )
 	  :destination 'handle-csm-response
 	  :trigger t)
-	 
+
+	 ; Only gets here if propose-cps-act is invoked, not when we fall into it from segmentend (no trigger)
 	 (transition
 	  :description "default"
 	  :pattern '((?!spec ?sa ?t)
@@ -451,7 +452,8 @@ ONT::INTERACT
 	 (transition
 	  :description "green; the green block; How about me?"
 	  :pattern '((ONT::SPEECHACT ?!sa (? t ONT::ANSWER ONT::IDENTIFY ONT::REQUEST-COMMENT) :what ?!ans)
-		     (?!spec ?!ans (? !t ONT::SITUATION-ROOT)) 
+		     ;(?!spec ?!ans (? !t ONT::SITUATION-ROOT)) 
+		     (?!spec ?!ans (? !t ONT::EVENT-OF-CHANGE)) ; allow EVENT-TYPE but exclude commands 
 		     (ont::eval (generate-AKRL-context :what ?!ans :result ?akrl-context))
 		     (ont::eval (find-attr :result ?goal :feature ACTIVE-GOAL))
 		     -user-response4b>
@@ -1613,7 +1615,8 @@ ONT::INTERACT
 							
 		     )
 	  :destination 'handle-csm-response
-	  :trigger t)
+	  ;:trigger t
+	  )
 	 (transition
 	  :description "user defers to system: e.g., you choose"
 	  :pattern '((ONT::SPEECHACT ?!sa (? x ONT::PROPOSE ONT::REQUEST ONT::REQUEST-COMMENT ONt::FRAGMENT) :what ?!what)
@@ -1624,7 +1627,8 @@ ONT::INTERACT
 		     (INVOKE-CSM :msg (PICK-ACTIVE-GOAL))
 		     )
 	  :destination 'what-next-initiative-on-new-goal
-	  :trigger t)
+	  ;:trigger t
+	  )
 	 )))	 	 
 
 

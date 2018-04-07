@@ -12,6 +12,7 @@ public class OntologyReader {
 	private HashMap<String,ArrayList<String>> goals;
 	private ArrayList<String> goalOrdering;
 	private HashMap<String,ArrayList<String>> actGoalSuggestionMapping;
+	private HashMap<String,ArrayList<String>> implicitActGoalMapping;
 	private HashSet<String> models;
 	
 	public OntologyReader()
@@ -19,6 +20,7 @@ public class OntologyReader {
 		events = new HashMap<String, String>();
 		goals = new HashMap<String, ArrayList<String>>();
 		actGoalSuggestionMapping = new HashMap<String, ArrayList<String>>();
+		implicitActGoalMapping = new HashMap<String, ArrayList<String>>();
 		goalOrdering = new ArrayList<String>();
 		models = new HashSet<String>();
 	}
@@ -54,14 +56,23 @@ public class OntologyReader {
 				    	
 				    	for (String parent : parents.split(","))
 				    	{
-				    		if (parent.trim().length() > 0 && parent.charAt(0) != '@')
-				    			parentList.add(parent.toUpperCase().trim());
-				    		else if (parent.trim().length() > 0)
+				    		if (parent.trim().length() == 0)
+				    			continue;
+				    		
+				    		if (parent.trim().charAt(0) == '@')
 				    		{
 				    			if (!actGoalSuggestionMapping.containsKey(parent))
 				    				actGoalSuggestionMapping.put(parent,new ArrayList<String>());
 				    			actGoalSuggestionMapping.get(parent).add(goal);
 				    		}
+				    		else if (parent.charAt(0) == '^')
+				    		{
+				    			if (!implicitActGoalMapping.containsKey(parent))
+				    				implicitActGoalMapping.put(parent,new ArrayList<String>());
+				    			implicitActGoalMapping.get(parent).add(goal);		    			
+				    		}
+				    		else
+				    			parentList.add(parent.toUpperCase().trim());
 				    	}
 				    	
 				    	if (parentList.size() == 0)
@@ -174,6 +185,13 @@ public class OntologyReader {
 		String actTypeString = "@" + actType.toString();
 		
 		return actGoalSuggestionMapping.get(actTypeString);
+	}
+	
+	public List<String> getImplicitAcceptsOfActType(ActType actType)
+	{
+		String actTypeString = "^" + actType.toString();
+		
+		return implicitActGoalMapping.get(actTypeString);
 	}
 	
 	public void readEventOntologyFromFile(String filename)
