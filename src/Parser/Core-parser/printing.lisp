@@ -3,7 +3,7 @@
 ;;;
 ;;; Author:  James Allen <james@cs.rochester.edu>
 ;;;
-;;; Time-stamp: <Mon Jun 26 13:22:23 EDT 2017 jallen>
+;;; Time-stamp: <Thu Apr 12 11:01:41 EDT 2018 james>
 
 (in-package "PARSER")
 
@@ -486,10 +486,11 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
   (let* ((ans (find-arg-in-act parse  :terms))
 	 (root (find-arg-in-act parse :root))
 	 (result (sort-lfs root (extract-lfs ans))))
-    (if *show-words* (format t "~%~%;;;;; ~S" (find-arg-in-act (find-if #'(lambda (x)
-									    (eq (find-arg-in-act x :var) root))
-									ans)
-							       :input)))
+    (if *show-words*
+	(format t "~%~%;;;;; ~S" (find-arg-in-act (find-if #'(lambda (x)
+							       (eq (find-arg-in-act x :var) root))
+							   ans)
+						  :input)))
     (print-lf-nicely result "")))
 
 (defun print-lf-nicely (lfs prefix)
@@ -501,12 +502,15 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
   (values))
 
 (defun extract-lfs (term)
+  (extract-lf-from-term term))
+  
+(defun extract-lf-from-term (term)
   "is a term has an LF then it is returned rather than the term"
   (when term
     (if (consp term) 
       (if (eq (car term) 'term)
-	  (or (add-positional-info (find-arg-in-act term :lf) term) term)
-	  (mapcar #'extract-lfs term))
+	  (add-lex-if-necessary (or (add-positional-info (find-arg-in-act term :lf) term) term) term)
+	  (mapcar #'extract-lf-from-term term))
       term)))
 
 (defun add-positional-info (lf term)
@@ -514,6 +518,16 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
       lf
       (append lf
 	      (list :start (find-arg-in-act term :start) :end (find-arg-in-act term :end)))))
+
+(defvar *add-lex-to-lf* nil)
+
+(defun add-lex-if-necessary (lf term)
+  (if (and *add-lex-to-lf* (consp term))
+      (let ((lex (find-arg-in-act term :lex)))
+	(if lex
+	    (append lf (list :lex lex))
+	    lf))
+      lf))
 
 (defun sort-lfs (root lfs)
   "Sorts LFs by closet distance to the 'root' LF, which is the first one"
@@ -1104,6 +1118,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
                                 (build-lf-term (cdr x) form))
                             objects))
          *additional-modifiers*))
+       
        (root-term (find-if #'(lambda (x) (eq (find-arg-in-act x :var) root)) terms))
        (result (list 'UTT
                      :type (car analysis)
@@ -1115,13 +1130,15 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 		     :end  (or (find-arg-in-act root-term :end) (get-max-position))
 		     :words words
                      ))
+       
        (noise (find-arg-in-act analysis :noise))
        (focus (find-arg-in-act analysis :focus)))
       ;; add additional information on noise, adverbials and focus
       (if noise 
         (setq result (append result (list :noise noise))))
       (if focus
-        (setq result (append result (list :wh-focus focus))))
+	  (setq result (append result (list :wh-focus focus))))
+      
       result
       )))
 
@@ -1146,7 +1163,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 		  (w::description
 		   (build-lf-term-from-description (clean-out-vars c) form))
 		  ((w::prop w::speechact W::sa-seq)
-		   (build-lf-term-from-prop (clean-out-vars c) (second c) form)))))
+		   (build-lf-term-from-prop (clean-out-vars c) (second c) form))))
+	  )
       (if *kr-type-info-desired* 
 	  ;; promote the WNSENSE into the LF
 	  (list* 'term :lf (car (extract-lfs+wnsense (list term) *kr-type-info-desired* t)) (cdddr term))
@@ -1200,6 +1218,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
            (term (list 'TERM :LF newlf)))
       (if (or (null form) (member 'w::var form))(setq term (append term (list :VAR var))))
       (if (or (null form) (member 'w::sem form)) (setq term (append term (list :SEM sem))))
+      (if *add-lex-to-lf*
+	  (setq term (replace-arg-in-act term :lf (append newlf (list :LEX lex)))))
       (if (and input (or (null form) (member 'w::input form)))
 	  (setq term (append term (list :INPUT input)))
         )
@@ -1272,7 +1292,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 
 (defun build-spec (status)
   "Build the right SPEC structure based on the status feature"
-  (case status 
+  (case status
+    ;;; the W:: cases are obsolete.  Use ONT:: further below.
     ((w::definite w::name w::gname) 'ont::the) 
     (w::indefinite 'ont::A)
     ((w::indefinite-plural w::number) 'ont::indef-set)
@@ -1301,6 +1322,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
     (ONT::SM 'ont::SM)
     (ONT::definite-plural 'ont::the-set)
     ((ONT::wh ONT::what ONT::which ONT::whose ONT::*wh-term*) 'ont::wh-term) 
+    (ONT::WH-PLURAL 'ONT::WH-term-SET)
     (ONT::wh-quantity 'ont::wh-quantity)
     (ONT::universal 'ont::all-the)
     (ONT::value 'ont::value)
@@ -1539,21 +1561,24 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
          (var (convert-to-package (get-fvalue args 'w::var) *ont-package*))
          (constraints (get-fvalue args 'w::constraint))
          (tma (get-fvalue args 'w::tma))
+	 (lex (get-fvalue args 'W::lex))
          (roles (build-roles-for-lf var constraints))
          (input (get-fvalue args 'w::input))
 	 (start (get-fvalue args 'W::start))
 	 (end (get-fvalue args 'w::end))
          (new-lf (list* (build-spec type)
-             var
-             class
-             (if (and tma (not (eq tma '-)) (not (symbolp tma)))
-               (if (not *promote-tmas*)
-		   (append  roles `(:TMA ,(third tma)))
-		   (append roles (build-roles-for-lf var tma)))
-	       roles)))
+			var
+			class
+			(if (and tma (not (eq tma '-)) (not (symbolp tma)))
+			    (if (not *promote-tmas*)
+				(append  roles `(:TMA ,(third tma)))
+				(append roles (build-roles-for-lf var tma)))
+			    roles)))
          (term (list 'TERM :LF new-lf)))
+   
     (if (or (null form) (member 'w::var form)) (setq term (append term (list :VAR var))))
     (if (or (null form) (member 'w::sem form)) (setq term (append term (list :SEM (get-fvalue args 'w::sem) ))))
+    (if *add-lex-to-lf* (setq term (replace-arg-in-act term :lf (append new-lf (list :LEX lex)))))
     (if (or (null form) (and (member 'w::input form) input))
       (setq term (append term (list :INPUT input)))
         )
@@ -1844,7 +1869,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
   (let* ((lfs (mapcar #'(lambda (x) (find-arg-in-act x :LF)) terms))
 	 (type-map (mapcar  #'(lambda (x) (list (second x) (third x))) lfs)))
     (mapcar #'(lambda (term)
-		(replace-arg-in-act term :lf (refine-abstract-roles-in-lf (find-arg-in-act term :lf) type-map))) terms)))
+		(replace-arg-in-act term :lf (refine-abstract-roles-in-lf (find-arg-in-act term :lf) type-map)))
+	    terms)))
 
 (defun refine-abstract-roles-in-lf (lf type-maps)
   (let ((roles (cdddr lf)))
@@ -1912,6 +1938,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 				  (eq x old-role-name)) new-names)))
     (cond 
       ;; first case checks for relational roles that we can have multiple versions of
+      ((null new-names)
+       old-role-name)
       ((member (car really-new-names)
 		   '(:result :source :transient-result))
 	   (car really-new-names))
@@ -1921,7 +1949,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
       ;; otherwise, the first one is the answer
       (really-new-names 
        (car really-new-names))
-      ;; none left, retrn original name
+      ;; none left, return original name
       (t old-role-name))))
 
       					    

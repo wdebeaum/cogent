@@ -512,7 +512,7 @@
      )
      -wh-advbl-q1> .98 ;; really don't want this to apply before gaps
     (advbl
-     ;;(argument (% s (sem ?sem) (sem ($ f::situation (f::type f::eventuality)))))
+     (argument (% s (sem ?sem) (sem ($ f::situation))))
      (var ?advv)
      (arg ?v) (wh q) (wh-var ?wvar) (qtype ?qtype) (lf ?lf1)
      )
@@ -930,7 +930,7 @@
      )
    
    ;; e.g., for the train to arrive
-   ((cp (ctype s-to) (var ?v) (subj ?subj) (gap ?g)
+   ((cp (ctype s-to) (for-to +) (var ?v) (subj ?subj) (gap ?g)
      (lf ?lf)
  ;;    (lex to) (headcat ?vinf) ;; non-aug-trips settings
      (lex ?hlex) (headcat ?hcat) ;; aug-trips
@@ -1014,7 +1014,7 @@
        (filled -) (adjectival -) (gap ?gap)
        (wh ?wh)
        )
-      -pred-advbl> 0.98 ;; don't use it if a regular advbl interpretation is possible
+      -pred-advbl>
       ;; md: argument should be % np, if an adverbial does not apply to nps, don't use it
       (head (advbl (lf ?lf) (var ?v) (arg ?arg) (argument ?argument) 
 		   (argument (% np (var ?arg))) (sem ?sem)
@@ -1767,7 +1767,7 @@
    ;; test: the dog was given (me)
    ((v (vform passive) (passive +)
      (subj ?!dobj) (subj-map ?dobj-map) 
-     (dobj (% -)) (agent-map ?subj-map) (agent-sem ?subjsem)
+     (dobj (% -)) (dobj-map -) (agent-map ?subj-map) (agent-sem ?subjsem)
      (iobj ?iobj) (iobj-map ?iobj-map)
      (comp3 ?comp3) (part ?part) (comp3-map ?comp-map)
 ;     (prefix ?prefix)
@@ -2279,7 +2279,7 @@
      
      )
     ;;?subj
-    (np (var ?subjvar) (agr ?subjagr) (case (? npcase sub -)) (sem ?subjsem) (wh -) (sort (? !sort wh-desc)) (gap -) (lex ?subjlex) )  ;; lots of restrictions on this np to eliminate sentences like "is where the people"
+    (np (var ?subjvar) (agr ?subjagr) (case (? npcase sub -)) (sem ?subjsem) (wh -) (sort (? !sort wh-desc)) (gap -) (lex ?subjlex))  ;; lots of restrictions on this np to eliminate sentences like "is where the people"
     ?dobj
     ?comp
     (add-to-conjunct (val (tense (? vf past pres))) (old ?tma) (new ?newtma))
@@ -2340,7 +2340,8 @@
       (append-conjuncts (conj1 (& (tense (? vf past pres)) (negation +))) (conj2 ?tma) (new ?newtma))
       ;;    (add-to-conjunct (val (tense (? vf past pres fut))) (old ?tma) (new ?newtma))
     )
-      
+
+     ; Where is the red block?
    ((s 
      (stype ynq) (main +) (aux -) 
      
@@ -2366,7 +2367,7 @@
      (gap (% ?!s3 (case ?dcase) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap -)))
      (advbl-needed ?avn)
      )
-    -s-ynq-be-gap> 0.96  ;; downgrade this until we find an example that needs this rule!!  Why do we not require the V to be ONT::BE or ONT::EQUAL????
+    -s-ynq-be-gap> 0.98
     (head (v (aux -)
 	   
 	   (var ?v) ;; propagate up explicitly because not a head feature	   
@@ -2606,24 +2607,24 @@
    ; The dog?
    ((utt (lf (% speechact (var *) (class ont::SA_YN-QUESTION) (constraint (& (content ?v) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p)) 
-    -np-utt-simple-q> .98
+    -np-utt-simple-q> .97
     (head (np (wh -) (sort (? x pred unit-measure)) (complex -) (var ?v) (sem ($ ?!type))))
     (punc (punctype ?p) (lex w::punc-question-mark))
     )
    
    ; What next?  What color?
-   ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?v) (punctype ?p))) )) (var *)
+   ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?whv) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p))
-    -np-utt-simple-whq> .98
-    (head (np (wh Q) (sort (? x pred unit-measure)) (complex -) (var ?v) (sem ($ ?!type))))
+    -np-utt-simple-whq> .97
+    (head (np (wh Q) (sort (? x pred unit-measure)) (complex -) (var ?v) (wh-var ?whv) (sem ($ ?!type))))
     (punc (punctype ?p) (lex w::punc-question-mark))
     )
    
    ; How big?
-   ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?v) (punctype ?p))) )) (var *)
+   ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?whv) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p)) 
-    -how-adj-utt-simple-q> .98
-    (head (adjp (wh Q) (sort (? x pp-word)) (complex -) (var ?v) (sem ($ ?!type))))
+    -how-adj-utt-simple-q> .97
+    (head (adjp (wh Q) (sort (? x pp-word)) (complex -) (var ?v) (wh-var ?whv) (sem ($ ?!type))))
     (punc (punctype ?p) (lex w::punc-question-mark))
     )
 
@@ -2639,7 +2640,7 @@
 					   (tma (& (negation +)))
 					   ))
      )
-     -not-np-s> .98
+     -not-np-s> .97
      (neg)
      (head (np (wh -) (sort (? x pred unit-measure)) (gerund -) (var ?v) (sem ?sem) (sem ($ ?!type))))
      )
@@ -2736,12 +2737,12 @@
     ; Of what do you think?
      ((s (stype whq) (subjvar ?subjvar) (dobjvar ?dobjvar)
       (qtype q) (lf ?lf) (var ?v))
-     -wh-q-ppgap>
-     (pp (var ?npvar) (sem ?npsem) (wh q) (agr ?a) (case ?case) (ptype ?ptp))
+      -wh-q-ppgap>
+      (pp (var ?npvar) (sem ?npsem) (wh q) (agr ?a) (case ?case) (ptype ?ptp))
       (head (s (stype ynq) (lf ?lf) (var ?v) 
-	     (advbl-needed -)
-	     (subjvar ?subjvar) (dobjvar ?dobjvar)
-	     (gap (% pp (sem ?npsem) (case ?case) (var ?npvar) (agr ?a) (ptype ?ptp))))
+	       (advbl-needed -)
+	       (subjvar ?subjvar) (dobjvar ?dobjvar)
+	       (gap (% pp (sem ?npsem) (case ?case) (var ?npvar) (agr ?a) (ptype ?ptp))))
        )
       )
 
@@ -3101,7 +3102,7 @@
 (parser::augment-grammar
   '((headfeatures
      (vp vform agr cont comp3 postadvbl aux modal auxname lex headcat transform subj-map template)     
-     (s vform neg comp3 cont  lex headcat transform )
+     (s vform neg comp3 cont headcat transform )
      )
     
      ;; rules for auxiliaries with elided vp complement: will i?, can i?, do i? 
@@ -3118,7 +3119,7 @@
      (head (aux 
 	    (tma-contrib ?tma-contrib)
 	    (sem-contrib ?sem-contrib)
-	    (ellipsis +) 
+	    (ellipsis +) (lex ?lx)
 	    (contraction -)
 	    (sem ?sem) (vform ?vf) (vform (? vf pres past fut))
 	    (var ?v) (tma ?tma1) (agr ?a)
@@ -3161,7 +3162,7 @@
 	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (case sub) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
             (comp3 ?comp)
 	    (comp3 (% ?s4 (class ?class)
-		      (var ?v)
+		      (var ?v)  (lex ?lx)
 		      (case (? ccase obj -)) (subj-map ?rsubjmap) 
 		      (constraint ?con) (subjvar ?subjvar) (tma ?tma1)
 		      (var ?compvar) (sem ?compsem) (gap ?gap) (subj (% ?s1 (lex ?subjlex) (case sub) (var ?subjvar)
@@ -3182,6 +3183,8 @@
      (change-feature-values (old ?compsem) (new ?newsem) (newvalues ?sem-contrib))
      )
 
+
+    ;; e.g., can I not open the door?
     ((s (stype ynq) (gap ?gap) (lex ?lx)
       (subjvar ?subjvar) (dobjvar ?dobjvar) (var ?v)
       (lf (% prop  (var ?v) (class ?class) (sem ?newsem)
@@ -3203,7 +3206,7 @@
 	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (case sub) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
             (comp3 ?comp)
 	    (comp3 (% ?s4 (class ?class)
-		      (var ?v)
+		      (var ?v)  (lex ?lx)
 		      (case (? ccase obj -)) (subj-map ?rsubjmap) 
 		      (constraint ?con) (subjvar ?subjvar) (tma ?tma1)
 		      (var ?compvar) (sem ?compsem) (gap ?gap) (subj (% ?s1 (lex ?subjlex) (case sub) (var ?subjvar)
@@ -3287,7 +3290,7 @@
      -ynq-aux-modal-nocomp-neg> .96 ;; only execute if we have to so we don't explode the search space
      (head (aux 
 	    (tma-contrib ?tma-contrib)
-	    (sem-contrib ?sem-contrib)
+	    (sem-contrib ?sem-contrib)  (lex ?lx)
 	    (ellipsis +) (contraction -)
 	    (sem ?sem) (vform ?vf) (vform (? vf pres past fut))
 	    (var ?v) (tma ?tma1) (agr ?a)
@@ -3309,19 +3312,19 @@
 (parser::augment-grammar
  '((headfeatures
     (vp agr neg iobj dobj comp3 part cont  tense-pro gap subj subjvar aux modal auxname headcat advbl-needed template)
-    (vp- lex headcat template result)
+    (vp- headcat template result)
     )
    
    ;; aux rule for auxilliaries that change the sem features of the phrase
    ;; e.g. he has left; she is leaving; she can work
    ;; test: the dog can bark.
    ;; test: the dog has chased the cat.
-   ((vp- (subj ?subj) (main -) (subjvar ?subjvar) (dobjvar ?dobjvar) (lex ?l)
+   ((vp- (subj ?subj) (main -) (subjvar ?subjvar) (dobjvar ?dobjvar)
      (var ?var) (class ?class) (gap ?gap) 
      (constraint ?con1)
      (tma ?newtma)
      (postadvbl +) (agr ?a)
-     (sem ?newsem)
+     (sem ?newsem) (lex ?lex)
      (vform ?vform) (transform ?transform)
      (aux +) (auxname ?auxname) 
      (subj-map ?lsubj-map) 
@@ -3333,7 +3336,7 @@
 	   (tma-contrib ?tma-contrib)
 	   (sem-contrib ?sem-contrib)
 	   (ellipsis -) ;; (contraction -)
-	   (lex ?l)
+	  
 	   (lf ?lf)
 	   (vform ?vform)
 	   (agr ?a)
@@ -3343,7 +3346,7 @@
 	   (comp3 ?comp) 
 	   (comp3 (% vp- (class ?class)  (constraint ?con1) (tma ?tma1) (var ?var)
 		     (case (? ccase obj -)) (var ?compvar)  
-		     (gap ?gap)		     
+		     (gap ?gap)	(lex ?lex)	     
 		     (sem ?compsem) ;; (sem ($ f::situation (aspect (? !asp f::indiv-level))))  ;; constraints are in lf
 		     (subjvar ?subjvar) (dobjvar ?dobjvar) (transform ?transform)
 		     (subj ?subj)
@@ -3368,10 +3371,10 @@
    ;; add (modality ont::xx) & (negation +) to tma
    ;; test: the dog won't bark.
    ;; test: the dog won't chase the cat.
-    ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?dobjvar) (lex ?l)
+    ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?dobjvar)
       (var ?v) (class ?cl) (gap -) 
       (constraint ?con1)
-      (tma ?newtma)
+      (tma ?newtma) (lex ?lex)
       (postadvbl +) (agr ?a) (sem ?compsem)
       (vform ?vform) (transform ?trans)
       (aux +)  (modal +)
@@ -3383,7 +3386,6 @@
 	    (tma-contrib ?tma-contrib)
 	    (sem-contrib ?sem-contrib)
 	    (ellipsis -) (neg -)
-	    (lex ?l)
 	    (vform ?vform) (vform (? vf past pres fut)) ;; double matching for 'do', since tense not marked in lexicon
 	    (agr ?a) 
 	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
@@ -3393,7 +3395,7 @@
 		      (case (? ccase obj -)) (var ?compvar)  ;;(sem ?compsem) -- needed for bug in unifier
 		      (gap -) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 		      (subjvar ?subjvar) (dobjvar ?dobjvar) (transform ?trans)
-		      (advbl-needed -)
+		      (advbl-needed -) (lex ?lex)
 		      ))
 	    (subj-map ?lsubj-map) (comp3-map ?comp3-map)
 	    ))

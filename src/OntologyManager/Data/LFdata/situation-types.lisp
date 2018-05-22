@@ -4,6 +4,10 @@
     :parent ont::event-of-action
     :comment "abstract event of doing something: behave, activity, ..."
     :arguments ((:required ont::agent  ((? cz F::Phys-obj f::abstr-obj f::situation)))
+
+		; need to figure out why James thinks this
+		;(:optional ont::result (F::abstr-obj (F::type ont::property-val)))   ;; this is the generic restriction on what RESULTs can be
+
 		(:optional ONT::NOROLE)
 		))
 
@@ -36,7 +40,6 @@
  :sem (F::Situation (F::Cause (? cz F::Force f::agentive)) (F::Trajectory -))
  :arguments ((:ESSENTIAL ONT::agent ((? oc F::Phys-obj F::Abstr-obj F::Situation)))
 	     (:optional ont::affected ((? aff F::SITUATION F::ABSTR-OBJ F::Phys-obj)))
-	     (:optional ont::result ((? res1 F::SITUATION F::ABSTR-OBJ)))
 	     (:optional ont::formal ((? res2 F::SITUATION F::ABSTR-OBJ)
 				     (F::type (? ftype ONT::SITUATION-ROOT ONT::PROPERTY-VAL));; ONT::POSITION-RELN)) ;; here for now while we decide the FORMAL/RESULT issue
 				     )))
@@ -48,7 +51,7 @@
  :sem (F::Situation (F::Cause (? cz F::Force f::agentive)) (F::Trajectory -))
  :comment "an AGENT prevents some activity from occuring or proposition from becoming true"
  :arguments ((:ESSENTIAL ONT::affected ((? oc F::Phys-obj F::Abstr-obj F::Situation)))  
-             (:ESSENTIAL ONT::result ((? eoc2 F::situation)))
+             
              (:OPTIONAL ONT::formal ((? eoc3 F::situation)))
              (:OPTIONAL ONT::agent ((? aoc F::phys-obj F::abstr-obj)) (:implements cause))
              )
@@ -220,7 +223,7 @@
 
 
 (define-type ONT::Objective-influence
-    :wordnet-sense-keys ("force%1:07:01" "appeal%2:37:00" "keep_up%2:29:00" "retire%2:33:00" "sensitise%2:39:00" "sound%2:39:01" "stampede%2:38:01" "stampede%2:41:01" "trip%2:38:01" "unbalance%2:42:00" "undo%2:36:00")
+    :wordnet-sense-keys ("force%1:07:01" "appeal%2:37:00" "keep_up%2:29:00" "retire%2:33:00" "sensitise%2:39:00" "stampede%2:38:01" "stampede%2:41:01" "trip%2:38:01" "unbalance%2:42:00" "undo%2:36:00")
     :parent ONT::EVENT-OF-causation
     :comment "an AGENT influences the AFFECTED role in some way (typically unspecified by the verb)"
     :sem (F::Situation (F::Trajectory -))
@@ -358,7 +361,7 @@
 ;; cognizer acquires a believe about a situation and it actually holds
 ;; get, grasp, realize, see, understand
 (define-type ONT::come-to-understand
- :wordnet-sense-keys ("understand%2:31:00" "see%2:31:01" "realise%2:31:00" "realize%2:31:00" "understand%2:31:01")
+ :wordnet-sense-keys ("see%2:31:01" "realise%2:31:00" "realize%2:31:00" "understand%2:31:01" "sink_in%2:31:00")
  :parent ONT::acquire-belief
  :arguments ((:REQUIRED ONT::Formal ((? th5 f::phys-obj f::abstr-obj f::situation))) ;;Ground
              (:ESSENTIAL ONT::Agent  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
@@ -445,7 +448,7 @@
  )
 
 (define-type ONT::Request
- :wordnet-sense-keys ("quest%2:32:01" "call_for%2:32:04" "bespeak%2:32:00" "request%2:32:01" "request%1:10:00" "asking%1:10:00")
+ :wordnet-sense-keys ("request%2:32:01" "request%1:10:00" "call%2:41:04")
  :parent ONT::directive
  :comment "the generic directive act"
  :sem (F::Situation (F::Cause F::Agentive))
@@ -619,9 +622,8 @@
  :wordnet-sense-keys ("enter%2:38:00" "come_in%2:38:02" "get_into%2:38:00" "get_in%2:38:01" "go_into%2:38:00" "go_in%2:38:00" "move_into%2:38:00" "enter%2:36:00")
  :parent ont::event-of-action ;ont::motion
  :arguments ((:REQUIRED ONT::affected ((? ttype f::phys-obj)))
-	     (:ESSENTIAL ont::result (F::phys-obj (F::spatial-abstraction (? sa F::spatial-region))
+	     (:ESSENTIAL ont::neutral (F::phys-obj (F::spatial-abstraction (? sa F::spatial-region))
 					       (F::object-function (? of f::spatial-object f::building))))
-	     (:optional ont::neutral)
 	     )
  )
 
@@ -654,7 +656,7 @@
 |#
 
 (define-type ONT::Active-Perception
- :wordnet-sense-keys ("look%2:39:00" "feel%2:39:00" "sense%2:39:00" "note%2:39:02" "look_on%2:39:00" "look_out%2:39:00" "watch%2:39:00" "watch%2:39:03")
+ :wordnet-sense-keys ("look%2:39:00" "feel%2:39:00" "sense%2:39:00" "note%2:39:02" "look_on%2:39:00" "look_out%2:39:00" "watch%2:39:00" "watch%2:39:03" "see%2:39:00" "taste%2:39:02" "smell%2:39:00")
  :parent ONT::PERCEPTION
 ; :sem (F::Situation (F::trajectory +)) ;; can perceive along trajectories; on your left you see a building; you hear a noise to your right
  :arguments ((:ESSENTIAL ONT::agent (F::Phys-obj (F::Intentional +)))
@@ -878,7 +880,7 @@
  )
 
 (define-type ONT::APPEARS-TO-HAVE-PROPERTY
- :wordnet-sense-keys ("sound%2:39:06" "come_across%2:31:00")
+ :wordnet-sense-keys ("sound%2:39:06")
  :parent ONT::HAVE-PROPERTY
  :sem (F::situation (F::Aspect F::stage-level) (F::Time-span F::extended))
  )
@@ -939,7 +941,7 @@
 
 ;; e.g., my leg hurts, he itches, They tired of the game
  (define-type ONT::experiencer-obj
- :wordnet-sense-keys ("itch%2:39:02")
+ :wordnet-sense-keys ("itch%2:39:02" "ache%2:39:00")
  :parent ONT::event-of-undergoing-action
  :sem (F::Situation (F::aspect F::dynamic) (F::cause F::agentive))
  :arguments (;; (:REQUIRED ONT::cause) ;; this used to include other verbs, but now is a formal (part or an experiencer), or experiencer

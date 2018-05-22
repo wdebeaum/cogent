@@ -98,11 +98,13 @@
   "cost table is either modified for the next utterance only, or permanently. Default is next utterance only"
   (if (and (consp mods) (every #'consp mods))
       (if (eq duration 'permanent)
-      	  (setq *cost-table* (append (convert-to-package mods *ont-package*) *cost-table*))
+      	  (setq *cost-table* (append mods ;(convert-to-package mods *ont-package*)
+				     *cost-table*))
 	  (progn
 	    (setq *original-cost-table* *cost-table*)
 	    (setq *original-cost-table-was-modified* t)
-	    (setq *cost-table* (append (convert-to-package mods *ont-package*) *cost-table*))))
+	    (setq *cost-table* (append mods ;(convert-to-package mods *ont-package*)
+				       *cost-table*))))
       (format t "~% BAD format of MODS in ADJUST-COST-TABLE: ~S" mods)))
       
 
@@ -935,6 +937,7 @@
                             (w::status ,(or status 'w::*PRO*))
                             (w::constraint ,(get-value c 'w::constraint))
 			    (w::start ,(get-value c 'w::start))
+			    (w::lex ,(get-value c 'w::lex))
 			    (w::end ,(get-value c 'w::end))))
             )))))
   
@@ -1019,6 +1022,7 @@
 	   temp-symbol-table))
     (let* ((constit (car constit-tree))
 	   (lf (get-value constit 'w::lf))
+	   (lex (get-value constit 'W::lex))
 	   (sem (get-value constit 'w::sem))
 	   (input (get-value constit 'w::input))
 	   (notes (get-value constit 'w::notes))
@@ -1027,7 +1031,11 @@
 	(multiple-value-bind (new-lf pros)
 	    (remove-*pro*-from-lf lf)
 	  (add-to-temp-symbol-table var (if (constit-p new-lf) 
-					    (replace-sem-in-lf (add-feature-value new-lf 'w::input input)
+					    (replace-sem-in-lf
+					     (add-feature-value
+					      (add-feature-value new-lf 'w::input input)
+					      'w::lex
+					      lex)
 							 sem)
 					    new-lf))
 	  ;; if there were *PRO* objects found, add them too

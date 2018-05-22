@@ -104,6 +104,12 @@
  :parent ONT::DEGREE-MODIFIER
  )
 
+;; at all, whatsoever
+(define-type ont::least-extent
+ :parent ont::modifier
+ :comment "to the least extent, to any extent"
+)
+
 ;; so (very good)
 (define-type ONT::intensifier
  :parent ONT::modifier
@@ -184,12 +190,15 @@
  )
 
 (define-type ONT::PURPOSE
- :parent ONT::SITUATION-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation (F::type (? t1 ont::event-of-action ont::event-of-awareness)))); maybe takes statives: This suffices for...
+ ;:parent ONT::SITUATION-MODIFIER
+ :parent ONT::SITUATION-OBJECT-MODIFIER ; take out of SITUATION-MODIFIER so we can have PHYS-OBJ
+ :arguments ((:ESSENTIAL ONT::FIGURE ((? x F::phys-obj F::Situation)
+				      (F::type (? t1 ont::phys-object ont::event-of-action ont::event-of-awareness)))); maybe takes statives: This suffices for... ; takes phys-object: The pizza is for eating
 ;;             (:REQUIRED ONT::VAL (F::Situation (F::aspect F::dynamic)))
 	     ;; purposes don't have to be dynamic -- e.g. to store something, to remember, etc.
 ;	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj) (F::scale (? !sc ont::duration-scale))))
-	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj) (f::type (? !t ONT::ORGANISM)) (F::scale -)))
+	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj)
+				     (f::type (? !t ONT::ORGANISM)) (F::scale -)))
 	     ;; a separate role because it will be lower priority
 ;	     (:required ont::obj-val (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
 	    ;; (:required ont::REASON (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
@@ -296,8 +305,8 @@
  :arguments ((:ESSENTIAL ONT::FIGURE ((? s F::Phys-obj F::situation)))
              ;(:REQUIRED ONT::GROUND (F::abstr-obj (f::scale ?!sc)))
 	     ;(:OPTIONAL ONT::GROUND1 (F::abstr-obj (f::scale ?!sc2)))
-             (:REQUIRED ONT::GROUND (F::abstr-obj (f::scale (? sc ont::linear-scale ont::number-scale ont::linear-extent-scale))))
-	     (:OPTIONAL ONT::GROUND1 (F::abstr-obj (f::scale (? sc2 ont::linear-scale ont::number-scale ont::linear-extent-scale))))
+             (:REQUIRED ONT::GROUND (F::abstr-obj (f::type (? t ont::length-unit ont::number)) (f::scale (? sc ont::linear-scale ont::number-scale ont::linear-extent-scale))))
+	     (:REQUIRED ONT::GROUND1 (F::abstr-obj (f::type (? t2 ont::length-unit ont::number)) (f::scale (? sc2 ont::linear-scale ont::number-scale ont::linear-extent-scale))))
              )
  )
 

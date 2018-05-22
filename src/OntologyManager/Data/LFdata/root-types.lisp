@@ -169,7 +169,11 @@
     :sem (F::abstr-obj )
     :arguments ((:REQUIRED ONT::FIGURE)
 		(:ESSENTIAL ONT::GROUND)
-		(:ESSENTIAL ONT::SCALE))
+		(:ESSENTIAL ONT::SCALE)
+		(:OPTIONAL ONT::NOROLE)
+		(:OPTIONAL ONT::COMPAR)
+		(:OPTIONAL ONT::REFSET)
+		)
    )
 
 (define-type ONT::Part
@@ -182,3 +186,6 @@
 
 (define-type ont::remaining-part
     :parent ont::part)
+
+(define-type ont::important-part
+  :parent ont::part)

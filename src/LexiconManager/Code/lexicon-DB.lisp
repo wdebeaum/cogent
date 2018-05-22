@@ -537,9 +537,12 @@ intersection of an entry's tags and these tags is non-empty."
 	 (nom-def (if word (cons word (list 
 				       (cons 'senses (if objpreps
 							 (mapcar #'(lambda (x) (cons (list 'syntax '(w::sort w::pred)
-											   (list 'w::nomobjpreps (list '? 'objp objpreps))
-											   (list 'W::nomsubjpreps (list '? 'subjp subjpreps)
-												 ))
+											   (list 'w::nomobjpreps (when (not (member objpreps '(- w::-)))
+														   (list '? 'objp objpreps)))
+											   (list 'W::nomsubjpreps (when (not (member subjpreps '(- w::-)))
+														    (list '? 'subjp subjpreps)))
+																     
+											   )
 										     x))
 								 nom-senses)
 							 nom-senses))))))
@@ -825,14 +828,17 @@ intersection of an entry's tags and these tags is non-empty."
 		      (let* ((lf-parent (sense-definition-lf-parent x))
 			     (orig-templ (sense-definition-templ x))
 			     (fscale (car (get-sem-feature-value lf-parent 'f::scale)))
+			     (wfeats (vocabulary-entry-wfeats entry))
 			     ;;(this-sem (sense-definition-sem x))			    
 			     ;;(orientation (cadr (assoc 'f::orientation this-sem)))
 			     (templ (retrieve-template (sense-definition-templ x)))
-			     (templ-feats (remove-if #'(lambda (x) (eq (car x) 'w::SUBCAT))
+			     (templ-feats (remove-if #'(lambda (x) (eq (car x) 'w::SUBCAT)) ; e.g., to remove (subcat -) from adj-theme-templ
 						     (if (syntax-template-p templ)
 							 (syntax-template-syntax templ))))
-			     (comp-op (cadr (assoc 'w::comp-op templ-feats)))
+			     (comp-op (or (cadr (assoc 'w::comp-op wfeats))  ; in lexical entry
+					  (cadr (assoc 'w::comp-op templ-feats)))) ; in template
 			     )
+				
 			(case comp-op 
 			  ((ont::less w::less)
 			   (setf (sense-definition-lf-parent x)
@@ -845,7 +851,12 @@ intersection of an entry's tags and these tags is non-empty."
 				   (:er 'ONT::more-VAL)
 				   (:est 'ONT::max-VAL)))))
 			(setf (sense-definition-templ x)
-			      (case feat (:er 'COMPAR-TEMPL) (:est 'SUPERL-TEMPL)))
+			      (case feat
+				(:er (if (assoc 'subcat (syntax-template-mappings templ))
+					 'COMPAR-TWOSUBCATS-TEMPL 'COMPAR-TEMPL))
+				(:est (if (assoc 'subcat (syntax-template-mappings templ))
+					 'SUPERL-TWOSUBCATS-TEMPL 'SUPERL-TEMPL))
+				))
 			(setf (sense-definition-syntax x)
 			      (list* (list 'W::FUNCTN `,fscale)
 				     (list 'W::FIGURE-SEM (get-figure-sem-from-type lf-parent
@@ -967,10 +978,11 @@ intersection of an entry's tags and these tags is non-empty."
 ;;	(op (get-fvalue oldfeats 'w::comp-op))
 ;;	(scale (get-fvalue oldfeats 'w::pred))
 	)
-    (if (null lf) (setq lf (get-fvalue oldfeats 'w::lex)))
-    ;;(append
+    (if (null lf)
+	(setq lf (get-fvalue oldfeats 'w::lex)))
+    (append
      `((w::COMPARATIVE ,(case er-or-est (:er '+) (:est 'w::SUPERL)))
-       )))
+      ) oldfeats)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

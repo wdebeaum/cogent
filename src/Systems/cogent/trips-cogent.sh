@@ -123,7 +123,7 @@ cleanup () {
 }
 
 rkill() {
-    for cpid in $(ps -o pid,ppid | awk -v ppid=$1 '$2==ppid {print $1}')
+    for cpid in $(ps -x -o pid,ppid | awk -v ppid=$1 '$2==ppid {print $1}')
     do
 	rkill $cpid
     done
@@ -213,8 +213,8 @@ fi
      $port_opt \
      -process-input-utterances yes \
      -terms-file $TRIPS_BASE/etc/$TRIPS_SYSNAME/domain-terms.tsv \
-     -init-taggers terms-from-file,misspellings \
-     -default-type '(or affixes words punctuation terms-from-file misspellings)' \
+     -init-taggers terms-from-file,misspellings,word-net \
+     -default-type '(or affixes words punctuation terms-from-file misspellings word-net)' \
  2>&1 | tee $logdir/TextTagger.err) &
 
 # Start Graphviz

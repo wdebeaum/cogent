@@ -19,9 +19,9 @@
              (:optional ONT::REASON ((? pi f::phys-obj f::abstr-obj f::situation)))
              (:OPTIONAL ONT::GROUND)
              (:optional ont::standard)
-             (:optional ont::norole)
              )
  )
+
 
 ;; higher-level type for evaluation
 (define-type ont::evaluation-attribute-val
@@ -77,7 +77,7 @@
 
 (define-type ont::awful-val
  :parent ont::bad 
- :wordnet-sense-keys ("nasty%3:00:00" "awful%5:00:00:bad:00" )
+ :wordnet-sense-keys ("nasty%3:00:00" "awful%5:00:00:bad:00")
 )
 
 (define-type ont::neutral-acceptability-val
@@ -1069,6 +1069,10 @@
  :comment "means of production and dissemination (c.f. ont::mode)"
 )
 
+(define-type ont::multimedia-val
+ :parent ont::medium
+)
+
 ;; e.g., graphical, tactile, vocal
 (define-type ont::mode
  :parent ont::substantial-property-val 
@@ -1078,7 +1082,7 @@
 )
 
 (define-type ont::mode-of-control-val
- :parent ont::mode 
+ :parent ont::mode
 )
 
 (define-type ont::manual-val
@@ -1092,7 +1096,7 @@
 )
 
 (define-type ont::signal-representation-val
- :parent ont::mode 
+ :parent ont::mode
 )
 
 (define-type ont::digital-val
@@ -1107,7 +1111,8 @@
 )
 
 (define-type ont::sensory-mode-val
- :parent ont::mode 
+ :parent ont::mode
+ ; auditory, visual, tactile communication/information
 )
 
 ;; phospho, phospho-, p-
@@ -2462,9 +2467,10 @@
 
 ;; dimensional-property
 (define-type ont::dimensional-property-val
- :parent ont::property-val 
- :comment "properties pertaining to dimensions and measurable extents"
-)
+    :parent ont::property-val
+    :sem (F::abstr-obj (F::scale ont::dimensional-scale))
+    :comment "properties pertaining to dimensions and measurable extents"
+    )
 
 (define-type ont::position-on-dimension-scale-val
  :parent ont::dimensional-property-val 
@@ -2472,14 +2478,14 @@
 )
 
 (define-type ont::high-val
- :parent ont::position-on-dimension-scale-val 
- :wordnet-sense-keys ("high%3:00:02" "high%3:00:01" )
-)
+    :parent ont::position-on-dimension-scale-val
+    :wordnet-sense-keys ("high%3:00:02" "high%3:00:01" )
+    )
 
 (define-type ont::low-val
- :parent ont::position-on-dimension-scale-val 
- :wordnet-sense-keys ("low%3:00:01" "low%3:00:02" )
-)
+    :parent ont::position-on-dimension-scale-val
+    :wordnet-sense-keys ("low%3:00:01" "low%3:00:02" )
+    )
 
 (define-type ont::medium-val
  :parent ont::position-on-dimension-scale-val 
@@ -2495,70 +2501,81 @@
 
 ;; size on a linear scale
 (define-type ont::linear-extent-val
- :parent ont::size-val 
- :comment "size on a linear scale"
+     :sem (F::abstr-obj (F::scale ont::linear-extent-scale ))
+     :parent ont::size-val 
+     :comment "size on a linear scale"
 )
 
 ;; size specific to non-vertical linear scale
 (define-type ont::non-vertical-val
  :parent ont::linear-extent-val 
  :comment "size specific to non-vertical linear scale"
-)
+ )
 
 (define-type ont::narrow-val
- :parent ont::non-vertical-val 
- :wordnet-sense-keys ("narrow%3:00:00" )
+    :sem (F::abstr-obj (F::scale ONT::width-scale))
+    :parent ont::non-vertical-val 
+    :wordnet-sense-keys ("narrow%3:00:00" )
 )
 
 (define-type ont::broad
- :parent ont::non-vertical-val 
- :wordnet-sense-keys ("broad%3:00:04" "wide%3:00:00" )
-)
+    :sem (F::abstr-obj (F::scale ONT::width-scale))
+    :parent ont::non-vertical-val 
+    :wordnet-sense-keys ("broad%3:00:04" "wide%3:00:00" )
+    )
 
 (define-type ont::thick-val
- :parent ont::non-vertical-val 
- :wordnet-sense-keys ("thick%3:00:01" )
-)
+    :sem (F::abstr-obj (F::scale ont::thickness-scale ))
+    :parent ont::non-vertical-val 
+    :wordnet-sense-keys ("thick%3:00:01" )
+    )
 
 (define-type ont::thin-val
- :parent ont::non-vertical-val 
- :wordnet-sense-keys ("thin%3:00:01" "flat%5:00:00:thin:01" )
-)
+    :sem (F::abstr-obj (F::scale ont::thinness-scale ))
+    :parent ont::non-vertical-val 
+    :wordnet-sense-keys ("thin%3:00:01" "flat%5:00:00:thin:01" )
+    )
 
 ;; size specific to vertical linear scale
 (define-type ont::vertical-val
- :parent ont::linear-extent-val 
- :comment "size specific to vertical linear scale"
+    :sem (F::abstr-obj (F::scale ont::vertical-scale ))
+    :parent ont::linear-extent-val 
+    :comment "size specific to vertical linear scale"
 )
 
 (define-type ont::tall-val
- :parent ont::vertical-val 
- :wordnet-sense-keys ("tall%3:00:00" )
+    :sem (F::abstr-obj (F::scale ont::height-scale ))
+    :parent ont::vertical-val 
+    :wordnet-sense-keys ("tall%3:00:00" )
 )
 
 (define-type ont::deep-val
- :parent ont::vertical-val 
- :wordnet-sense-keys ("deep%3:00:01" )
+    :sem (F::abstr-obj (F::scale ont::depth-scale ))
+    :parent ont::vertical-val 
+    :wordnet-sense-keys ("deep%3:00:01" )
 )
 
 (define-type ont::shallow-val
- :parent ont::vertical-val 
- :wordnet-sense-keys ("shallow%3:00:01" )
-)
+    :sem (F::abstr-obj (F::scale ont::depth-scale ))
+    :parent ont::vertical-val 
+    :wordnet-sense-keys ("shallow%3:00:01" )
+    )
 
 ;; short on a linear scale; does not indicate horizontality or verticality of the object
 (define-type ont::short-val
- :parent ont::linear-extent-val 
- :wordnet-sense-keys ("short%3:00:02" "short%3:00:01" )
- :comment "less in orientation on a linear scale -- does not indicate horizontality or verticality of the object"
-)
+    :sem (F::abstr-obj (F::scale ont::height-scale ))
+    :parent ont::linear-extent-val 
+    :wordnet-sense-keys ("short%3:00:02" "short%3:00:01" )
+    :comment "less in orientation on a linear scale -- does not indicate horizontality or verticality of the object"
+    )
 
 ;; long on a linear scale; does not indicate horizontality or verticality of the object
 (define-type ont::long
- :parent ont::linear-extent-val 
- :wordnet-sense-keys ("long%3:00:01" "long%3:00:02" )
- :comment "more in orientation on a linear scale -- does not indicate horizontality or verticality of the object"
-)
+    :sem (F::abstr-obj (F::scale ont::length-scale ))
+    :parent ont::linear-extent-val 
+    :wordnet-sense-keys ("long%3:00:01" "long%3:00:02" )
+    :comment "more in orientation on a linear scale -- does not indicate horizontality or verticality of the object"
+    )
 
 ;; size that deals with 2D area
 (define-type ont::two-dimensional-val
@@ -2573,16 +2590,18 @@
 )
 
 (define-type ont::fat-val
- :parent ont::relative-to-height-val 
- :wordnet-sense-keys ("plump%5:00:00:fat:01" "fat%3:00:01" )
- :comment "more in  horizontal orientation with respect to the height"
+    :sem (F::abstr-obj (F::scale ont::fat-scale ))
+    :parent ont::relative-to-height-val 
+    :wordnet-sense-keys ("plump%5:00:00:fat:01" "fat%3:00:01" )
+    :comment "more in  horizontal orientation with respect to the height"
 )
 
 (define-type ont::skinny-val
- :parent ont::relative-to-height-val 
- :wordnet-sense-keys ("slim%5:00:00:thin:03" "skinny%5:00:00:thin:03" "slender%5:00:00:thin:03" "thin%3:00:03")
- :comment "less in horizontal orientation with respect to the height"
-)
+    :sem (F::abstr-obj (F::scale ont::skinny-scale ))
+    :parent ont::relative-to-height-val 
+    :wordnet-sense-keys ("slim%5:00:00:thin:03" "skinny%5:00:00:thin:03" "slender%5:00:00:thin:03" "thin%3:00:03")
+    :comment "less in horizontal orientation with respect to the height"
+    )
 
 ;; large
 (define-type ont::large
@@ -3905,13 +3924,6 @@
  :wordnet-sense-keys ("lunar%3:01:00")
 )
 
-;; bogus, temporary node. will be deleted as soon as words in this class are handled.
-(define-type ONT::Discrete-property-val
- :parent ONT::PROPERTY-VAL
- :sem (F::Abstr-obj (F::gradability -))
- :comment "temporary node. Will be deleted as soon as the words in this type are placed in their correct places in the ontology"
- )
-
 ;; words relating to space
 (define-type ont::spatial
 ; :parent ont::abstract-object
@@ -4066,7 +4078,8 @@
 ;; close to, near
 (define-type ONT::distance-val
  :parent ONT::spatial
- :sem (F::abstr-obj (:required (f::scale ont::linear-scale))(:default (F::gradability +)))
+ :sem (F::abstr-obj (:required (f::scale ont::distance-scale))
+		    (:default (F::gradability +)))
  :arguments ((:REQUIRED ONT::neutral ((? th f::situation f::phys-obj f::abstr-obj)))
              (:ESSENTIAL ONT::neutral1 ((? cth f::situation f::phys-obj f::abstr-obj)))
 ;	     (:OPTIONAL ONT::PROPERTY)
@@ -4210,9 +4223,10 @@
 )
 
 (define-type ONT::adequacy-VAL
- :parent  ONT::quantity-related-property-val
- :arguments ((:ESSENTIAL ONT::GROUND)
-             )
+   :sem (F::Abstr-obj (F::scale ONT::adequacy-val))
+   :parent  ONT::quantity-related-property-val
+   :arguments ((:ESSENTIAL ONT::GROUND)
+	       )
  )
 
 (define-type ONT::number-related-property-val
@@ -4267,17 +4281,17 @@
  )
 
 (define-type ONT::inadequate
- :parent ONT::adequacy-VAL
- :arguments ((:required ONT::GROUND (f::phys-obj (f::type ont::material)))
-	     (:required ONT::FIGURE ((? xx  F::phys-obj abstr-obj))))
- ; Words: (W::SHORT W::INADEQUATE W::INSUFFICIENT)
- :wordnet-sense-keys ("inadequate%5:00:00:insufficient:00" "insufficient%3:00:00" "scarce%3:00:00")
- ; Antonym: ONT::ADEQUATE (W::SUFFICIENT W::ADEQUATE W::ENOUGH)
- )
+  :parent ONT::adequacy-VAL
+  :arguments ((:required ONT::GROUND (f::phys-obj (f::type ont::material)))
+	      (:required ONT::FIGURE ((? xx  F::phys-obj abstr-obj))))
+					; Words: (W::SHORT W::INADEQUATE W::INSUFFICIENT)
+  :wordnet-sense-keys ("inadequate%5:00:00:insufficient:00" "insufficient%3:00:00" "scarce%3:00:00")
+					; Antonym: ONT::ADEQUATE (W::SUFFICIENT W::ADEQUATE W::ENOUGH)
+  )
 
 (define-type ONT::ADEQUATE
- :parent ONT::adequacy-VAL
- ; Words: (W::SUFFICIENT W::ADEQUATE W::ENOUGH)
+  :parent ONT::adequacy-VAL
+					; Words: (W::SUFFICIENT W::ADEQUATE W::ENOUGH)
  :wordnet-sense-keys ("sufficient%3:00:00" "adequate%5:00:00:sufficient:00")
  ; Antonym: ONT::inadequate (W::SHORT W::INADEQUATE W::INSUFFICIENT)
  )

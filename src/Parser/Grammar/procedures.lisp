@@ -134,6 +134,88 @@
   #'(lambda (args)
       (check-if-bound (get-fvalue args 'w::arg1))))
 
+(defun check-if-bound (var)
+  "succeeds only if arg is bound to something not equal to -"
+  (if (var-p var) 
+    (and (var-values var) (not (eq (var-values var) '-)) *success*)
+    *success*))
+
+(define-predicate 'w::NOT-BOUND
+  #'(lambda (args)
+      (check-if-not-bound (get-fvalue args 'w::arg1))))
+
+(defun check-if-not-bound (var)
+  "succeeds only if arg is not bound to something not equal to -"
+  (if (not (check-if-bound var)) *success*)
+  )
+
+(define-predicate 'w::recompute-atype
+  #'(lambda (args)
+      (recompute-atype args)))
+  
+(defun recompute-atype (args)
+  (let ((atype (get-fvalue args 'w::atype))
+	(subcat (get-fvalue args 'w::subcat))
+	(subcat2  (get-fvalue args 'w::subcat2))
+	(result (get-fvalue args 'w::result))
+	)
+    (if (or (and (not (eq subcat '-)) (var-p subcat) ;(check-if-bound subcat)
+		 (constit-p (var-values subcat)) (not (var-p (second (assoc 'w::var (constit-feats (var-values subcat)))))))
+	    (and (not (eq subcat2 '-)) (var-p subcat2) ;(check-if-bound subcat2)
+		 (constit-p (var-values subcat2)) (not (var-p (second (assoc 'w::var (constit-feats (var-values subcat2)))))))
+	    )
+	(match-vals nil result (read-expression '(? atp w::postpositive w::predicative-only)))
+      (match-vals nil result atype)
+      )
+   ))
+
+
+#|
+(define-predicate 'w::get-c-var
+  #'(lambda (args)
+      (get-c-var args)))
+  
+(defun get-c-var (args)
+  (let ((c (get-fvalue args 'w::c))
+	(result (get-fvalue args 'w::result))
+	)
+    (if (and (not (eq c '-)) (check-if-bound c) (constit-p (var-values c)))
+	(match-vals nil result (second (assoc 'w::var (constit-feats (var-values c)))))
+      (match-vals nil result nil)
+      )
+   ))
+|#
+
+(define-predicate 'w::recompute-more-less
+  #'(lambda (args)
+      (recompute-more-less args)))
+  
+(defun recompute-more-less (args)
+  (let ((adv-op (get-fvalue args 'w::adv-op))
+	(adj-op (get-fvalue args 'w::adj-op))
+	(result (get-fvalue args 'w::result))
+	)
+    (cond
+     ((eq adv-op 'ONT::MORE-VAL)
+      (if (eq adj-op 'w::less) 
+	  (match-vals nil result 'ONT::LESS-VAL)
+	(match-vals nil result 'ONT::MORE-VAL)))
+     ((eq adv-op 'ONT::LESS-VAL)
+      (if (eq adj-op 'w::less) 
+	  (match-vals nil result 'ONT::MORE-VAL)
+	(match-vals nil result 'ONT::LESS-VAL)))
+     ((eq adv-op 'ONT::MAX-VAL)
+      (if (eq adj-op 'w::less) 
+	  (match-vals nil result 'ONT::MIN-VAL)
+	(match-vals nil result 'ONT::MAX-VAL)))
+     ((eq adv-op 'ONT::MIN-VAL)
+      (if (eq adj-op 'w::less) 
+	  (match-vals nil result 'ONT::MAX-VAL)
+	(match-vals nil result 'ONT::MIN-VAL)))
+      )
+   ))
+
+
 (define-predicate 'w::recompute-spec
     #'(lambda (args)
 	(recompute-spec args)))
@@ -142,23 +224,23 @@
   (let ((spec (get-fvalue args 'w::spec))
 	(agr  (get-fvalue args 'w::agr))
 	(result (get-fvalue args 'w::result)))
-    
-    (if (member spec '(ONT::DEFINITE W::DEFINITE))
-	(if (equal agr 'w::|3P|)
-	    (match-vals nil result 'ONT::DEFINITE-PLURAL)
-	    (match-vals nil result 'ONT::DEFINITE))
-	(if (member  spec '(ONT::INDEFINITE W::INDEFINITE))
-	    (if (equal agr 'w::|3P|)
-		(match-vals nil result 'ONT::INDEFINITE-PLURAL)
-		(match-vals nil result 'ONT::INDEFINITE))
-	    (match-vals nil result spec))
-   )))
+    (case spec
+      ((ONT::DEFINITE W::DEFINITE)
+       (if (match-vals nil agr 'w::|3P|) ;(equal agr 'w::|3P|) ; agr can be a variable
+	   (match-vals nil result 'ONT::DEFINITE-PLURAL)
+	 (match-vals nil result 'ONT::DEFINITE)))
+      ((ONT::INDEFINITE W::INDEFINITE)
+       (if (match-vals nil agr 'w::|3P|) ;(equal agr 'w::|3P|)
+	   (match-vals nil result 'ONT::INDEFINITE-PLURAL)
+	 (match-vals nil result 'ONT::INDEFINITE)))
+      ((ONT::wh ONT::what ONT::which ONT::whose ONT::*wh-term*)
+       (if (match-vals nil agr 'w::|3P|) ;(equal agr 'w::|3P|)
+	   (match-vals nil result 'ONT::WH-PLURAL)
+	 (match-vals nil result 'ONT::WH)))
+      (otherwise (match-vals nil result spec))
+      )
+   ))
 
-(defun check-if-bound (var)
-  "succeeds only if arg is bound to something not equal to -"
-  (if (var-p var) 
-    (and (var-values var) (not (eq (var-values var) '-)) *success*)
-    *success*))
 
 (define-predicate 'w::NOT-UNIFY
   #'(lambda (args)

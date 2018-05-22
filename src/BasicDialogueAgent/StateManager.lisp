@@ -760,8 +760,8 @@
 	  (trace-msg 3 "~%Possible triggers are: ~S~%Checking them one by one until success" possible-triggers)
 	  (Try-triggered-states-until-success (caar possible-triggers) (cadar possible-triggers) (cdr possible-triggers) terms lfs hyps context channel words user uttnum))
 	;; no applicable trigger: see if there is any more input
-	(release-pending-speech-act) 
-      ;;(uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) nil user uttnum)
+	;(release-pending-speech-act) ; this is for asma
+      (uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) nil user uttnum) ; this is for cwc: clear q when imrules work but no cps rule matches
     )
     ))
 
@@ -801,8 +801,8 @@
 	     ))
 	  ))
       ;; We tried them all, so checkfor more input
-      (release-pending-speech-act) 
-      ;;11(uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) segment user uttnum))
+      ;(release-pending-speech-act) ; this is for asma
+      (uninterpretable-utterance-handler lfs hyps context channel words (current-dstate user) segment user uttnum)  ; this is for cwc
  ))
 
 (defun interpret-new-responses (hyps context channel words user uttnum)
@@ -1227,9 +1227,9 @@
 	       speechact)))
     (case (car act)
       (ASK-IF
-       (send-msg '(request :content (adjust-cost-table :mods ((SA_RESPONSE 1))))))
+       (send-msg '(request :content (adjust-cost-table :mods ((ONT::SA_RESPONSE 1))))))
       (ASK-WH
-       (send-msg '(request :content (adjust-cost-table :mods ((SA_IDENTIFY 1) (SA_FRAGMENT 1.5))))))
+       (send-msg '(request :content (adjust-cost-table :mods ((ONT::SA_IDENTIFY 1) (ONT::SA_FRAGMENT 1.5) (w::ADJP 1.1) (w::ADVBL 1.1))))))
       ))
   )
 					  
@@ -1367,7 +1367,8 @@
 		      channel)
 	  (update-prior-failures user)
 	  (reask-question user channel uttnum))
-	(release-pending-speech-act)  ;; why is this here - we should be at the end of the utterance already?
+	;(release-pending-speech-act)  ;; why is this here - we should be at the end of the utterance already?  ; this is for asma
+	(clear-pending-speech-acts uttnum channel) ; this is for cwc: clear q after the first uninterpretable fragment (i.e., no imrules match; IM sends INTERPRETATION-FAILED)
 	)
       
       (call-wizard lfs hyps context channel words state segment user uttnum)

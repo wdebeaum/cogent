@@ -192,12 +192,21 @@
 
 
 
-     ;; e.g., Name/List/Tell me/Look up the drugs that...
+     ;; e.g., Name/List/Tell me/Look up the drugs that... (mod)
      ((ONT::SPEECHACT ?x ONT::SA_REQUEST :CONTENT ?!theme)
       (ONT::F ?!theme (? t3 ONT::NAMING ONT::LISTING ONT::TELL ONT::LOOK-UP) :NEUTRAL ?!n :force (? f ONT::TRUE ONT::ALLOWED ONT::FUTURE ONT::POSSIBLE)) 
       (?!spec ?!n ?!t :mods (?!m))
-      (ONT::F ?!m (? !t2 ONT::DOMAIN-PROPERTY ONT::MODIFIER)) ; e.g., beautiful, or unknown adjectives 
+      (ONT::F ?!m (? !t2 ONT::DOMAIN-PROPERTY ONT::MODIFIER)) ; e.g., *not* beautiful, or unknown adjectives 
       -request-to-identify>
+      (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
+      )
+
+     ;; e.g., Name/List/Tell me/Look up the drugs regulated by... (suchthat)
+     ((ONT::SPEECHACT ?x ONT::SA_REQUEST :CONTENT ?!theme)
+      (ONT::F ?!theme (? t3 ONT::NAMING ONT::LISTING ONT::TELL ONT::LOOK-UP) :NEUTRAL ?!n :force (? f ONT::TRUE ONT::ALLOWED ONT::FUTURE ONT::POSSIBLE)) 
+      (?!spec ?!n ?!t :suchthat ?!m)
+      (ONT::F ?!m (? !t2 ONT::DOMAIN-PROPERTY ONT::MODIFIER)) ; e.g., *not* beautiful, or unknown adjectives 
+      -request-to-identify-b>
       (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
       )
 
@@ -234,6 +243,18 @@
      -can-indirect-request>
      (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
       )
+
+     ;; can you name... (indirect requests)
+     ((ONT::SPEECHACT ?V7187 ONT::SA_YN-QUESTION :CONTENT ?!c)
+      (ONT::F ?!theme (? t3 ONT::NAMING ONT::LISTING ONT::TELL ONT::LOOK-UP) :NEUTRAL ?!n 
+	      :AGENT ?!V6 :force (? f ONT::ALLOWED ONT::PROHIBITED ONT::FUTURE ONT::FUTURENOT ONT::POSSIBLE ONT::FUTURE)) 
+     (?!spec ?!n ?!t :suchthat ?!m)
+     (ONT::F ?!m (? !t2 ONT::DOMAIN-PROPERTY ONT::MODIFIER))
+     ((? z ONT::PRO) ?!V6 ONT::PERSON :proform (? xx w::you))    
+     -can-indirect-request-b>
+     (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
+      )
+     
      
      ;; e.g., buy me a computer
      ((ONT::SPEECHACT ?x ONT::SA_REQUEST :CONTENT ?!theme)
@@ -345,7 +366,7 @@
       ;; e.g., What budget are we using?
 
    ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
-       (ONT::WH-TERM ?!ff ?!type)
+       ((? spec ONT::WH-TERM ONT::WH-TERM-SET) ?!ff ?!type)
        -standardQ>
        (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!ff :suchthat ?!rr)
 	)
@@ -396,7 +417,16 @@
       -ynq1> 
       (ONT::ASK-IF :who *USER* :to *ME* :what ?!rr)
       )
-        
+
+     ; Did you eat anything?
+     ((ONT::SPEECHACT ?!a ONT::SA_YN-QUESTION :CONTENT ?!rr)
+      (ONT::F ?!rr ?type)
+      (?spec ?!t ONT::REFERENTIAL-SEM :PROFORM w::anything)
+      -ynq2> 
+      (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!t :suchthat ?!rr)
+      )
+
+     
    #||   ;; I think this is unmotivated given we have -inform>
 
       ;;==========================================
@@ -430,7 +460,7 @@
    ;;  fragments that only work as answers:  e.g., somewhat, really
    (;;(ONT::SPEECHACT ?a ONT::SA_FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? tt ONT::DEGREE-MODIFIER ONT::GRADE-MODIFIER ONT::QMODIFIER ONT::DEGREE-OF-BELIEF ONT::LIKELIHOOD))
-    -frag-degree>
+    -frag-degree> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv :force ONT::TRUE)
     )
 
@@ -438,7 +468,7 @@
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? tt ONT::DEGREE-MODIFIER ONT::GRADE-MODIFIER  ONT::DEGREE-OF-BELIEF ONT::LIKELIHOOD ONT::QMODIFIER) :MODS (?!mm))
     (ONT::F ?!mm ONT::NEG)
-    -frag-degree-not>
+    -frag-degree-not> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv :force ONT::FALSE)
     )
 
@@ -465,13 +495,13 @@
     )
 
    ((?spec ?!v ONT::NUMBER)
-    -frag-number> 
+    -frag-number> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!v))
 
    ;; fragment predicates, e.g., severe, very sad, ...
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
-    (ONT::F ?!vv ONT::PROPERTY-VAL)
-    -frag->
+    (ONT::F ?!vv ONT::PROPERTY-VAL :figure -)
+    -frag-> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv)
     )
 
@@ -484,8 +514,9 @@
 
    ;;  fragment adverbials (e.g., locations, in my ankles, above the stove)
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
-    (ONT::F ?!vv (? typ ONT::SPATIAL-LOC ONT::position-reln))
-    -frag-location->
+    (ONT::F ?!vv (? typ ONT::SPATIAL-LOC ONT::position-reln ont::path) :ground ?gd)
+    (?spec ?gd ?gd-type)
+    -frag-location-path-> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv)
     )
 
@@ -493,7 +524,7 @@
     (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :content ?!cc)
      (ONT::F ?!cc (:* ONT::EVENT-TIME-REL W::WHEN) :FIGURE ?!x)
      ;(ONT::IMPRO ?!x ?y)
-     -explicit-condition->
+     -explicit-condition-> 0.98
      (ONT::ANSWER :who *USER* :to *ME* :condition (when ?!x))
      )
 
@@ -501,14 +532,14 @@
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :content ?!vv)
     (ONT::F ?!vv (:* ONT::POS-CONDITION W::IF) :FIGURE ?!x :GROUND ?!val)
     (ONT::IMPRO ?!x ?y)
-    -explicit-condition1->
+    -explicit-condition1-> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :condition (if ?!val))
     )
 
    ;; e.g., sometimes, occasionally, never
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? t ONT::FREQUENCY ONT::FREQUENCY-VAL))
-    -frag-frequency>
+    -frag-frequency> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :content ?!vv)
     )
 
@@ -516,7 +547,7 @@
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv ONT::FREQUENCY :mod ?!n)
     (ONT::F ?!n ONT::NEG)
-    -frag-not-frequency>
+    -frag-not-frequency> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :frequency ?!vv :force ONT::FALSE)
     )
 
@@ -524,7 +555,7 @@
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv ONT::EVENT-TIME-REL :mod ?!n)
     (ONT::F ?!n ONT::NEG)
-    -frag-not-time-loc>
+    -frag-not-time-loc> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :time-loc ?!vv :force ONT::FALSE)
     )
    
@@ -539,7 +570,7 @@
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :MODS (?!v1 ?!v2))
     (ONT::F ?!v1  (? xx ONT::FREQUENCY ONT::RESTRICTION))
     (ONT::F ?!v2 ONT::TIME-SPAN-REL)
-    -frag-frequency-implicit-condition>
+    -frag-frequency-implicit-condition> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :frequency ?!v1 :condition ?!v2)
     )
    
@@ -563,14 +594,14 @@
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT  :CONTENT ?!c)
     (ONT::F ?!c ONT::MANNER  :MOD ?!mod)
     (ONT::F ?!mod ONT::DEGREE-MODIFIER)
-    -degree-manner-mod>
+    -degree-manner-mod> 0.98
      (ONT::ANSWER :who *USER* :to *ME* :what ?!c)
     )
 
    ;; well
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT  :CONTENT ?!c)
     (ONT::F ?!c ONT::MANNER)
-    -degree-manner>
+    -degree-manner> 0.98
      (ONT::ANSWER :who *USER* :to *ME* :what ?!c)
     )
 
@@ -682,7 +713,7 @@
   ;;  This handles Q's like "what is the budget", "what is its weight"
   '(
    ((ONT::F ?!xx ONT::IN-RELATION :neutral1 ?!q-term :neutral ?!wh-term)
-    (ONT::WH-TERM ?!wh-term ?any)
+    ((? spec ONT::WH-TERM ONT::WH-TERM-SET) ?!wh-term ?any)
     (ONT::THE ?!q-TERM ONT::ABSTRACT-FUNCTION)
     -Q-FUNCTION-VALUE>
     (Q-FUNCTION-VALUE ?q-term))
@@ -760,8 +791,8 @@
 	   ;; that's right/that could be right
 	  ((ONT::SPEECHACT ?!a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :formal ?!dd :neutral ?!x :force (? force ONT::TRUE ONT::ALLOWED ONT::REQUIRED))
-	   (ONT::PRO ?!x (ONT::REFERENTIAL-SEM W::THAT))
-	   (ONT::F ?!dd (:* ONT::EVALUATION-VAL (?x W::RIGHT)))
+	   (ONT::PRO ?!x (:* ONT::REFERENTIAL-SEM W::THAT))
+	   (ONT::F ?!dd (:* ONT::correctness-val (? x2 W::RIGHT)))
 	   ;;(CALL (ACTIVE-PROPOSAL-ON-STACK ?prop ?context))
 	   -confirm2>
 	   (ONT::ACCEPT :who *USER* :to *ME* :what ?!x))
@@ -769,8 +800,8 @@
 	  ;; that's not right
 	  ((ONT::SPEECHACT ?!a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :FORMAL ?!dd :neutral ?!x :force (? force ONT::FALSE ONT::PROHIBITED))
-	   (ONT::PRO ?!x (ONT::REFERENTIAL-SEM W::THAT))
-	   (ONT::F ?!dd (:* ONT::EVALUATION-VAL W::RIGHT))
+	   (ONT::PRO ?!x (:* ONT::REFERENTIAL-SEM W::THAT))
+	   (ONT::F ?!dd (:* ONT::correctness-val W::RIGHT))
 	   ;;(CALL (ACTIVE-PROPOSAL-ON-STACK ?prop ?context))
 	   -confirm2a>
 	   (ONT::REJECT :who *USER* :to *ME* :what ?x))
@@ -778,7 +809,7 @@
 	  ;; that's good/okay
 	  ((ONT::SPEECHACT ?a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :FORMAL ?!dd :neutral ?!x :force (? force ONT::TRUE ONT::ALLOWED ONT::REQUIRED))
-	   (ONT::PRO ?!x (ONT::REFERENTIAL-SEM W::THAT))
+	   (ONT::PRO ?!x (:* ONT::REFERENTIAL-SEM W::THAT))
 	   (ONT::F ?!dd (:* ONT::GOOD (? xx W::GOOD W::OKAY)))
 	   ;;(CALL (ACTIVE-PROPOSAL-ON-STACK ?prop ?context))   deleted for demo - readd
 	   -confirm3>
@@ -794,7 +825,7 @@
 	  ;; that's not good/okay
 	  ((ONT::SPEECHACT ?a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :FORMAL ?!dd  :NEUTRAL ?!x :force (? force ONT::FALSE ONT::PROHIBITED))
-	   (ONT::PRO ?!x (ONT::REFERENTIAL-SEM W::THAT))
+	   (ONT::PRO ?!x (:* ONT::REFERENTIAL-SEM W::THAT))
 	   (ONT::F ?!dd (:* ONT::GOOD (? xx W::GOOD W::OKAY)))
 	   ;;(CALL (ACTIVE-PRO
 	   -confirm3a>
@@ -803,7 +834,7 @@
 	  ;; that's bad
 	  ((ONT::SPEECHACT ?a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :FORMAL ?!dd  :neutral ?!x :force (? force ONT::TRUE ONT::ALLOWED ONT::REQUIRED))
-	   (ONT::PRO ?!x (ONT::REFERENTIAL-SEM W::THAT))
+	   (ONT::PRO ?!x (:* ONT::REFERENTIAL-SEM W::THAT))
 	   (ONT::F ?!dd (:* ONT::BAD W::BAD))
 	   ;;(CALL (ACTIVE-PROPOSAL-ON-STACK ?prop ?context))
 	   -confirm4>
@@ -812,7 +843,7 @@
 	  ;; that's not bad
 	  ((ONT::SPEECHACT ?a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :FORMAL ?!dd  :neutral ?!x :force ONT::FALSE)
-	   (ONT::PRO ?!x (ONT::REFERENTIAL-SEM W::THAT))
+	   (ONT::PRO ?!x (:* ONT::REFERENTIAL-SEM W::THAT))
 	   (ONT::F ?!dd (:* ONT::BAD W::BAD))
 	   ;;(CALL (ACTIVE-PROPOSAL-ON-STACK ?prop ?context))
 	   -confirm4a>
@@ -822,7 +853,7 @@
 	  ((ONT::SPEECHACT ?a ONT::SA_TELL :content ?!cc)
 	   (ONT::F ?!cc ONT::HAVE-PROPERTY :FORMAL ?!dd  :neutral ?!x :force (? force ONT::TRUE ONT::ALLOWED ONT::REQUIRED))
 	   (ONT::PRO ?!x ONT::REFERENTIAL-SEM)
-	   (ONT::F ?!dd (:* ONT::EVALUATION-VAL W::WRONG))
+	   (ONT::F ?!dd (:* ONT::correctness-val W::WRONG))
 	   ;;(CALL (ACTIVE-PROPOSAL-ON-STACK ?prop ?context))
 	   -confirm5>
 	   (ONT::REJECT :who *USER* :to *ME* :what ?!x))

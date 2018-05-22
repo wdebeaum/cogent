@@ -358,7 +358,11 @@
  :arguments ((:REQUIRED ONT::FIGURE)
 	     (:REQUIRED ONT::GROUND)
 	     (:optional ont::neutral)
-	     (:optional ont::neutral1))  ;; some relations based on verbs use this
+	     (:optional ont::neutral1)  ;; some relations based on verbs use this
+	     (:optional ont::norole)
+	     (:OPTIONAL ONT::COMPAR)
+	     (:OPTIONAL ONT::REFSET)
+	     )
  :sem (F::abstr-obj (:required)
 		    (:default (f::intensity ont::hi)))
  )
@@ -616,7 +620,7 @@
 (define-type ONT::memory-UNIT
  :wordnet-sense-keys ("computer_memory_unit%1:23:00")
  :parent ONT::formal-UNIT
- :sem (F::Abstr-obj (F::Scale Ont::Other-scale))
+ :sem (F::Abstr-obj (F::Scale Ont::measure-scale))
  :arguments ((:ESSENTIAL ONT::FIGURE (F::phys-obj (f::origin f::artifact)))
              )
  )
@@ -676,10 +680,10 @@
 	     (:optional ont::formal)
 	     ))
 
-;; percent
+;; three fold
 (define-type ONT::multiple
  :parent ONT::MATHEMATICAL-TERM
- :sem (F::Abstr-obj )
+ :sem (F::Abstr-obj (F::Scale ?sc))  ; "by three fold" needs scale
  )
 
 ;; percent
@@ -886,6 +890,11 @@
   :parent ont::event-defined-by-activity
   )
 
+;; recession
+(define-type ont::economic-event
+:parent ONT::event-defined-by-activity
+)
+
 ;; travel
 (define-type ONT::travel
  :parent ONT::event-defined-by-activity
@@ -990,7 +999,7 @@
              )
  )
 
-(define-type ont::mental-atttitude
+(define-type ont::mental-attitude
  :wordnet-sense-keys("mentality%1:09:01")
  :parent ONT::mental-construction
 )
@@ -999,7 +1008,8 @@
     :wordnet-sense-keys ("knowledge%1:03:00")
     :parent ONT::mental-construction
     :arguments ((:OPTIONAL ONT::FIGURE) ;(f::situation (f::information f::mental-construct) (f::cause f::mental)))
-		))
+		(:optional ont::FORMAL (f::situation)))
+    )
 
 (define-type ONT::understanding
  :wordnet-sense-keys("understanding%1:09:01" "comprehension%1:09:00")

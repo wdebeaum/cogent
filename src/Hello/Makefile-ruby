@@ -1,6 +1,8 @@
 MODULE = Hello
 MAIN = Hello.rb
 SRCS = Hello.rb
+# uncomment this and list gems your module requires, if any
+#REQUIRES =
 
 CONFIGDIR=../config
 include $(CONFIGDIR)/ruby/prog.mk
