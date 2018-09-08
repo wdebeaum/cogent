@@ -3,7 +3,7 @@
 ;;;
 ;;; Author:  James Allen <james@cs.rochester.edu>
 ;;;
-;;; Time-stamp: <Thu Apr 12 11:01:41 EDT 2018 james>
+;;; Time-stamp: <Thu Jun 28 17:19:29 EDT 2018 james>
 
 (in-package "PARSER")
 
@@ -147,13 +147,14 @@
 ;; Do a shortest-path algorithm for best constit-sequence to cover input, where constituents have a fixed cost.
 ;;  Costs  
 ;;
-(defvar *cost-table* '((w::PUNC 4)  ;; Puncs should be attached to their utts
+(defvar *default-cost-table* '((w::PUNC 4)  ;; Puncs should be attached to their utts
                        (w::UTT 1)  ;; making UTT one prefers sequences with minimal number of UTTs
                        (w::NP 3) (w::PATH 3) ;; These are rare now, as most major consists become UTTs
                        (w::ADVBL 3) (w::ADJP 3)  ;; other high level constits
 		       ;;  the speech acts get individual scores
 		       (w::SA_PRED-FRAGMENT 2)
 		       ))
+(defvar *cost-table* *default-cost-table*)
 
 (defun customize-cost-table (values)
   (setq *cost-table* (append values *cost-table*)))
@@ -1218,7 +1219,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
            (term (list 'TERM :LF newlf)))
       (if (or (null form) (member 'w::var form))(setq term (append term (list :VAR var))))
       (if (or (null form) (member 'w::sem form)) (setq term (append term (list :SEM sem))))
-      (if *add-lex-to-lf*
+      (if (and *add-lex-to-lf* lex)
 	  (setq term (replace-arg-in-act term :lf (append newlf (list :LEX lex)))))
       (if (and input (or (null form) (member 'w::input form)))
 	  (setq term (append term (list :INPUT input)))
@@ -1321,8 +1322,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
     ((ONT::indefinite-plural) 'ont::indef-set)
     (ONT::SM 'ont::SM)
     (ONT::definite-plural 'ont::the-set)
-    ((ONT::wh ONT::what ONT::which ONT::whose ONT::*wh-term*) 'ont::wh-term) 
-    (ONT::WH-PLURAL 'ONT::WH-term-SET)
+    ((ONT::wh ONT::what ONT::which ONT::whose ONT::*wh-term* ont::wh-term) 'ont::wh-term) 
+    ((ONT::WH-PLURAL ont::wh-term-set) 'ONT::WH-term-SET)
     (ONT::wh-quantity 'ont::wh-quantity)
     (ONT::universal 'ont::all-the)
     (ONT::value 'ont::value)
@@ -1578,7 +1579,8 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
    
     (if (or (null form) (member 'w::var form)) (setq term (append term (list :VAR var))))
     (if (or (null form) (member 'w::sem form)) (setq term (append term (list :SEM (get-fvalue args 'w::sem) ))))
-    (if *add-lex-to-lf* (setq term (replace-arg-in-act term :lf (append new-lf (list :LEX lex)))))
+    (if (and *add-lex-to-lf* lex)
+	(setq term (replace-arg-in-act term :lf (append new-lf (list :LEX lex)))))
     (if (or (null form) (and (member 'w::input form) input))
       (setq term (append term (list :INPUT input)))
         )
@@ -1998,6 +2000,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	((ont::phys-object :mod)
 	 ((ont::position-reln ) :location)
 	 ((ont::temporal-location) :time)
+	 ((ont::source-reln) :source)
 	 )
 	 ;;((ont::assoc-with) :assoc-with))
 	((ont::abstract-object :mod)
@@ -2005,12 +2008,13 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 ((ont::temporal-location) :time) ; prices in 2016
 	 ;; ((ont::assoc-with) :assoc-with)
 	 ((ont::degree-modifier) :degree)
+	 ((ont::source-reln) :source)
 	 )
 	((ont::situation-root :mod)
 	 ((ont::goal-reln) :result)
 	 ((ont::reason ont::purpose) :reason)
 	 ((ont::extent-predicate) :extent)
-	 ((ont::frequency ont::frequency-val) :frequency)
+	 ((ont::frequency ont::frequency-val ont::iteration-period) :frequency)
 	 ((ont::degree-modifier) :degree)
 	 ;;((ont::assoc-with) :assoc-with)
 	 ((ont::temporal-location) :time)
@@ -2028,6 +2032,11 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 ((ont::manner ont::abstract-object-property ont::pivot) :manner)
 	 ((ont::likelihood ont::qualification) :qualification)
 	 )
+	((ont::referential-sem :mod)  ; agentnom and missing head
+	 ((ont::position-reln ) :location)
+	 ((ont::temporal-location) :time)
+	 ((ont::source-reln) :source)
+	 )	 
 	)
  )
 

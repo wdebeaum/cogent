@@ -262,15 +262,6 @@ public class Goal {
 	public String toString()
 	{
 	    // LG: added more information in a compact form
-	    if (false) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Goal:" + getVariableName());
-		if (parent != null)
-		    {
-			sb.append("\nParent: " + parent.getVariableName());
-		    }
-		return sb.toString();
-	    }
 	    return "Goal:" + getVariableName()
 		+ "[" + ( "A:" + accepted +
 			  ",R:" + rejected +

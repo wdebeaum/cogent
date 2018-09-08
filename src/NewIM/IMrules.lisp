@@ -210,8 +210,8 @@
       (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
       )
 
-     ;; e.g., Tell me/Let me know if there is/are...
-     ;; e.g., I want to know if (SA_TELL)
+     ;; e.g., Tell me/Let me know if there is/are proteins that activate...
+     ;; e.g., I want to know if there is an orange block (SA_TELL)
      ((ONT::SPEECHACT ?x (? sa ONT::SA_REQUEST ONT::SA_TELL) :CONTENT ?!theme)
       (ONT::F ?!theme (? t3 ONT::TELL ONT::ALLOW ONT::WANT ONT::LOOK-UP) :FORMAL ?!n :force (? f ONT::TRUE ONT::ALLOWED ONT::FUTURE ONT::POSSIBLE)) 
       (ONT::F ?!n3 ONT::CLAUSE-CONDITION :CONTENT ?!c) ; note n3, not n
@@ -222,6 +222,26 @@
       -request-to-identify3>
       (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n2 :suchthat ?!m)
       )
+
+     ;; e.g., Are any of those...
+     ((ONT::SPEECHACT ?x (? sa ONT::SA_YN-QUESTION) :CONTENT ?!theme)
+      (?reln ?!theme ?type) ; beats -ynq1>
+      (?reln1 ?!t ONT::REFERENTIAL-SEM :QUAN ONT::ANY)
+      -request-to-identify3c>
+      (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!t :suchthat ?!theme)
+      )
+     
+   ;; e.g., Tell me/Let me know whether the block is red.
+   ((ONT::SPEECHACT ?x (? sa ONT::SA_REQUEST ONT::SA_TELL) :CONTENT ?!theme)
+    (ONT::F ?!theme (? t3 ONT::TELL ONT::ALLOW ONT::WANT ONT::LOOK-UP) :FORMAL ?!n :force (? f ONT::TRUE ONT::ALLOWED ONT::FUTURE ONT::POSSIBLE)) 
+    (ONT::F ?!n3 ONT::CLAUSE-CONDITION :CONTENT ?!c)
+    ;;(ONT::F ?!c ONT::EXISTS :NEUTRAL ?!n2)
+					;(ONT::PRO ?!p ONT::EXPLETIVE :PROFORM w::there) ; this is not put through the match
+    ;;(?!spec2 ?!n2 ?!t2 :MODS (?!m))
+    ;;(ONT::F ?!m (? !t4 ONT::DOMAIN-PROPERTY ONT::MODIFIER))
+    -request-to-identify3b>
+    (ONT::ASK-IF :who *user* :to *ME* :what ?!c)
+    )
      
      ;; I want to know (about)...
      ((ONT::SPEECHACT ?x ONT::SA_TELL :CONTENT ?!theme )
@@ -240,8 +260,18 @@
      (?!spec ?!n ?!t :mods (?!m))
      (ONT::F ?!m (? !t2 ONT::DOMAIN-PROPERTY ONT::MODIFIER))
      ((? z ONT::PRO) ?!V6 ONT::PERSON :proform (? xx w::you))    
-     -can-indirect-request>
+     -can-indirect-yes-no>
      (ONT::ASK-WHAT-IS :who *user* :to *ME* :what ?!n :suchthat ?!m)
+      )
+
+   ;; can you tell me whether ... (indirect requests)
+     ((ONT::SPEECHACT ?V7187 ONT::SA_YN-QUESTION :CONTENT ?!c)
+      (ONT::F ?!theme (? t3 ONT::TELL ONT::LOOK-UP) :FORMAL ?!n 
+	      :AGENT ?!V6 :force (? f ONT::ALLOWED ONT::PROHIBITED ONT::FUTURE ONT::FUTURENOT ONT::POSSIBLE ONT::FUTURE)) 
+     (?!spec ?!n ONT::CLAUSE-CONDITION :content ?!m)
+     ((? z ONT::PRO) ?!V6 ONT::PERSON :proform (? xx w::you))    
+     -can-indirect-request>
+     (ONT::ASK-IF :who *user* :to *ME* :what ?!m)
       )
 
      ;; can you name... (indirect requests)
@@ -289,10 +319,10 @@
       (ONT::REQUEST :who *USER* :to *ME* :what ?!theme)
       )
   
-    ;; basic inform acts  - default for tells if not other matches
+   ;; basic inform acts  - default for tells if no other matches
    ((ONT::SPEECHACT ?x ONT::SA_TELL :CONTENT ?!c)
     (ONT::F ?!c ?type)
-     -inform> .98   
+    -inform> .98   
     (ONT::TELL :who *USER* :to *ME* :what ?!c)
     )
 
@@ -356,9 +386,9 @@
       |#
 
       ;;  What next?
-      ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr)
-       (ONT::WH-TERM ?!ff ?foc-type :MOD ?!m1)
-       (ONT::F ?!m1 (? xxx ONT::SEQUENCE-VAL))
+      ((ONT::SPEECHACT ?!a ONT::SA_WH-QUESTION :FOCUS ?!ff :CONTENT ?!rr :MOD ?!m1)
+       (ONT::WH-TERM ?!ff ?foc-type)
+       (ONT::F ?!m1 ont::SEQUENCE-POSITION)
        -Q-next>
        (ONT::ASK-WHAT-IS :who *USER* :to *ME* :what ?!ff)
        )
@@ -457,6 +487,7 @@
 
    ;; FRAGMENTS 
 
+   #||
    ;;  fragments that only work as answers:  e.g., somewhat, really
    (;;(ONT::SPEECHACT ?a ONT::SA_FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? tt ONT::DEGREE-MODIFIER ONT::GRADE-MODIFIER ONT::QMODIFIER ONT::DEGREE-OF-BELIEF ONT::LIKELIHOOD))
@@ -465,13 +496,13 @@
     )
 
     ;;  e.g., not really
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? tt ONT::DEGREE-MODIFIER ONT::GRADE-MODIFIER  ONT::DEGREE-OF-BELIEF ONT::LIKELIHOOD ONT::QMODIFIER) :MODS (?!mm))
     (ONT::F ?!mm ONT::NEG)
     -frag-degree-not> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv :force ONT::FALSE)
     )
-
+||#
    ;; e.g., action fragment, used if nothing better is found!
 
    ((ONT::F ?!v ?type)
@@ -498,6 +529,7 @@
     -frag-number> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!v))
 
+   #||
    ;; fragment predicates, e.g., severe, very sad, ...
    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv ONT::PROPERTY-VAL :figure -)
@@ -513,38 +545,57 @@
      )
 
    ;;  fragment adverbials (e.g., locations, in my ankles, above the stove)
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? typ ONT::SPATIAL-LOC ONT::position-reln ont::path) :ground ?gd)
     (?spec ?gd ?gd-type)
     -frag-location-path-> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv)
     )
 
+   ||#
+   
    ;; e.g., when I climb the stairs
-    (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :content ?!cc)
+    ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :content ?!cc)
      (ONT::F ?!cc (:* ONT::EVENT-TIME-REL W::WHEN) :FIGURE ?!x)
-     ;(ONT::IMPRO ?!x ?y)
-     -explicit-condition-> 0.98
+     (ONT::IMPRO ?!x ?y)
+     -explicit-condition-> 
      (ONT::ANSWER :who *USER* :to *ME* :condition (when ?!x))
      )
 
    ;; e.g., If I am running, 
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :content ?!vv)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :content ?!vv)
     (ONT::F ?!vv (:* ONT::POS-CONDITION W::IF) :FIGURE ?!x :GROUND ?!val)
     (ONT::IMPRO ?!x ?y)
-    -explicit-condition1-> 0.98
+    -explicit-condition1-> 
     (ONT::ANSWER :who *USER* :to *ME* :condition (if ?!val))
     )
 
+   ;;  genersl rules to replace many specific instances
+   ;; e.g., sometimes, in the house, 
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+    (ONT::F ?!vv (? pp ONT::PROPERTY-VAL ONT::PREDICATE ONT::POSITION-RELN))
+    -frag-property> 0.98
+    (ONT::ANSWER :who *USER* :to *ME* :content ?!vv)
+    )
+   #||
+    ;; not needed as negation is handled in FORCE computation
+    ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+     (ONT::F ?!vv (? pp ONT::PROPERTY-VAL ONT::PREDICATE ONT::POSITION-RELN) :mod ?!n)
+     (ONT::F ?!n ONT::NEG)
+    -frag-not-property> 0.98
+    (ONT::ANSWER :who *USER* :to *ME* :content ?!vv)
+     )
+   
+   
    ;; e.g., sometimes, occasionally, never
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv (? t ONT::FREQUENCY ONT::FREQUENCY-VAL))
     -frag-frequency> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :content ?!vv)
     )
 
    ;; e.g., not often
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv ONT::FREQUENCY :mod ?!n)
     (ONT::F ?!n ONT::NEG)
     -frag-not-frequency> 0.98
@@ -552,12 +603,13 @@
     )
 
    ;; e.g., not today
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!vv)
     (ONT::F ?!vv ONT::EVENT-TIME-REL :mod ?!n)
     (ONT::F ?!n ONT::NEG)
     -frag-not-time-loc> 0.98
     (ONT::ANSWER :who *USER* :to *ME* :time-loc ?!vv :force ONT::FALSE)
     )
+   ||#
    
    ;; e.g., sometimes when I climb the stairs
    ((ONT::SPEECHACT ?a ONT::SA_CONDITION :condition ?!vv :content ?!v :MODS (?!v1))
@@ -566,8 +618,8 @@
     (ONT::ANSWER :who *USER* :to *ME* :frequency ?!v1 :condition ?!vv :what ?!v)
     )
 
-   ;; e.g., never in the morning
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :MODS (?!v1 ?!v2))
+   ;; e.g., never/often in the morning
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT :CONTENT ?!v1 :MODS (?!v2))
     (ONT::F ?!v1  (? xx ONT::FREQUENCY ONT::RESTRICTION))
     (ONT::F ?!v2 ONT::TIME-SPAN-REL)
     -frag-frequency-implicit-condition> 0.98
@@ -588,10 +640,10 @@
     -evaluation-mods>
     (ONT::ANSWER :who *USER* :to *ME* :what ?!vv)
     )
-
+#||
    ;;  MANNER FRAGMENTS
    ;; E.G., pretty well
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT  :CONTENT ?!c)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT  :CONTENT ?!c)
     (ONT::F ?!c ONT::MANNER  :MOD ?!mod)
     (ONT::F ?!mod ONT::DEGREE-MODIFIER)
     -degree-manner-mod> 0.98
@@ -599,12 +651,12 @@
     )
 
    ;; well
-   (;;(ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT  :CONTENT ?!c)
+   ((ONT::SPEECHACT ?a ONT::SA_PRED-FRAGMENT  :CONTENT ?!c)
     (ONT::F ?!c ONT::MANNER)
     -degree-manner> 0.98
      (ONT::ANSWER :who *USER* :to *ME* :what ?!c)
     )
-
+||#
    ;;===========================================
    ;;  RULES that use Problem solving verbs: e.g., work, teach, correct, ...
    ;;
@@ -875,7 +927,7 @@
 	   (ONT::CANCEL :who *USER* :to *ME* :what ?n))
 
           ; never mind
-          ((ONT::SPEECHACT ?a ONT::SA_REJECT :content w::never-mind)
+          ((ONT::SPEECHACT ?!a ONT::SA_REJECT :content w::never-mind)
 	   -cancel2> 1.0  ; higher priority
 	   (ONT::CANCEL :who *USER* :to *ME*))
 	  

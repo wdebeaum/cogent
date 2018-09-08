@@ -311,7 +311,7 @@
 	       (example "in general" "in particular" "in short" "in series" "in parallel" "in full" "in earnest" "the room is done in green")
 	       ;; a restriction of ADJP with no argument
 	       (templ binary-constraint-S-templ (xp (% w::ADJP (w::var ?var) (w::sem ?sem) (w::set-modifier -))))
-	       (preference 0.93)
+	       (preference 0.9)
 	       )
 	      ))
 ))
@@ -329,15 +329,26 @@
 	     )
 	    )
 	   )
-   ((w::in W::part)
-   (SENSES
-    ((LF-PARENT ONT::partial-incomplete)
-     (TEMPL pred-s-vp-templ)
-     (EXAMPLE "in part, he is happy. he is, in part, Happy")
-     )
-    )
-   )
-))
+	  ((w::in W::part)
+	   (SENSES
+	    ((LF-PARENT ONT::partial-incomplete)
+	     (TEMPL pred-s-vp-templ)
+	     (EXAMPLE "in part, he is happy. he is, in part, Happy")
+	     )
+	    ((LF-PARENT ONT::partial-incomplete)
+	     (templ post-adv-templ)
+	     (meta-data :origin calo :entry-date 20050216 :change-date nil :comments caloy2)
+	     (example "is it due in part to drought")
+	     )
+	    )
+	   ((LF-PARENT ONT::partial-incomplete)
+	     (templ pre-adj-templ)
+	     (meta-data :origin calo :entry-date 20050216 :change-date nil :comments caloy2)
+	     (example "is it due in part to drought")
+	     )
+	    )
+	   )
+	  )
 
 (define-words :pos W::ADV
  :words (
@@ -410,8 +421,13 @@
 	      (TEMPL PRED-S-or-np-TEMPL)
 	      (SYNTAX (W::ALLOW-DELETED-COMP +)))
 	     ))
-	     
-    ))
+
+     ((w::in w::turn)
+     (senses ((LF-PARENT ONT::SEQUENCE-POSition)
+	      (TEMPL PRED-vp-pre-TEMPL)
+	      ))
+      ))
+ )
 
 (define-words :pos W::ADV
  :tags (:base500)
@@ -427,16 +443,8 @@
      (meta-data :origin cernl :entry-date 20110114 :change-date nil :comments hpi-acn-3)
      (example "the device placed in five minutes")
      (preference .98)
-     )
-    ;; like within
-    ((LF-PARENT ONT::scale-relation)
-     (meta-data :origin calo :entry-date 20040423 :change-date nil :comments calo-y1v5)
-     (example "is there a computer in that price range")
-     (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
-     (lf-form w::within)
-     (preference .92) ;; prefer direction
      )||#
-    ;;;;;need specific constraints that we're lacking now
+     ;;;;;need specific constraints that we're lacking now
     ((LF-PARENT ONT::TIME-span-rel)
      (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)
      (example "he ran the race in June" "in the middle of the night")
@@ -461,14 +469,25 @@
      (example "terminals are in the same state")
      (preference 0.95) ;; don't choose if other options are available
      )||#	      
-    ((LF-PARENT ONT::direction)
+    ((LF-PARENT ONT::direction-in)
      (TEMPL PRED-S-POST-TEMPL)
      (preference 0.98)
      )
     ;; in the air (excluded by ont::spatial-loc)
+     )
     )
-   )
-))
+  ))
+
+(define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
+		  :words (
+			  ((w::in w::danger)
+			   (SENSES
+			    ((meta-data :origin calo :entry-date 20031223 :change-date nil :wn ("likely%5:00:00:prospective:00") :comments html-purchasing-corpus)
+			     (EXAMPLE "He is a likely candidate")
+			     (lf-parent ont::at-risk-val)
+			     (SEM (F::GRADABILITY F::+))
+			     (TEMPL central-adj-xp-TEMPL (XP (% W::pp (W::ptype W::of))))
+			     )))))
 
 (define-words :pos W::PREP :boost-word t :templ NO-FEATURES-TEMPL
  :tags (:base500)

@@ -38,6 +38,8 @@
 
 (defvar *interpretable-utt* nil)
 
+(defvar *utterance-processing-in-progress* nil) ;;  this is T if the user starting speaking and no interpretation has yet been received
+
 (defun cache-response-for-processing (x)
   (push x *last-internal-response*))
 
@@ -174,12 +176,12 @@
 	(when cell-drts ; if there are cell daily-report-tos, also send text
 	  (dolist (ch cell-drts)
 	    (send-msg `(request :content
-		(say :channel ,ch :content ,content)))))
+		(say :channel ,ch ,content)))))
 	)
       (t
         (dolist (ch (cons channel-id cell-drts))
 	  (send-msg `(request :content
-	      (say :channel ,ch :content ,content))))
+	      (say :channel ,ch ,content))))
 	(when combined-cc ; if there's a cc, also send that email
 	  (send-msg `(request :content
 	      (send-mail :to ,combined-cc :subject ,subject :content ,content))))
@@ -302,7 +304,9 @@
 
 (defun restart-dagent nil
   (mapcar #'reset-user (mapcar #'cdr *users*))
+  (reset-states)
   (setq *interpretable-utt* nil)
+  (setq *utterance-processing-in-progress* nil)
   (send-status 'OK)
   )
 
@@ -316,9 +320,9 @@
   
   
 (defun reset-states nil
-  (setq *segments* nil)
-  (setq *state-table* nil)
-  (setq *starting-segment* nil)
+  ;;(setq *segments* nil)
+  ;;(setq *state-table* nil)
+  ;;(setq *starting-segment* nil)
   (when *transition-ids* 
     (im::reset-im-rules *transition-ids*))
   (setq *transition-ids* nil))
@@ -488,8 +492,10 @@
 	;; special handling of idle-checks
 	(progn
 	  (trace-msg 3 "checking idle time: last interaction with user: ~S. last interaction with BA: ~S time of day ~S"  (user-time-of-last-user-interaction user) (user-time-of-last-BA-interaction user) (get-time-of-day))
-	  (when (>= (time-difference-in-seconds (user-time-of-last-user-interaction user) (get-time-of-day))
-			 (- *max-wait-until-prompt-in-seconds* 1))
+	  (when (or (>= (time-difference-in-seconds (user-time-of-last-user-interaction user) (get-time-of-day))
+			(- *max-wait-until-prompt-in-seconds* 1))
+		    (not *utterance-processing-in-progress*)  ;; checks if user started speaking already
+		    )
 	    ;; eventually we might want to save the current state and reestablish it after the alarm
 	   
 	    (cache-response-for-processing (list (list* 'ALARM 'XX (find-arg-in-act msg :msg))))
@@ -501,11 +507,12 @@
 	    (case (car msg)
 	      (alarm
 	       ;; we only act on the alarm if the system is not currently waiting for an answer from the system
-	       ;;  note: if the alarm is persistent, the question will get asked after the other question is completed
+	       ;;  note: if the alarm is persistent, the question will get asked after the other question is complete
 	       (if  (or *disabled-wizard*
 			(null (user-wizard-response-pending user))` 
 			(> (time-difference-in-minutes (user-time-of-last-wizard-interaction user) (get-time-of-day))
-			   *max-wait-for-wizard-reply*))
+			   *max-wait-for-wizard-reply*)
+			 (not *utterance-processing-in-progress*))  ;; checks if user started speaking already
 		    ;;(null (user-current-dstate user)))
 		    ;; everything is OK to handle the alarm
 		    (progn
@@ -536,6 +543,12 @@
 
 (defun set-idle-prompt-alarm (user)
   (when (and *using-alarms* (user-p user))
+    #||
+    (send-msg `(REQUEST :content (CLEAR-ALARMS 
+					  :pattern (ALARM &key :user ,(user-channel-id user) :msg (IDLE-CHECK)))))
+    (send-msg `(REQUEST :content (CLEAR-ALARMS 
+					  :pattern (ALARM &key :user ,(user-channel-id user) :msg (ONT::WAITING-FOR-USER)))))
+    ||#
     (send-msg `(REQUEST :content (SET-ALARM :delay ,*max-wait-until-prompt-in-hours*
 					  :msg (ALARM :user ,(user-channel-id user) :msg (IDLE-CHECK)))))))
 
@@ -584,8 +597,9 @@
 
     (record-for-current-user '(RECORD WAITING NO) user)
     (setq *current-user* user)
-    (trace-msg 3 "~%new act ~S, user is ~S, state is ~S, channel ~S." words 
-	       (if (user-p user) (user-name user) newchannel)
+    (trace-msg 3 "~%new act ~S, user is ~S" words 
+	       (if (user-p user) (user-name user) newchannel))
+    (trace-msg 4 "~% state is ~S, channel ~S." words 
 	       (if (user-p user) (user-current-dstate user))
 	       newchannel)
     (set-idle-prompt-alarm user)
@@ -603,7 +617,7 @@
 	       (check-posted-alarms user newchannel))
 	      
 	      (t
-	       (trace-msg 4 "System processing input ~S" words)
+	       (trace-msg 3 "System processing input ~S" words)
 	       (record-transcript user 'user-says words)
 	       (let* ((hyp (if (consp hyps) (car hyps)))   ;; just do first one for now
 		      (lfs (cons hyp (mapcar #'make-mods-unique (im::remove-unused-context hyp context))))
@@ -641,7 +655,7 @@
 	 (context)
 	 (lfs (list content))
 	 (hyps))
-    (when (not (member sender '(graphviz dagent imagedisplay)))
+    (when (not (member sender '(graphviz dagent imagedisplay chartdisplay))) ; ignore messages from these modules
       (if dstate 
 	  (when (not (process-lf-in-state lfs hyps context newchannel nil user uttnum))
 	    (if (state-implicit-confirm dstate)
@@ -1118,80 +1132,113 @@
 	    )
     ))
 
+;;; n.b.: msg has the form (:content (ONT::ILLOCUTION ...))
 (defun invoke-generator (msg user channel uttnum)
   "here we send out a message to the generator module, and also set up
     the context for the parser for processing the answer"
   (setf (user-time-of-last-user-interaction user) (get-time-of-day))
-  (let ((expanded-msg (quick-generator (expand-args msg))))
-    (Format t "~%~%==========================~% System generating: ~S ~%========================~%" expanded-msg)
-    ;;  we clear any remaining input as we generate  ;;; we don't because it might just be responding with an "ok" and we want to process the next speech act
-;    (clear-pending-speech-acts uttnum channel)  
+  (prep-parser-if-necessary (find-arg msg :content))
+  (if *use-quick-generator*
+      (let ((converted-msg (quick-generator (expand-args msg))))
+	(Format t "~%~%==========================~% System generating: ~S ~%========================~%" converted-msg)
+	;;  we clear any remaining input as we generate  ;;; we don't because it might just be responding with an "ok" and we want to process the next speech act
+					;    (clear-pending-speech-acts uttnum channel)  
 					;    (setq *interpretable-utt* t)
-    (prep-parser-if-necessary (find-arg msg :content))
-    (send-msg `(REQUEST :content ,(cons 'GENERATE expanded-msg)))))
+	(if (stringp converted-msg)
+	    (SAY converted-msg)
+	    (progn
+	     (SAY "handing on to generator")
+	      (send-msg  `(REQUEST :content ,(cons 'GENERATE msg)))
+	    )))
+      (send-msg `(REQUEST :content ,(cons 'GENERATE msg)))))
 
 (defvar *use-quick-generator* nil)
 
+(defun say (msg  &optional channel)
+  (send-and-wait `(REQUEST :content (SAY ,msg))))
+
 (defun quick-generator (msg)
-  (if (not *use-quick-generator*)
-      msg
-      (let ((content (find-arg msg :content))
-	  (context (find-arg msg :context)))
-      (case (car content)
+  "this checks for certain common, or prededtermined situations and returns a string - por nothing if there is no match"
+  (let* ((content (find-arg msg :content))
+	(context (find-arg msg :context))
+	(content1 (find-arg-in-act content :content)))
+    ;; quick hack as sometimes we get a multiply nested propose
+    (if (and (eq (car content) 'ont::propose) (consp content1) (member (car content1) '(ont::ask-if ont::ask-wh ont::clarify-goal ont::request ont::propose ont::answer ont::unacceptable ont::tell ont::assertion )))
+	(setq content content1))
+    
+    (case (car content)
 	((ask-if ont::ask-if)
 	 (let* ((query (find-lf-in-context (find-arg-in-act content :query) context))
 		(code (find-arg query :code))
 		(arg (find-arg query :arg)))
 	   (if code
 	       ;; pre anticipated conditions using codes
-	       (let ((strng (case code
-			      (pct? "Shall we look at percentage of children who are malnourished (:PCT_MALNOUR_CHILD)?")
-			      (do-baseline? (format nil "Do you want me to compute a baseline analysis for ~A?" (if arg (gen-description arg)
-														   "Sudan")))
-			      (run-plan? (format nil "I can estimate this effect using the following plan. Is it OK?"))
-			      (displayed (format nil "Here is a graph of causal infleunces."))
-			      (execute-plan? "Here are the influences. Shall I try to quantity the effect?")
-			      (otherwise "My tongue is tied, I don't know what to say"))))
-		 (list :content strng))
-	       (list :content "My tongue is tied, I don't know what to say"))))
+	       (case code
+		 (pct? "Shall we look at percentage of children who are malnourished (:PCT_MALNOUR_CHILD)?")
+		 (do-baseline? (format nil "Do you want me to compute a baseline analysis for ~A?" (if arg (gen-description arg)
+												       "Sudan")))
+		 (run-plan? (format nil "I can estimate this effect using the following plan. Is it OK?"))
+		 (displayed (format nil "Here is a graph of causal infleunces."))
+		 (execute-plan? "Here are the influences. Shall I try to quantity the effect?")
+		 )
+	       )))
 	(ONT::CLARIFY-GOAL
-	 (list :content "What are you trying to do?"))
+	 "What are you trying to do?")
+	
 	((ask-wh ont::ask-wh)
 	 (let ((query (find-lf-in-context (find-arg-in-act content :query) context))
 	       (what (find-lf-in-context (find-arg-in-act content :what) context)))
-	   (if (not (and query what))
-	       msg
-	       (let ((ground (find-lf-in-context (find-arg query :ground) context)))
-		 (list :content (concatenate 'string "What is the value of " (symbol-name (find-arg what :instance-of))
+	   (if (and query what))
+	   (let ((ground (find-lf-in-context (find-arg query :ground) context)))
+	     (if ground
+		 (concatenate 'string "What is the value of " (symbol-name (find-arg what :instance-of))
 					     " associated with " (or (symbol-name (find-arg ground :instance-of))
-								     (symbol-name (find-arg query :instance-of)))))))))
-	((ont::request request)
+								     (symbol-name (find-arg query :instance-of))))))))
+	((ont::request request ont::propose propose)
 	 (let ((content1 (find-arg-in-act content :content)))
-	   
 	   (when (Consp content1)
 	     (case (car content1)
 	       (ONT::PROPOSE-GOAL
-		(list :content "What do you want to do?"))
-	       )
-	       msg)
+		"What do you want to do?")
+	       ((ONT::adopt adopt)
+		(let* ((id (find-arg-in-act content1 :what))
+		       (prop (find-lf-in-context id context)))
+		  (case (find-arg prop :instance-of)
+		    (ont::YOU-SUGGEST-SOMETHING
+		     (pick-one '("what do you want to do?" "what shall we do?" "what is your goal?" )))
+		    )))
+	       ))
 	   ))
 	 
 	((ont::accept accept)
-	 (list :content (pick-one '("OK" "Sure"))))
+	 (pick-one '("OK!" "Sure!" "You bet!")))
+
+	(ont::greet
+	 (pick-one '("Hi" "Hello" "Greetings!")))
 
 	(ont::answer
 	 (let ((value (find-arg-in-act content :value)))
-	   (list :content value)))
+	   value))
 	
 	((unacceptable ont::unacceptable)
-	 (list :content (pick-one `("Sorry, I didn't understand" "I didn't get that" "I didn't understand what you said"))))
+	 (pick-one `("Sorry, I didn't understand" "I didn't get that" "I didn't understand what you said")))
 
 	((tell ont::tell)
 	 (let ((content1 (find-arg-in-act content :content)))
-	   (if (and (Consp content1) (eq (car content1) 'ONT::FAIL))
-	       (list :content (pick-one `("Sorry, I didn't understand" "I didn't get that" "I didn't understand what you said"))
-		     )
-	       msg)
+	   (if (Consp content1)
+	       (case (car content1)
+		 (ONT::FAIL
+		  (pick-one `("Sorry, I didn't understand" "I didn't get that" "I didn't understand what you said")))
+
+		 (ONT::DONE
+		  (pick-one '("we're done" "We are finished")))
+
+		 (ONT::CLOSE-TOPIC
+		  (pick-one '("We've complted that task" "we accomplished the goal")))
+		 
+		 (ONT::WAITING
+		  (pick-one `("I'm waiting for you" "you still there?" "I'm waiting for you to speak" "I'm waiting")))
+		 ))
 	   ))
 	
 	((assertion ont::assertion)
@@ -1199,17 +1246,14 @@
 	   (case (find-arg what :instance-of)
 	     ((ont::results results)
 	      (let ((value (find-arg what :value)))
-		(list :content (concatenate 'string "The results are " (format nil "~S" value)))))
+		(concatenate 'string "The results are " (format nil "~S" value))))
 	     (displayed
-	      (list :content (format nil "Here is a graph of causal influences.")))
+	      (format nil "Here is a graph of causal influences."))
 	     (execute-plan?
-	      (list :content "I'll execute the plan"))
+	      "I'll execute the plan")
 	     )))
-	     
-	
-	(otherwise
-	 msg))))
-  )
+	)
+    ))
 
 (defun gen-description (arg)
   (if (symbolp arg)
@@ -1222,6 +1266,7 @@
       
 
 (defun prep-parser-if-necessary (speechact)
+  "this checks if we are asking a quesrtion, and if so preset the parser copst-table for the answer"
   (let ((act (if (eq (car speechact) 'ONT::PROPOSE)
 		 (find-arg-in-act speechact :content)
 	       speechact)))
@@ -1465,7 +1510,7 @@
   (trace-msg 3 "Saying ~S: ~S" channel msg)
   (if (and (or (string-equal channel "desktop") (eq channel 'DESKTOP)) (eq parser::*in-system* :asma))
       (format t "~%**********************~%*~%SYS: ~S~%*~%**************************" msg)
-      (send-msg `(REQUEST :content (SAY :content ,msg :channel ,channel)))
+      (SAY msg channel)
   ))
 
 (defun send-status (status)
@@ -1588,6 +1633,6 @@
 
 ;; doesn't work
 (defun wiz-say (msg)
-  (im::send-msg `(tell :sender AsmaWizard :content (say :patient "desktop" :message ,msg))))
+  (im::send-msg `(tell :sender AsmaWizard :content (say :channel "desktop" ,msg))))
 
   

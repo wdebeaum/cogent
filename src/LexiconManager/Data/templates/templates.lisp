@@ -492,7 +492,7 @@
 
       (THEME-DURATION-EXPLETIVE-TEMPL
        (ARGUMENTS
-	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex W::it)) NOROLE)
+	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex W::it)) ONT::NOROLE)
 	(LIOBJ (% W::NP) ont::formal OPTIONAL)
 ;	(LOBJ (% W::NP) ONT::DURATION)
 	(LOBJ (% W::NP) ONT::EXTENT)
@@ -501,7 +501,7 @@
 
       (AFFECTED-DURATION-EXPLETIVE-TEMPL
        (ARGUMENTS
-	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex W::it)) NOROLE)
+	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex W::it)) ONT::NOROLE)
 	(LIOBJ (% W::NP) ONT::Affected OPTIONAL)
 ;	(LOBJ (% W::NP) ONT::DURATION)
 	(LOBJ (% W::NP) ONT::EXTENT)
@@ -600,7 +600,7 @@
           
       (THEME-COST-EXPLETIVE-TEMPL
        (ARGUMENTS
-	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex W::it)) NOROLE)
+	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex W::it)) ONT::NOROLE)
 ;	(LOBJ (% W::NP) ONT::Cost)
 	(LOBJ (% W::NP) ONT::EXTENT)
 	(LCOMP (% W::cp (W::ctype W::s-to)) ont::formal)
@@ -628,7 +628,7 @@
       
       (EXPLETIVE-THEME-PRED-TEMPL
        (ARGUMENTS
-	(LSUBJ (:parameter xp1 (:default (% W::NP)) (:required (W::sem ($ -)))) NOROLE)
+	(LSUBJ (:parameter xp1 (:default (% W::NP)) (:required (W::sem ($ -)))) ONT::NOROLE)
 	(LOBJ (:parameter xp2 (:default (% W::NP))) ONT::NEUTRAl)
     ;;;;; the arg of the pred will be the subject of the verb
 	(LCOMP (% W::PRED (W::arg ?lobjvar) (W::filled -) (W::argument ?lobj) (W::gap ?gap)) ONT::FORMAL)
@@ -636,21 +636,21 @@
 
       (EXPLETIVE-THEME-TEMPL
        (ARGUMENTS
-	(LSUBJ (:parameter xp1 (:default (% W::NP)) (:required(W::sem ($ -)))) NOROLE)
+	(LSUBJ (:parameter xp1 (:default (% W::NP)) (:required(W::sem ($ -)))) ONT::NOROLE)
 	(LOBJ (:parameter xp2 (:default (% W::CP (w::ctype w::s-finite)))) ONT::NEUTRAL)
 	))
 
       ; it was/has been demonstrated that...
       (EXPLETIVE-FORMAL-TEMPL
        (ARGUMENTS
-	(LSUBJ (:parameter xp1 (:default (% W::NP)) (:required(W::sem ($ -)))) NOROLE)
+	(LSUBJ (:parameter xp1 (:default (% W::NP (w::expletive +) (W::lex W::it))) (:required(W::sem ($ -)) )) ONT::NOROLE)
 	(LOBJ (:parameter xp2 (:default (% W::CP (w::ctype w::s-finite)))) ONT::FORMAL)
 	))
 
       ;; used only for "there is ..." constructions. 
       (THERE-theme-TEMPL  
        (ARGUMENTS
-	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex w::there) (w::expletive +)) NOROLE)
+	(LSUBJ (% W::NP (W::sem ($ -)) (W::lex w::there) (w::expletive +)) ONT::NOROLE)
 	(LOBJ (:parameter xp (:default (% W::NP (w::agr (? a w::1s w::1p w::2s w::2p w::3s w::3p -)))))
 	      ONT::NEUTRAL)
 	))
@@ -658,7 +658,7 @@
       ;; it rained
       (EXPLETIVE-TEMPL
        (ARGUMENTS
-	(LSUBJ (% W::NP (w::expletive +) (W::sem ($ -)) (W::lex W::it)) NOROLE)
+	(LSUBJ (% W::NP (w::expletive +) (W::sem ($ -)) (W::lex W::it)) ONT::NOROLE)
 	))
       
       (THEME-ALONG-TEMPL
@@ -1300,6 +1300,12 @@
 	(LSUBJ (% W::NP) ONT::affected)
 	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::from)))) ONT::SOURCE)
 	))
+
+    (affected-cause-optional-XP-TEMPL
+       (ARGUMENTS
+	(LSUBJ (% W::NP) ONT::affected)
+	(LCOMP (:parameter xp (:default (% W::pp (W::ptype W::from)))) ONT::AGENT optional)
+	))
       
       (affected-SOURCE-OPTIONAL-TEMPL
        (ARGUMENTS
@@ -1308,7 +1314,7 @@
 	))
 
       
- (affected-AFFECTED-SOURCE-OPTIONAL-TEMPL
+     (affected-AFFECTED-SOURCE-OPTIONAL-TEMPL
        (ARGUMENTS
 	(LSUBJ (% W::NP) ONT::affected)
 	(LOBJ (% W::NP) ONT::AFFECTED1)
@@ -1443,18 +1449,18 @@
   (AUX-MODAL-TEMPL
    (SYNTAX(W::AUX +) (W::MODAL +) (W::CHANGESEM +) (W::morph (:forms NIL)) (W::AGR ?agr))
    (ARGUMENTS
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp)) ONT::NOROLE)
     (LCOMP (% W::VP- (W::vform W::base) (W::subj (% W::NP (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var 
             ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp))) (W::roles ?croles) (W::subj-map ?subj-map 
        ) (W::tranform ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar 
-         ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+         ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   (DO-TEMPL
    (SYNTAX(W::AUX +) (W::MODAL +) (W::CHANGESEM -) (W::morph (:forms NIL)) (W::AGR ?agr))
    (ARGUMENTS
     ;;;;;; (LSUBJ (% NP) norole)
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) ONT::NOROLE)
     ;;;;;; (LCOMP (% VP- (vform base) (aux -) (subj ?vpsubj) (roles ?croles)
     ;;;;;;	 (constraint ?con) (tma ?tma) (class ?c) (tranform ?transform)
     ;;;;;;	 (subjvar ?vpsubjvar) (dobjvar ?dobjvar) (subj-map ?subj-map)
@@ -1463,7 +1469,7 @@
     (LCOMP (% W::VP- (W::vform W::base) (W::subj (% W::NP (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var 
             ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr))) (W::roles ?croles) (W::subj-map ?subj-map 
        ) (W::tranform ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar 
-         ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+         ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   ;;;;; for will, shall -- these don't change the sem features
@@ -1471,11 +1477,11 @@
    (SYNTAX(W::AUX +) (W::MODAL +) (W::CHANGESEM -) (W::VFORM W::FUT) (W::morph (:forms NIL)) (W::AGR 
       ?agr))
    (ARGUMENTS
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (W::expletive ?exp)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (W::expletive ?exp)) ONT::NOROLE)
     (LCOMP (% W::VP- (W::vform W::base) (W::subj (% W::NP (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var 
             ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp))) (W::roles ?croles) (W::subj-map ?subj-map 
        ) (W::tranform ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar 
-         ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+         ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   ;;;;; he should/could/would have gone (only takes the perfective as a complement)
@@ -1483,11 +1489,11 @@
    (SYNTAX(W::AUX +) (W::MODAL +) (W::CHANGESEM +) (W::VFORM W::PAST) (W::morph (:forms NIL)) (W::AGR 
       ?agr))
    (ARGUMENTS
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) ONT::NOROLE)
     (LCOMP (% W::VP- (W::vform W::base) (W::aux +) (W::modal -) (W::auxname W::PERF) (W::subj (% W::NP (
            W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr 
           ))) (W::roles ?croles) (W::subj-map ?subj-map) (W::tranform ?transform) (W::class ?cclass) (
-        W::constraint ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+        W::constraint ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   ;;;;; he should/could/would go
@@ -1496,7 +1502,7 @@
       ?agr))
    (ARGUMENTS
     ;;;;;; (LSUBJ (% NP) norole)
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) ONT::NOROLE)
     ;;;;;; (LCOMP (% VP- (vform base) (auxname (? an PASSIVE PROGR -)) (subj ?vpsubj) (roles ?croles)
     ;;;;;;	 (constraint ?constraint) (tma ?tma) (class ?cclass) (tranform ?transform)
     ;;;;;;	 (subjvar ?vpsubjvar) (dobjvar ?dobjvar) (subj-map ?subj-map)
@@ -1505,7 +1511,7 @@
     (LCOMP (% W::VP- (W::vform W::base) (W::auxname (? an W::PASSIVE W::PROGR -)) (W::subj (% W::NP (W::sem 
             ?lsubjsem) (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr))) (
         W::roles ?croles) (W::subj-map ?subj-map) (W::tranform ?transform) (W::class ?cclass) (W::constraint 
-        ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+        ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   ;;;;; allow null complements for auxiliary verbs to handle 'I can' 'I will' 'I do'
@@ -1523,7 +1529,7 @@
     (LCOMP (% W::VP- (W::vform W::base) (W::subj (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case 
             ?lsubjcase) (W::agr ?lsubjagr))) (W::roles ?croles) (W::subj-map ?subj-map) (W::tranform 
          ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (
-        W::dobjvar ?dobjvar)) NOROLE)
+        W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   ;;;;; allow null complements for auxiliary verbs to handle "I am" "he has"
@@ -1534,18 +1540,18 @@
     (LCOMP (% W::VP- (W::vform W::base) (W::auxname (? an W::PASSIVE W::PROGR W::PERF)) (W::subj (% W::NP (
            W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr 
           ))) (W::roles ?croles) (W::subj-map ?subj-map) (W::tranform ?transform) (W::class ?cclass) (
-        W::constraint ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+        W::constraint ?constraint) (W::tma ?tma) (W::subjvar ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   (PROG-TEMPL
    (SYNTAX(W::morph (:forms NIL)) (W::AUX +) (W::MODAL -) (W::CHANGESEM +) (W::AGR ?agr) (W::AUXNAME 
       W::PROGR))
    (ARGUMENTS
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp)) ONT::NOROLE)
     (LCOMP (% W::VP- (W::vform W::ing) (W::subj (% W::NP (W::sem ?lsubjsem) (W::lex ?lsubjlex) (W::var 
             ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr) (w::expletive ?exp))) (W::roles ?croles) (W::subj-map ?subj-map)
 	    (W::tranform ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar 
-         ?subjvar) (W::dobjvar ?dobjvar)) NOROLE)
+         ?subjvar) (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
 
 ; nobody uses this
@@ -1582,7 +1588,7 @@
    (SYNTAX(W::morph (:forms NIL)) (W::AUX +) (W::MODAL -) (W::AUXNAME W::PASSIVE) (W::CHANGESEM -) (
      W::AGR ?agr))
    (ARGUMENTS
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) ONT::NOROLE)
     
     (LCOMP (% W::VP- (W::vform W::passive) 
 	      (W::subj (% W::NP (W::sem ?lsubjsem) 
@@ -1597,17 +1603,17 @@
 	      (W::constraint ?constraint) 
 	      (W::tma ?tma) 
 	      (W::subjvar ?subjvar) 
-	      (W::dobjvar ?dobjvar)) NOROLE)
+	      (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
   
   (PERFECTIVE-TEMPL
    (SYNTAX (W::AUX +) (W::MODAL -) (W::CHANGESEM +) (W::AGR ?agr) (W::AUXNAME W::PERF))
    (ARGUMENTS
-    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) NOROLE)
+    (LSUBJ (% W::NP (W::lex ?lsubjlex) (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr)) ONT::NOROLE)
     (LCOMP (% W::VP- (W::vform W::pastpart) (W::subj (% W::NP (W::sem ?lsubjsem) (W::lex ?lsubjlex)
 	   (W::var ?lsubjvar) (W::case ?lsubjcase) (W::agr ?lsubjagr))) (W::roles ?croles) (W::subj-map ?subj-map) 
 	   (W::tranform ?transform) (W::class ?cclass) (W::constraint ?constraint) (W::tma ?tma) (W::subjvar ?subjvar)
-	   (W::dobjvar ?dobjvar)) NOROLE)
+	   (W::dobjvar ?dobjvar)) ONT::NOROLE)
     ))
 
 
@@ -2244,6 +2250,13 @@
     (LCOMP (:parameter xp2 (:default(% W::PP (w::ptype w::as) (w::arg ?dobjvar)))) ont::formal)
     ))
 
+(agent-neutral-to-neutral-templ		
+   (ARGUMENTS
+    (LSUBJ (% W::NP) ONT::agent)
+    (LOBJ (:parameter xp (:default (% W::NP (w::var ?dobjvar)))) ONT::neutral)
+    (LCOMP (:parameter xp2 (:default(% W::PP (w::ptype w::to)))) ont::neutral1)
+    ))
+
 (experiencer-neutral-as-theme-optional-templ		
    (ARGUMENTS
     (LSUBJ (% W::NP) ONT::experiencer)
@@ -2466,7 +2479,7 @@
     ))
 
   (quan-than-comp  ;; e.g., more than five, more than that
-   (SYNTAX (W::QCOMP (% W::PP (W::PTYPE W::THAN) (W::GAP -)))
+   (SYNTAX (W::QCOMP (% W::PP (W::PTYPE W::THAN) (W::GAP -) (w::agr ?agrr)))
 			;;(W::SEM ($ F::ABSTR-OBJ (F::INFORMATION F::DATA)))))
   	   (W::QOF (% W::PP (W::PTYPE W::OF) (W::AGR ?agr1) (W::MASS ?m))) 
    ))
@@ -2815,7 +2828,7 @@
    (ARGUMENTS
     (ARGUMENT (% W::S) ONT::FIGURE)
     (SUBCAT (:parameter xp1 (:default (% W::S (W::stype W::decl)))) ONT::GROUND)    
-    (SUBCAT2 (:parameter xp2 (:default (% w::word (w::lex w::then)))) NOROLE)
+    (SUBCAT2 (:parameter xp2 (:default (% w::word (w::lex w::then)))) ONT::NOROLE)
     ))
 
   
@@ -3051,7 +3064,7 @@
     (ARGUMENT (% W::S ) ONT::FIGURE)
     (subcat (:parameter xp1 
 			(:default (% W::NP) ) 
-			(:required (w::var ?subcatvar) (w::sem ?subcatsem) (w::lex ?subcatlex) (w::expletive ?exp))) NOROLE)
+			(:required (w::var ?subcatvar) (w::sem ?subcatsem) (w::lex ?subcatlex) (w::expletive ?exp))) ONT::NOROLE)
     (subcat2 (:parameter xp2 
 			 (:default (% W::CP (W::ctype W::s-to)))  
 			 (:required (W::subj (% W::np (W::sem ?subcatsem) (W::lex ?subcatlex) (W::var ?subcatvar) (w::expletive ?exp)))))
@@ -3115,7 +3128,7 @@
    (SYNTAX (W::SORT W::PRED) (W::ATYPE W::CENTRAL) (W::ARG ?arg) (W::COMPARATIVE W::+) (W::ALLOW-post-n1-subcat +) ) ;(W::allow-deleted-comp +) )
    (ARGUMENTS
     (ARGUMENT (% W::NP) ONT::FIGURE)
-    (subcat (:parameter xp (:default (% W::pp (W::ptype W::than)))) ONT::COMPAR optional)
+    (subcat (:parameter xp (:default (% W::compar))) ONT::COMPAR optional)
     (subcat2 (% -) ONT::NOROLE)
     ))
 
@@ -3370,7 +3383,7 @@
   (adj-expletive-content-xp-templ
    (SYNTAX (W::SORT W::PRED) (W::ATYPE W::central) (W::ARG ?arg) (W::ALLOW-DELETED-COMP -))
    (ARGUMENTS    
-    (ARGUMENT (% W::NP (W::lex W::it)) NOROLE)
+    (ARGUMENT (% W::NP (W::lex W::it)) ONT::NOROLE)
 ;    (subcat (:parameter xp (:default (% W::CP (W::ctype W::s-that)))) ONT::Content)
     (subcat (:parameter xp (:default (% W::CP (W::ctype W::s-that)))) ONT::FIGURE)
     (subcat2 (% -) ONT::NOROLE)
@@ -3380,7 +3393,7 @@
    (adj-to-inf-templ
    (SYNTAX (W::SORT W::PRED) (W::ATYPE W::central) (W::ARG ?arg) (W::ALLOW-DELETED-COMP -))
    (ARGUMENTS    
-    (ARGUMENT (% W::NP  (W::sem ?dobjsem) (W::lex ?dobjlex) (W::var ?dobjvar) (w::expletive ?exp)) NOROLE)
+    (ARGUMENT (% W::NP  (W::sem ?dobjsem) (W::lex ?dobjlex) (W::var ?dobjvar) (w::expletive ?exp)) ONT::NOROLE)
 ;    (subcat (:parameter xp (:default (% W::CP (W::ctype W::s-that)))) ONT::Content)
     (subcat (:parameter xp (:default (% W::CP (W::ctype W::s-to)))
 			(:required (W::dobj (% W::np (W::sem ?dobjsem) (W::lex ?dobjlex) (W::var ?dobjvar) (w::expletive ?exp)))))
@@ -3420,7 +3433,7 @@
   (adj-expletive-content-control-templ
    (SYNTAX (W::SORT W::PRED) (W::ATYPE W::central) (W::ARG ?arg) (W::ALLOW-DELETED-COMP -))
    (ARGUMENTS    
-    (ARGUMENT (% W::NP (W::lex W::it)) NOROLE)
+    (ARGUMENT (% W::NP (W::lex W::it)) ONT::NOROLE)
     (subcat (:parameter xp1 
 			(:default (% W::pp (W::ptype W::for))) 
 			(:required (w::var ?subcatvar) (w::sem ?subcatsem) (w::lex ?subcatlex) (w::expletive ?exp))) ONT::Affected)
@@ -3681,6 +3694,13 @@
     (subcat (:parameter xp (:default (% W::pp (W::ptype W::for)))) ONT::STANDARD optional)
     ))
 
+(post-adv-templ
+ (SYNTAX (W::SORT W::PRED) ;(W::ALLOW-DELETED-COMP +)
+	 (W::ATYPE W::post) (W::ARG ?arg))
+ (ARGUMENTS
+  (ARGUMENT (% (? W::argcat W::ADVBL W::ADJP)  (w::set-modifier -) (W::sort ?sort)) ONT::FIGURE)
+  ))
+
  ;; quiet enough to sing a song
   (post-adv-xp-templ
    (SYNTAX (W::SORT W::PRED) (W::ALLOW-DELETED-COMP +) (W::ATYPE W::post) (W::ARG ?arg))
@@ -3696,6 +3716,7 @@
 ;    (SUBCAT (% W::S (W::stype (? st W::decl w::ing))) ONT::VAL)  
 ;    ))
 
+#|
    ;; the device placed at that time
   (binary-constraint-adj-postpos-templ
    (SYNTAX (W::SORT W::binary-constraint) (W::ATYPE W::postpositive) (W::ARG ?arg))
@@ -3704,7 +3725,8 @@
     (subcat (% (? ag w::NP)) ONT::GROUND)
     (subcat2 (% -) ONT::NOROLE)
     ))
-  
+|#
+
   ;;;;; if word is postpositive and takes optional subcats
   ;;;;; "money enough" "money enough for all"
   (postpositive-adj-experiencer-theme-templ

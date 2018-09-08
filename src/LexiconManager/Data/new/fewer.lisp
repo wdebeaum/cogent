@@ -1,7 +1,7 @@
 ;;;;
 ;;;; W::FEWER
 ;;;;
-
+#||
 (define-words :pos W::quan :boost-word t
  :tags (:base500)
  :words (
@@ -16,15 +16,28 @@
      )
     )
    )
-))
+  ))||#
 
 (define-words :pos W::ADV
  :words (
   (W::FEWER
    (SENSES
     ((LF-PARENT ONT::LESS-VAL)
-     (TEMPL COMPAR-THAN-templ)
+     ;(TEMPL COMPAR-THAN-templ)
+     (TEMPL COMPAR-templ)
      )
     )
    )
   ))
+
+(define-words :pos W::adv 
+ :words (
+  ((W::fewer W::than)
+   (SENSES
+    ((LF-PARENT ONT::QMODIFIER)
+     (LF-FORM W::LESS-THAN)
+     (TEMPL NUMBER-OPERATOR-TEMPL)
+     )
+    )
+   )
+))

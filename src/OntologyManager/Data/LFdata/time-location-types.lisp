@@ -13,18 +13,18 @@
 ; a relation between an object (figure) to another object (ground) by a spatial relation, possible abstract
 (define-type ont::position-reln
  :parent ont::abstract-object
- :comment "Spatial relations that locate one object (the figure) in terms of another object (the ground)"
+ :comment "Spatial relations that locate one object (the figure) in terms of another object (the ground), which often is implicit"
  ;; situations can be spatially located, e.g. meetings, riots, parties
  ;; so can abstr-obj: the idea in the document; the name on the envelope; the man at the party
  :arguments (;(:ESSENTIAL ONT::OF ((? of F::Phys-obj F::Situation f::abstr-obj)))
 	     ;(:ESSENTIAL ONT::val ((? val F::Phys-obj F::Situation f::abstr-obj)))
 	     (:ESSENTIAL ONT::FIGURE ((? fig F::Phys-obj F::Situation f::abstr-obj)))
-	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj F::Situation f::abstr-obj)) (f::type (? !t ONT::TIME-MEASURE-SCALE)))
-             )
+	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj F::Situation f::abstr-obj)) (f::type (? !t ONT::TIME-MEASURE-SCALE))
+             ))
  )
 
 (define-type ont::at-scale-value
-    :comment "The main predicate for mapping an object to a value on a scale"
+    :comment "The main predicate for associating an object with a value on a scale"
     :parent ont::position-reln)
 
 ; *********************************************
@@ -35,31 +35,34 @@
 
 ; figure is viewed as a point
 (define-type ont::position-as-point-reln
- :parent ont::position-reln
- )
+    :comment "locating an object (FIGURE) wrt a point-like object (GROUND)"
+    :parent ont::position-reln
+    )
+
+
+(define-type ont::at-loc
+    :comment "prototypical locating of a FIGURE wrt a point-like GROUND"
+    :parent ont::position-as-point-reln
+    )
 
 ; figure is viewed as a point and related to ground by (abstract) containment
-(define-type ont::pos-as-containment-reln
-  :parent ont::position-as-point-reln
-  )
-
-; ground is within a container, group or area
-;(define-type ont::within-reln
-;  :parent ont::pos-as-containment-reln
-;  )
+(define-type ont::pos-wrt-containment-reln
+    :comment "locating an object (typically rthe FIGURE) within an extended object (typically the GROUND)"
+    :parent ont::position-reln
+    )
 
 ; in, within, inside (of)
 (define-type ont::in-loc
-  :parent ont::pos-as-containment-reln
+    :parent ont::pos-wrt-containment-reln
+    :comment "FIGURE is within or inside the GROUND"
   :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj f::abstr-obj) ; measure (music)
-					;(f::type (? t ont::phys-object ont::information-function-object ont::mental-construction)) ; mental-construction: signaling-pathway
 				       (f::intentional -) (f::container +) ; containers include corner and pathway
-				   )))
+				       )))
   )
 
 (define-type ont::contain-reln
     :comment "a kind of Inverse of IN-LOC, but can't be used as a result location"
-    :parent ont::predicate
+    :parent ont::pos-wrt-containment-reln
     :arguments ((:ESSENTIAL ONT::FIGURE ((? val f::phys-obj) (f::intentional -)
 					 (f::container +)
 				   )))
@@ -67,27 +70,43 @@
 
 ; figure is outside a container, group or area
 (define-type ont::outside
-  :parent ont::pos-as-containment-reln
+  :parent ont::pos-wrt-containment-reln
   :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj) (f::intentional -)
 				       (f::container +)  ;; having container + causes problems with things like "pull the plug out of the wall"
 				       )))
   )
-
+#||
 ; out (of), outside (of)
 (define-type ont::out-loc
   :parent ont::outside
-  )
+  )||#
 
-; figure is abstract value and delimited by some range of values (ground)
-; in, within
-; examples: the price is within five dollars of the estimate
-; ?? the house is within five miles of the starbucks
 (define-type ont::delimit-reln
-  :parent ont::pos-as-containment-reln
-  :arguments ((:ESSENTIAL ONT::FIGURE ((? of f::abstr-obj)))
-	      (:ESSENTIAL ONT::GROUND ((? val f::abstr-obj)))
+    :comment "the FIGURE has a value in a rnage that is delimited by the GROUND, e.g., within five dollars of the estimate, within five miles of starbucks"
+  :parent ont::pos-wrt-containment-reln
+  :arguments ((:ESSENTIAL ONT::FIGURE ((? of F::phys-obj f::abstr-obj)))
+	      (:ESSENTIAL ONT::GROUND ((? val F::phys-obj f::abstr-obj)))
 	      )
   )
+
+					; figure is spatially related to a group of objects (the ground)
+(define-type ont::complex-ground-reln
+    :comment "FIGURE is located wrt a set of objects that comprise the GROUND. e.g., between X and Y, among the participants"
+    :parent ont::position-reln
+    )
+
+; figure is between objects comprising the ground
+; between, in between
+(define-type ont::between
+  :parent ont::complex-ground-reln
+  )
+
+; figure is within objects comprising the ground
+; among
+(define-type ont::among
+  :parent ont::complex-ground-reln
+  )
+
 
 ; figure is related to the ground by a distance scale
 (define-type ont::pos-distance
@@ -130,10 +149,7 @@
 ;  :parent ont::position-as-point-reln
 ;  )
 
-; at
-(define-type ont::at-loc
-  :parent ont::position-as-point-reln
-  )
+
 
 ; figure is related to perspective of speaker
 (define-type ont::pos-wrt-speaker-reln
@@ -151,78 +167,63 @@
 (define-type ont::there
   :parent ont::pos-wrt-speaker-reln
   )
-
+#||
 ; figure related by directon from ground
 (define-type ont::pos-directional-reln
+    :comment "FIGURE is related via a directional orientation to the GROUND"
   :parent ont::position-as-point-reln
   )
+||#
+
+
+; figure is related by inherent orientation of ground
+(define-type ont::oriented-loc-reln
+    :comment "FIGURE is located by a directional relationship with the GROUD"
+    :parent ont::position-as-point-reln
+    )
 
 ; direction is a verticality reln
 (define-type ont::directional-vert
-  :parent ont::pos-directional-reln
+    :comment "FIGURE is related via a vertical orientation to the GROUND"
+  :parent ont::oriented-loc-reln
   :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj f::abstr-obj )
-				   ))) ; situation should use SITUATED-IN
+				   )))
   )
 
 ; figure is below ground (in some way)
 ; below, under, underneath
 (define-type ont::below
-  :parent ont::directional-vert
-  )
+    :wordnet-sense-keys ("below%4:02:01")
+    :comment "FIGURE is lower on some vertical scale than the GROUND"
+    :parent ont::directional-vert
+    )
 
 ; figure is below (and translated) from ground
 ; down (from/of)
 (define-type ont::down
-  :parent ont::below
-  )
+    :wordnet-sense-keys ("down%4:02:00" "down%4:02:05")
+    :comment "FIGURE is lower on a scale"
+    :parent ont::directional-vert
+    )
 
 ; figure is above ground (in some way)
 ; above, over
 (define-type ont::above
-  :parent ont::directional-vert
+     :comment "FIGURE is higher on some vertical scale than the GROUND"
+     :parent ont::directional-vert
   )
 
 ; figure is above (and translated) from ground
 ; up (from/of/to)
 (define-type ont::up
-  :parent ont::above
-  )
-
-; figure is related by a navigational reln to ground
-(define-type ont::navigational-reln
-    :comment "Figure is related by a cardinal directional reln to ground"
-    :parent ont::pos-directional-reln
+    :comment "FIGURE is higher on some vertical scale than the GROUND"
+    :parent ont::directional-vert
     )
 
-; north (of), northward
-(define-type ont::north-reln
-  :parent ont::navigational-reln
-  )
-
-; east (of/from), eastward
-(define-type ont::east-reln
-  :parent ont::navigational-reln
-  )
-
-; south (of/from), southward
-(define-type ont::south-reln
-  :parent ont::navigational-reln
-  )
-
-; west (of/from), westward
-(define-type ont::west-reln
-  :parent ont::navigational-reln
-  )
-
-; figure is related by inherent orientation of ground
-(define-type ont::oriented-loc-reln
-  :parent ont::position-as-point-reln
-  )
-
-;;
 (define-type ont::orients-to
-  :parent ont::oriented-loc-reln
-  :arguments ((:essential ONT::GROUND ((? of1  f::phys-obj f::abstr-obj) (f::type (? t ONT::CARDINAL-POINT ONT::LOC-WRT-ORIENTATION)))))
+    :parent ont::oriented-loc-reln
+    :comment "FIGURE is located by an object defined by an orientation wrt an object. e.g., to the east, to the back"
+  :arguments ((:essential ONT::GROUND ((? of1  f::phys-obj f::abstr-obj) (f::type (? t ONT::CARDINAL-POINT ONT::object-dependent-location)))))
   )
 
 ; figure is on an object
@@ -259,95 +260,116 @@
   :parent ont::oriented-loc-reln
   )
 
-; figure is spatially related to a group of objects (the ground)
-(define-type ont::complex-ground-reln
-  :parent ont::position-as-point-reln
+; figure is related by a navigational reln to ground
+(define-type ont::navigational-reln
+    :comment "Figure is related by a cardinal directional reln to ground"
+    :parent ont::oriented-loc-reln
+    )
+
+; north (of), northward
+(define-type ont::north-reln
+  :parent ont::navigational-reln
   )
 
-; figure is between objects comprising the ground
-; between, in between
-(define-type ont::between
-  :parent ont::complex-ground-reln
+; east (of/from), eastward
+(define-type ont::east-reln
+  :parent ont::navigational-reln
   )
 
-; figure is within objects comprising the ground
-; among
-(define-type ont::among
-  :parent ont::complex-ground-reln
+; south (of/from), southward
+(define-type ont::south-reln
+  :parent ont::navigational-reln
   )
 
+; west (of/from), westward
+(define-type ont::west-reln
+  :parent ont::navigational-reln
+  )
 ; *********************************************
 ;
 ; ont::position-as-extent-reln subtree
 ;
 ; *********************************************
 
-; figure is a linear object
-(define-type ont::position-as-extent-reln
- :parent ont::position-reln
-; :arguments ((:ESSENTIAL ONT::of ((? of f::phys-obj (F::spatial-abstraction (? sa F::line F::strip)))))
-;             )
- )
-
-; figure is distributed over ground
-; over
-(define-type ont::pos-as-over
- :parent ont::position-as-extent-reln
- )
+(define-type ont::position-wrt-area-reln
+    :comment "Position of FIGURE defined in terms or a relationship to an area (the GROUND)"
+    :parent ont::position-reln
+    :arguments ((:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation)))
+		(:ESSENTIAL ONT::GROUND (F::Phys-obj (F::type ont::geo-object)
+						     (F::spatial-abstraction (? !xx F::spatial-point))))
+		))
+    
+;; mapped to ONT::ABOVE and ONT::DISTRIBUTED-POS
+#||(define-type ont::pos-as-over
+    :comment "FIGURE is above GROUND"
+    :parent ont::position-wrt-area-reln
+    )||#
 
 ; figure is distributed throughout ground
 ; throughout, through
 (define-type ont::distributed-pos
- :parent ont::pos-as-over
- )
+    :comment "FIGURE is distributed over the GROUND"
+    :parent ont::position-wrt-area-reln
+    )
 
+(define-type ont::across
+    :comment "FIGURE is a slice through the GROUND from one side to the other. Conceptually on the GROUND"
+    :parent ont::position-wrt-area-reln
+    )
 
-; *********************************************
-;
-; > ont::position-w-trajectory-reln subtree
-;
-; *********************************************
-
-; relation involves a trajectory (figure, ground or other)
-; ?? how do these relate to the ont::path subtree?
-(define-type ont::position-w-trajectory-reln
- :parent ont::position-reln
- :arguments (;(:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation) (F::trajectory +)))
-	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation)))
-             (:ESSENTIAL ONT::GROUND (F::Phys-obj))
-             )
- )
-
-; figure is linear and crosses ground
-; across
 (define-type ont::pos-as-opposite
- :parent ont::position-w-trajectory-reln
- )
+    :comment "FIGURE is on an opposite side of an area wrt some reference object: e.g., it is across the street"
+    :parent ont::position-wrt-area-reln
+    )
 
-(define-type ont::pos-as-around
- :parent ont::position-w-trajectory-reln
- )
+(define-type ont::around
+    :comment "FIGURE is an area surrounding the boundary of the GROUND, or distrubuted over the GROUND"
+    :parent ont::position-wrt-area-reln
+    )
+
+(define-type ONT::through
+    :parent ONT::position-wrt-area-reln
+    :comment "FIGURE crosses the GROUND, conceptually IN the ground" 
+    )
+
+
+
+
+; *********************************************
+;
+; > ont::position-wrt-linear-area-reln subtree
+;
+; *********************************************
+
+(define-type ont::position-wrt-linear-area-reln
+    :comment "FIGURE is defined wrt an area (the GROUND) that has a linear orientation"
+    :parent ont::position-reln
+    :arguments ((:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation)))
+		(:ESSENTIAL ONT::GROUND (F::Phys-obj (F::type ont::geo-object)
+						     (F::spatial-abstraction (? !ss F::spatial-point)))))
+    )
 
 ; figure is linear and adjacent to ground
 ; along, alongside (of)
-(define-type ont::linear-extent
- :parent ont::position-w-trajectory-reln
- )
+(define-type ont::pos-extended-along-linear-area
+    :comment "FIGURE is located within the linear area (GROUND). e.g., I found it along the street. We walked along the street"
+    :parent ont::position-wrt-linear-area-reln
+    )
 
-; ground is in the trajectory
 (define-type ont::pos-relative-wrt-trajectory
- :parent ont::position-w-trajectory-reln
+    :comment "FIGURE is located along a linear area wrt some other object (GROUND)"
+ :parent ont::position-wrt-linear-area-reln
  )
 
-; before, future
 (define-type ont::pos-before-in-trajectory
- :parent ont::pos-relative-wrt-trajectory
- )
+    :comment "FIGURE is before the GROUND wrt a linear area"
+    :parent ont::pos-relative-wrt-trajectory
+    )
 
-; after, past
 (define-type ont::pos-after-in-trajectory
- :parent ont::pos-relative-wrt-trajectory
- )
+    :comment "FIGURE is after the GROUND wrt a linear area"
+    :parent ont::pos-relative-wrt-trajectory
+    )
 
 #|
 ; ground is the trajectory
@@ -527,52 +549,13 @@
  )
 |#
 
-; constrains direction of motion
-(define-type ont::direction-reln
- :parent ont::path
- :arguments (;(:ESSENTIAL ONT::val ((? val F::Phys-obj)))
-	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj)))
-	     )
- )
-
-; constrains direction of rotation
-(define-type ont::dir-rotation
- :parent ont::direction-reln
- )
-
-; clockwise
-(define-type ont::clockwise
- :parent ont::dir-rotation
- )
-
-; counterclockwise
-(define-type ont::counterclockwise
- :parent ont::dir-rotation
- )
-
-(define-type ont::dir-in-terms-of-obj
- :parent ont::direction-reln
- :arguments (;(:ESSENTIAL ONT::OF (F::situation (F::type ont::motion)))
-	     (:ESSENTIAL ONT::FIGURE (F::phys-obj (F::mobility f::movable)))
-	     )
- )
-
-; towards
-(define-type ont::towards
- :parent ont::dir-in-terms-of-obj
- )
-
-; away
-(define-type ont::away
- :parent ont::dir-in-terms-of-obj
- )
 
 ; figure is trajectory, ground is within the trajectory
 ; via, by way of
 (define-type ont::obj-in-path
     :arguments (;(:ESSENTIAL ONT::FIGURE ((? type F::Situation F::phys-obj) (F::type (? path-type ont::motion ont::apply-force ont::route)) (F::trajectory +)))
 		;(:ESSENTIAL ONT::FIGURE ((? type F::phys-obj) ))
-		(:ESSENTIAL ONT::FIGURE ((? type F::Situation F::phys-obj) (F::type (? t F::route F::event-of-change)) )) ; I go to the post office via ...; The route to Avon via...
+		(:ESSENTIAL ONT::FIGURE ((? type F::Situation F::phys-obj) (F::type (? t ont::route ont::event-of-change)) )) ; I go to the post office via ...; The route to Avon via...
 		(:essential ONT::GROUND  (F::Phys-obj (F::form F::object)))) 
     :parent ont::path
     )
@@ -611,7 +594,7 @@
              (:ESSENTIAL ONT::GROUND ((? lv f::phys-obj f::situation)))
              )
  )
-
+#||   ;; all subtypes moved to 
 ;; close (to)/near a house, a party, a zipcode
 
 (define-type ONT::trajectory
@@ -621,7 +604,7 @@
 	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation)))
              (:ESSENTIAL ONT::GROUND (F::Phys-obj))
              )
- )
+ )||#
 
 (define-type ONT::from-loc
  :parent ONT::source-reln
@@ -678,75 +661,127 @@
  )
 |#
 
-(define-type ONT::through
- :parent ONT::TRAJECTORY
- :arguments ((:ESSENTIAL ONT::GROUND (F::Phys-obj (F::spatial-abstraction (? sa F::spatial-point F::spatial-region))))
-             )
- )
 
-; trans-
-(define-type ont::across
-  :parent ont::trajectory
-  )
-
-(define-type ont::over
-  :parent ont::trajectory
-  )
-
-(define-type ont::around
-  :parent ont::trajectory
-  )
 
 (define-type ONT::direction
- :parent ONT::position-reln
- :arguments (;(:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation) (F::trajectory +) 
-		;		      (f::type (? tt ONT::MOTION ONt::APPLY-FORCE ONT::PUT))))
-	     (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj
+    :parent ONT::position-reln
+    :wordnet-sense-keys ("direction%1:15:00")
+    :comment "a direction = a spatial relation between the location (FIGURE) of an object and its previous location"
+ :arguments ((:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj
 					 F::abstr-obj ; "move the plan up the agenda"?
-					 F::situation))) ; meeting is SITUATION (move the meeting up the stairs)
+					 F::situation) ; meeting is SITUATION (move the meeting up the stairs)
+				      (F::mobility f::movable)))
 	     (:ESSENTIAL ONT::GROUND (F::Phys-obj))
+	     (:OPTIONAL ONT::NOROLE)
             )
  )
 
+(define-type ont::direction-wrt-entity
+    :parent ont::direction
+    :comment "direction wrt respect to a given entity (the GROUND), i.e., the relation between the FIGUREs orginal and final position is defined with respect to the GROUND"
+    )
+
+(define-type ont::direction-forward
+    :wordnet-sense-keys ("forward%4:02:00")
+    :parent ont::direction-wrt-entity
+    :comment "FIGURE moves forward from its original position, where forward is defined by the orientation of the GROUND"
+    )
+
+(define-type ont::direction-backward
+    :parent ont::direction-wrt-entity
+    :wordnet-sense-keys ("back%4:02:00")
+    :comment "FIGURE moves backward from its original position, where backward is defined by the orientation of the GROUND"
+    )
+
+(define-type ont::direction-rightward
+    :parent ont::direction-wrt-entity
+     :wordnet-sense-keys ("right%4:02:03")
+    :comment "direction rightward wrt respect to a given entity (the GROUND)"
+    )
+
+(define-type ont::direction-leftward
+    :wordnet-sense-keys ("left%4:02:03")
+    :parent ont::direction-wrt-entity
+    :comment "direction leftward wrt respect to a given entity (the GROUND)"
+    )
+
+(define-type ont::towards
+    :comment "direction towards from a given entity (the GROUND)"
+    :parent ont::direction-wrt-entity
+    )
+
+(define-type ont::away
+    :comment "direction away a given entity (the GROUND)"
+    :parent ont::direction-wrt-entity
+    )
+
+(define-type ont::direction-rotation
+    :comment "rotational direction of the FIGURE"
+    :parent ont::direction
+    )
+
+(define-type ont::clockwise
+    :parent ont::direction-rotation
+    )
+
+; counterclockwise
+(define-type ont::counterclockwise
+    :parent ont::direction-rotation
+    )
+
+(define-type ont::direction-wrt-verticality
+    :parent ont::direction
+    :comment "direction wrt respect to verticality (e.g., gravity or a 'vertical' scale, e.g., temperature), possibly also related to a extended object, e.g., a street, a body, which is the GROUND"
+    )
+
 (define-type ont::direction-down
-    :parent ONT::DIRECTION)
+     :comment "This is the particle 'down' and is relative to some scale/domain: e.g., the temperature is down, move the ball down"
+    :parent ONT::DIRECTION-wrt-verticality)
 
 (define-type ont::direction-down-ground
     :comment "this is the transitive 'down' that has a GROUND that describes a physical object and locations objects or events"
     :arguments ( (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj 
 					 F::situation)))
 		 (:ESSENTIAL ONT::GROUND (F::Phys-obj)))
-    :parent ONT::DIRECTION)
+    :parent ONT::DIRECTION-wrt-verticality)
 
 (define-type ont::direction-up
-    :comment "This is the intransitive 'up' and is relative to some scale/domain: e.g., the temperature is up, move the ball up"
-    :parent ONT::DIRECTION)
+    :comment "This is the particle 'up' and is relative to some scale/domain: e.g., the temperature is up, move the ball up"
+    :parent ONT::DIRECTION-wrt-verticality)
 
 (define-type ont::direction-up-ground
     :comment "this is the transitive 'up' that has a GROUND that describes a physical object and locations objects or events"
     :arguments ( (:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj 
 					 F::situation)))
 		 (:ESSENTIAL ONT::GROUND (F::Phys-obj)))
-    :parent ONT::DIRECTION)
+    :parent ONT::DIRECTION-wrt-verticality)
+
+(define-type ont::direction-wrt-containment
+    :parent ont::direction
+    :comment "direction relative to containment in some object (the GROUND)"
+    )
+
+(define-type ont::direction-in
+    :comment "direction involving moving into some object (the GROUND)"
+    :parent ont::direction-wrt-containment
+    )
+
+(define-type ont::direction-out
+    :comment "direction involving moving into some object (the GROUND)"
+    :parent ont::direction-wrt-containment
+    )
 
 ;; north, south, east, west
 (define-type ont::cardinal-direction
   :parent ont::direction
   )
 
+
 ;;; swift 04/14/02 added to handle adverbs further/father
 (define-type ONT::extension
  :parent ONT::PREDICATE
  :arguments ((:ESSENTIAL ONT::FIGURE ((? t F::Phys-obj F::Situation)))
              )
- )
-
-;; along/up/down the street
-;; along the river/coast: not F::line/strip
-(define-type ONT::ALONG
- :parent ONT::TRAJECTORY
-; :arguments ((:ESSENTIAL ONT::GROUND (F::Phys-obj (F::spatial-abstraction (? sa F::line F::strip))))
-;             )
  )
 
 (define-type ONT::extent-predicate
@@ -837,14 +872,14 @@
  ))
 |#
 
-;; how long did it take / did he run
+#||;; how long did it take / did he run         Already have ONT::DURARION-SCALE
 (define-type ont::duration
-  :parent ont::temporal-predicate
+  :parent ont::measure-scale
   :sem (F::abstr-obj (F::Scale Ont::duration-scale))
   :arguments ((:ESSENTIAL ONT::FIGURE ((? t f::situation F::abstr-obj)))
              )
   )
-
+||#
 ;; frequencies
 (define-type ONT::frequency
  :parent ONT::temporal-modifier
@@ -879,8 +914,8 @@
 
 ;;; for things like per day, a day - must apply to bounded events (no quite stong enough, but as close as we can get with the features we have)
 (define-type ONT::iteration-period
- :parent ONT::temporal-location
- :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (F::aspect F::bounded))))
+ :parent ONT::predicate  ;; this has nothing to do with time per se
+ :arguments ((:ESSENTIAL ONT::FIGURE (F::abstr-object (F::type (? ttt ONT::QUANTITY)))))
  )
 
 ;; the population in the 1920s; the shortage in the 1920s
@@ -909,16 +944,43 @@
              )
  )
 
+(define-type ont::before
+    :parent ont::event-time-rel
+    :wordnet-sense-keys ("after%4:02:00" "after%4:02:01")
+    )
+
+(define-type ont::after
+    :parent ont::event-time-rel
+    :wordnet-sense-keys ("before%4:02:03")
+    )
+
+(define-type ont::immediate
+    :parent ont::event-time-rel
+    :wordnet-sense-keys ("immediately%4:02:00" "immediately%4:02:05")
+    )
+
+(define-type ont::when-while
+    :parent ont::event-time-rel
+   
+    )
+
+(define-type ont::until
+    :parent ont::event-time-rel
+   
+    )
+
 ;; still, yet, so far, ....
 (define-type ONT::time-rel-so-far
 ; :parent ONT::event-time-rel
-  :parent ONT::EVENT-DURATION-MODIFIER
-  :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation))
+    :parent ONT::EVENT-DURATION-MODIFIER
+    :wordnet-sense-keys ("so_far%4:02:00")
+    :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation))
              )
  )
 
 (define-type ONT::event-time-rel-now
- :parent ONT::event-time-rel
+     :wordnet-sense-keys ("now%4:02:05" "now%4:02:01")
+     :parent ONT::event-time-rel
  )
 
 (define-type ONT::implicit-overlap
@@ -927,7 +989,7 @@
  )
 
 (define-type ONT::event-time-rel-culmination
- :parent ONT::event-time-rel
+  :parent ONT::event-time-rel
  )
 
 ;; event times not including situations
@@ -992,7 +1054,7 @@
 	     (:ESSENTIAL ONT::GROUND (F::abstr-obj (F::scale ont::duration-scale)))
 ;	     (:optional ont::result-val (f::abstr-obj)) ; until recently / ready
 ;	     (:optional ont::time-val  (f::abstr-obj (f::scale ont::time-measure-scale)))
-             )
+            ) 
  )
 
 ;;; in five minutes as a deadline rather than a measure of how long something takes to achieve
@@ -1011,18 +1073,20 @@
 
 ;;; this is used only for "that/it". Most normal time object denote intervals or units
 (define-type ONT::Any-Time-object
- :parent ONT::ANY-SEM
- :sem (F::time (F::time-function F::Any-time-function) (F::time-scale (? sc F::interval F::point)))
- )
+    :parent ONT::ANY-SEM
+    :sem (F::time (F::time-function F::Any-time-function) (F::time-scale (? sc F::interval F::point)))
+    )
 
 (define-type ONT::Time-object
- :parent ONT::ANY-TIME-OBJECT
- :sem (F::time (F::time-scale (? sc F::point F::interval)))
- )
+    :comment "objects that refer to temporal locations in some way"
+    :parent ONT::ANY-TIME-OBJECT
+    :arguments ((:OPTIONAL ONT::FIGURE))
+    :sem (F::time (F::time-scale (? sc F::point F::interval)))
+    )
 
 ;; these are intervals such as "duration", which cannot generally be counted
 ;; or serve as time units
-(define-type ONT::TIme-interval
+(define-type ONT::Time-interval
  :wordnet-sense-keys ("interval%1:28:00" "time_interval%1:28:00" "time%1:28:03" "clock_time%1:28:00" "time%1:28:00" "time%1:28:05" "time_period%1:28:00")
  :parent ONT::TIME-OBJECT
  :sem (F::time (F::time-scale (? sc F::interval)) (F::Scale -)) ;;Ont::duration-scale))
@@ -1033,12 +1097,7 @@
              )
  )
 
-;;; future, past
-(define-type ONT::time-span
-; :parent ONT::TEMPORAL-PREDICATE
- :parent ont::time-interval
- :arguments ((:REQUIRED ONT::FIGURE))
- )
+
 
 ;;; phase, stage (e.g. phases of the moon) 
 ;;; not strictly bound to time, but there currently is no better place to place this type. once abstract sequence is defined
@@ -1050,29 +1109,37 @@
  :comment "e.g., phases of the moon, stage of the project. This type represents stages of a sequence that is more abstract than time."
 )
 
-;;  this type is constructed by the grammar for dates, times of day, etc.
+;;  direct reference to times (e.g. now, then, ...)
+;;  this type is also constructed by the grammar for dates, times of day, etc.
 (define-type ONT::TIME-LOC
- :parent ONT::TIME-interval)
+ :parent ONT::time-object)
 
-(define-type ONT::season
- :parent ONT::time-interval
- )
+(define-type ONT::recurring-time-of-day
+    :comment "recurring moments of the day, defined by some event"
+    :sem (F::time (F::time-function F::day-point))
+    :parent ont::time-interval
+    )
 
-(define-type ONT::winter
- :parent ONT::season
- )
+(define-type ONT::time-defined-by-event
+    :comment "times defined by events"
+    :sem (F::time (F::time-function F::day-point))
+    :parent ont::time-interval
+    )
 
-(define-type ONT::spring
- :parent ONT::season
- )
+(define-type ONT::time-defined-by-duration
+    :comment "times defined by events"
+    :parent ont::time-interval
+    )
 
-(define-type ONT::summer
- :parent ONT::season
- )
+(define-type ONT::month
+    :comment "time interval of a named month"
+    :parent ont::time-interval
+    )
 
-(define-type ONT::autumn
- :parent ONT::season
- )
+(define-type ONT::day
+    :comment "time interval of a day"
+    :parent ont::time-interval
+    )
 
 
 ;; ont::time-unit has been moved under ont::measure-unit (with other units pounds, ghz, etc.)
@@ -1113,40 +1180,107 @@
     )
 
 (define-type ont::date-object-in
-    :comment "date objects that use IN - e.g., in June"
+    :comment "temporal objects that use IN - e.g., in June"
     :parent ONT::TIME-Object
     )
 
+;;; future, past
+(define-type ONT::time-span
+; :parent ONT::TEMPORAL-PREDICATE
+ :parent ont::date-object-in
+ :arguments ((:REQUIRED ONT::FIGURE))
+ )
+
 (define-type ONT::day-name
- :wordnet-sense-keys ("day_of_the_week%1:28:00")
+ :wordnet-sense-keys ("calendar_day%1:28:00")
  :parent ONT::DATE-OBJECT-on
  :sem (F::time (F::time-function F::day-of-week))
    :arguments ((:OPTIONAL ONT::FIGURE ((? t f::situation f::abstr-obj)))
 	       (:optional ont::GROUND)
              )
- )
+   )
 
 (define-type ont::recurring-event
     :comment "events that recur every year (or some time interval)"
+    :wordnet-sense-keys ("day%1:28:01" "season%1:28:01" "season%1:28:02")
     :parent ONT::date-object-on)
 
 
+
 (define-type ONT::holiday
+    :wordnet-sense-keys ("leisure%1:28:00")
     :comment "recurring events based on religious or social activities"
     :parent ont::recurring-event
   )
 
 
+(define-type ONT::era
+    :wordnet-sense-keys ("era%1:28:00" "era%1:28:01")
+    :parent ONT::DATE-OBJECT-IN
+    :sem (F::time (f::time-function f::era))
+    )
+
+(define-type ONT::year
+    :parent ONT::DATE-OBJECT-IN
+    :wordnet-sense-keys ("year%1:28:00" "year%1:28:01" "year%1:28:02")
+ :sem (F::time (f::time-function f::year-name))
+ )
+
+(define-type ONT::century
+    :parent ONT::DATE-OBJECT-IN
+    :wordnet-sense-keys ("century%1:28:00")
+    :sem (F::time (f::time-function f::time-of-year))
+    )
+
+(define-type ONT::day-stage
+    :parent ONT::DATE-OBJECT-IN
+    :comment "a regular part of the day"
+     :wordnet-sense-keys ("morning%1:28:00" "evening%1:28:00" "night%1:28:00" "twilight%1:28:00" "afternoon%1:28:00"  )
+    :sem (F::time (f::time-function f::day-period))
+ )
+
+(define-type ONT::year-stage
+    :parent ONT::DATE-OBJECT-IN
+    :sem (F::time (f::time-function f::time-of-year))
+ )
+
 (define-type ONT::month-name
  :wordnet-sense-keys ("calendar_month%1:28:00" "month%1:28:01")
- :parent ONT::DATE-OBJECT-IN
+ :parent ONT::year-stage
  :sem (F::time (F::time-function F::month-name))
  )
 
-(define-type ONT::era
- :parent ONT::DATE-OBJECT-IN
- :sem (F::time (f::time-function f::era))
+(define-type ONT::week
+    :parent ONT::year-stage
+    :wordnet-sense-keys ("week%1:28:00" )
+    :sem (F::time (F::time-function F::time-of-year))
+    )
+
+(define-type ONT::season
+    :parent ONT::year-stage
+    :wordnet-sense-keys ("season%1:28:00")
+    )
+
+(define-type ONT::winter
+    :wordnet-sense-keys ("winter%1:28:00")
+    :parent ONT::season
  )
+
+(define-type ONT::spring
+    :wordnet-sense-keys ("spring%1:28:00")
+    :parent ONT::season
+ )
+
+(define-type ONT::summer
+    :wordnet-sense-keys ("summer%1:28:00")
+ :parent ONT::season
+ )
+
+(define-type ONT::autumn
+    :wordnet-sense-keys ("autumn%1:28:00")
+ :parent ONT::season
+ )
+
 
 ;; move forward at seven meters per second; find a hotel at gsa rates
 (define-type ont::rate-rel

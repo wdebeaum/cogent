@@ -26,3 +26,39 @@
    )
 ))
 
+(define-words :pos w::adv
+ :words (
+  (w::post-
+  (senses
+   ((lf-parent ont::after)
+    (example "postprocess")
+    (templ V-PREFIX-templ)
+    )
+   )
+  )
+))
+
+(define-words :pos W::adj 
+ :words (
+  (W::post-
+   (SENSES
+    (
+     (LF-PARENT ONT::after)
+     (example "postshow, postdinner")
+     (TEMPL prefix-adj-templ)
+     )
+    )
+   )
+))
+
+(define-words :pos w::adv
+ :words (
+  (w::post-
+  (senses
+   ((lf-parent ont::after)
+    (example "postadolescent")
+    (templ adj-operator-prefix-TEMPL)
+    )
+   )
+  )
+))

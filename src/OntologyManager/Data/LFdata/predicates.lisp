@@ -21,6 +21,12 @@
              )
  )
 
+;;; Modifiers expressing expectation, e.g. I ONLY made $10.
+(define-type ONT::Eval-wrt-expectation
+ :parent ONT::MODIFIER
+ )
+
+
 ;;; Modifiers of quantifiers
 (define-type ONT::Qmodifier
  :parent ONT::MODIFIER
@@ -89,12 +95,18 @@
  )
 
 (define-type ONT::DEGREE-MODIFIER-HIGH
- :parent ONT::DEGREE-MODIFIER
- )
+    :parent ONT::DEGREE-MODIFIER
+    :arguments ((:REQUIRED ONT::FIGURE (F::abstr-obj (F::type ont::property-val))))
+    )
+
+(define-type ONT::DEGREE-MODIFIER-HIGH-EVENT
+    :parent ONT::DEGREE-MODIFIER
+    :arguments ((:REQUIRED ONT::FIGURE (F::situation (F::type ont::event-of-experience)
+						     ))))
 
 (define-type ONT::DEGREE-MODIFIER-MED
- :parent ONT::DEGREE-MODIFIER
- )
+    :parent ONT::DEGREE-MODIFIER
+    )
 
 (define-type ONT::DEGREE-MODIFIER-LOW
  :parent ONT::DEGREE-MODIFIER
@@ -198,10 +210,12 @@
 	     ;; purposes don't have to be dynamic -- e.g. to store something, to remember, etc.
 ;	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj) (F::scale (? !sc ont::duration-scale))))
 	     (:REQUIRED ONT::GROUND ((? xx F::Situation f::abstr-obj f::phys-obj)
-				     (f::type (? !t ONT::ORGANISM)) (F::scale -)))
+				     (F::intentional -) ;(f::type (? !t ONT::ORGANISM))
+				     (F::scale -)))
 	     ;; a separate role because it will be lower priority
 ;	     (:required ont::obj-val (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
-	    ;; (:required ont::REASON (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
+	     ;; (:required ont::REASON (f::abstr-obj)) ;; needed for non-situation ont::vals -- e.g., hit return for more results
+	     (:OPTIONAL ONT::NOROLE)
              )
  )
 
@@ -305,8 +319,8 @@
  :arguments ((:ESSENTIAL ONT::FIGURE ((? s F::Phys-obj F::situation)))
              ;(:REQUIRED ONT::GROUND (F::abstr-obj (f::scale ?!sc)))
 	     ;(:OPTIONAL ONT::GROUND1 (F::abstr-obj (f::scale ?!sc2)))
-             (:REQUIRED ONT::GROUND (F::abstr-obj (f::type (? t ont::length-unit ont::number)) (f::scale (? sc ont::linear-scale ont::number-scale ont::linear-extent-scale))))
-	     (:REQUIRED ONT::GROUND1 (F::abstr-obj (f::type (? t2 ont::length-unit ont::number)) (f::scale (? sc2 ont::linear-scale ont::number-scale ont::linear-extent-scale))))
+             (:REQUIRED ONT::GROUND (F::abstr-obj (f::type (? t ont::length-unit ont::number))))
+	     (:REQUIRED ONT::GROUND1 (F::abstr-obj (f::type (? t2 ont::length-unit ont::number))))
              )
  )
 
@@ -436,12 +450,12 @@
  )
 
 (define-type ONT::sequence-position
- :parent ONT::PREDICATE
- :arguments ((:REQUIRED ONT::FIGURE)
-	     (:optional ont::GROUND) ;; list members before/after the specified item
-             )
- )
-
+    :comment "Position related to discourse. e.g., First, we laugh"
+    :parent ONT::PREDICATE
+    :arguments ((:REQUIRED ONT::FIGURE (F::Situation))
+		)
+    )
+ 
 ;;; Added by myrosia to handle about
 (define-type ONT::association-predicate
  :parent ONT::PREDICATE

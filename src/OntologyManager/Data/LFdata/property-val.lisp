@@ -29,6 +29,23 @@
  :comment "properties which need an observer to be recognized -- subjective to the observer"
 )
 
+;; fresh, stale
+(define-type ont::freshness-val
+ :parent ont::evaluation-attribute-val 
+ :comment "relating to how recently an object was made or obtained"
+)
+
+(define-type ont::fresh-val
+ :parent ont::freshness-val 
+ :wordnet-sense-keys ("recent%5:00:00:new:00" "recent%5:00:00:past:00" "new%3:00:00" "fresh%3:00:01")
+)
+
+(define-type ont::not-fresh-val
+ :parent ont::freshness-val 
+ :wordnet-sense-keys ("stale%3:00:00" "rusty%5:00:00:old:01")
+)
+
+
 ; adjectives to do with cost
 (define-type ont::cost-val
  :parent ont::evaluation-attribute-val 
@@ -395,7 +412,7 @@
 
 (define-type ont::atypical-val
  :parent ont::typicality-val 
- :wordnet-sense-keys ("uncommon%3:00:00" "unconventional%3:00:01" "unorthodox%5:00:00:unconventional:00" "unusual%3:00:00" "unusual%5:00:00:uncommon:00" "unconventional%3:00:00" "unnatural%3:00:00")
+ :wordnet-sense-keys ("uncommon%3:00:00" "unconventional%3:00:01" "unorthodox%5:00:00:unconventional:00" "unusual%3:00:00" "unusual%5:00:00:uncommon:00" "unconventional%3:00:00")
 )
 
 (define-type ont::strange
@@ -588,7 +605,7 @@
 
 (define-type ont::artificial
  :parent ont::artificiality-val 
- :wordnet-sense-keys ("synthetic%5:00:00:artificial:00" "false%5:00:00:artificial:00" "artificial%3:00:00" "artificial%5:00:00:affected:01" "unreal%3:00:04" "faux%5:00:00:artificial:00" "imitation%5:00:02:artificial:00" "fake%5:00:00:artificial:00" "affected%3:00:01")
+ :wordnet-sense-keys ("synthetic%5:00:00:artificial:00" "false%5:00:00:artificial:00" "artificial%3:00:00" "artificial%5:00:00:affected:01" "unreal%3:00:04" "faux%5:00:00:artificial:00" "imitation%5:00:02:artificial:00" "fake%5:00:00:artificial:00" "affected%3:00:01" "unnatural%3:00:00")
 )
 
 ;; natural, unnatural
@@ -694,7 +711,11 @@
 (define-type ont::likely-val
  :parent ont::likelihood-val
  :wordnet-sense-keys ("likely%3:00:04" "probable%3:00:00" )
-)
+ )
+
+(define-type ont::at-risk-val
+ :parent ont::likely-val
+ )
 
 (define-type ont::not-likely-val
  :parent ont::likelihood-val
@@ -1214,18 +1235,23 @@
 )
 
 ;; wet, dry
-(define-type ont::dampness-val
+(define-type ont::moisture-content-val
  :parent ont::physical-property-val 
  :arguments ((:REQUIRED ONT::FIGURE ((? lof f::phys-obj f::situation )))) ;; dry towel, a dry cough
 )
 
 (define-type ont::dry-val
- :parent ont::dampness-val 
+ :parent ont::moisture-content-val 
  :wordnet-sense-keys ("dry%3:00:01" )
 )
 
+(define-type ont::dehydrated-val
+ :parent ont::dry-val
+ :wordnet-sense-keys("withered%5:00:00:dry:01" "dehydrated%5:00:00:preserved:02")
+)
+
 (define-type ont::wet-val
- :parent ont::dampness-val 
+ :parent ont::moisture-content-val 
  :wordnet-sense-keys ("wet%3:00:01" )
 )
 
@@ -1314,6 +1340,20 @@
 (define-type ont::texture-val
  :parent ont::tangibility-val 
  :sem (F::Abstr-obj (F::MEasure-function F::VALUE ))
+)
+
+(define-type ont::thickeness-in-texture-val
+ :parent ont::texture-val
+)
+
+(define-type ont::thick-texture-val
+ :parent ont::thickeness-in-texture-val
+ :wordnet-sense-keys ("thick%3:00:02")
+)
+
+(define-type ont::thin-texture-val
+ :parent ont::thickeness-in-texture-val
+ :wordnet-sense-keys ("thin%3:00:02")
 )
 
 (define-type ont::hardness-val
@@ -1815,7 +1855,7 @@
  :wordnet-sense-keys ("aching%5:00:00:painful:00" "achy%5:00:00:painful:00" "painful%3:00:00" )
 )
 
-(define-type ont::dehydrated-val
+(define-type ont::medical-dehydration-val
  :parent ont::medical-symptom-val
  :wordnet-sense-keys ("dehydrated%5:00:00:unhealthy:00" )
 )
@@ -1985,7 +2025,7 @@
 
 (define-type ont::specified-period-val
  :parent ont::periodic-val 
- :wordnet-sense-keys ("daily%5:00:00:periodic:00" "annual%5:00:00:periodic:00" "weekly%5:00:00:periodic:00" "monthly%5:00:00:periodic:00" )
+ :wordnet-sense-keys ("daily%5:00:00:periodic:00" "annual%5:00:00:periodic:00" "weekly%5:00:00:periodic:00" "monthly%5:00:00:periodic:00" "seasonal%3:00:00" )
 )
 
 (define-type ont::repetitive-val
@@ -2284,7 +2324,7 @@
 
 (define-type ont::aggressive-val
  :parent ont::bold-val 
- :wordnet-sense-keys ("aggressive%3:00:00" )
+ :wordnet-sense-keys ("aggressive%3:00:00" "violent%3:00:00")
 )
 
 (define-type ont::not-bold-val
@@ -2330,6 +2370,7 @@
 ;; friendly, affectionate, kind, mean, considerate
 ;; no experiencer role; currently no distinction between human and non-human ont::of
 (define-type ont::social-interaction-val
+ :wordnet-sense-keys ("social%3:01:00" "social%3:00:00" )
  :parent ont::animal-propensity-val 
  :arguments ((:required ont::FIGURE ((? lof f::abstr-obj f::phys-obj f::situation )))) 
  :comment "properties of human behavior having to do with social interaction, e.g. friendly, kind, mean"
@@ -2473,9 +2514,10 @@
     )
 
 (define-type ont::position-on-dimension-scale-val
- :parent ont::dimensional-property-val 
- :comment "indicates a position given a dimensional scale. These adjectives do not specify the shape, direction, or alignment of the scale."
-)
+    :parent ont::dimensional-property-val
+    :wordnet-sense-keys ("scale_value%1:09:00")
+    :comment "indicates a position given a dimensional scale. These adjectives do not specify the shape, direction, or alignment of the scale."
+			 )
 
 (define-type ont::high-val
     :parent ont::position-on-dimension-scale-val
@@ -2489,7 +2531,7 @@
 
 (define-type ont::medium-val
  :parent ont::position-on-dimension-scale-val 
- :wordnet-sense-keys ("average%5:00:00:moderate:00" "medium%5:00:00:moderate:00" )
+ :wordnet-sense-keys ("average%1:09:01" "average%5:00:00:moderate:00" "medium%5:00:00:moderate:00" )
 )
 
 ;;; big/large/small
@@ -2716,7 +2758,7 @@
 
 (define-type ont::severe-val
  :parent ont::severity-val 
- :wordnet-sense-keys ("severe%5:00:01:bad:00" "severe%5:00:00:intense:00" "extreme%5:00:00:intense:00")
+ :wordnet-sense-keys ("severe%5:00:01:bad:00" "severe%5:00:00:intense:00" "extreme%5:00:00:intense:00" "drastic%5:00:00:forceful:00")
 )
 
 (define-type ont::mild-val
@@ -2742,7 +2784,6 @@
 
 (define-type ont::lean-val
  :parent ont::fattiness-val 
- :wordnet-sense-keys("lean%3:00:04")
 )
 
 (define-type ont::fatty-val
@@ -2920,23 +2961,6 @@
  :wordnet-sense-keys ("young%3:00:00" "immature%3:00:03" "new%3:00:09")
 )
 
-;; fresh, stale
-(define-type ont::freshness-val
- :parent ont::temporal-val 
- :comment "relating to how recently an object was made or obtained"
-)
-
-(define-type ont::fresh-val
- :parent ont::freshness-val 
- :wordnet-sense-keys ("recent%5:00:00:new:00" "recent%5:00:00:past:00" "new%3:00:00" "fresh%3:00:01")
-)
-
-(define-type ont::not-fresh-val
- :parent ont::freshness-val 
- :wordnet-sense-keys ("stale%3:00:00" "rusty%5:00:00:old:01")
-)
-
-
 (define-type ont::historical-era-val
  :parent ont::temporal-val 
  :comment "relating to the distinct periods in history"
@@ -2954,7 +2978,7 @@
 
 (define-type ont::current-val
  :parent ont::historical-era-val 
- :wordnet-sense-keys ("contemporary%5:00:00:current:00" )
+ :wordnet-sense-keys ("contemporary%5:00:00:current:00" "current%3:00:00")
 )
 
 (define-type ont::not-current-val
@@ -3216,7 +3240,7 @@
 
 ;; urban, rural
 (define-type ont::urban-val
- :parent ont::city-related-val 
+ :parent ont::city-related-val
  :wordnet-sense-keys ("urban%3:00:00" "urban%3:01:00" )
 )
 
@@ -3794,6 +3818,17 @@
  :wordnet-sense-keys ("industrial%3:01:00")
 )
 
+
+(define-type ont::agricultural-val
+ :parent ont::commercial-enterprise-val 
+ :wordnet-sense-keys ("agricultural%3:01:00" "agricultural%5:00:00:rural:00" )
+)
+
+(define-type ont::livestock-val
+ :parent ont::commercial-enterprise-val
+ :wordnet-sense-keys ("pastoral%3:01:02" )
+)
+
 ;; relating to economy
 (define-type ont::economic-val
  :parent ont::associated-with-val 
@@ -3956,11 +3991,6 @@
  :parent ont::orientation-val
 )
 
-(define-type ont::central-val
- :parent ont::spatial-arrangement-val
- :wordnet-sense-keys ("central%3:00:01")
-)
-
 (define-type ont::concentric-val
  :parent ont::spatial-arrangement-val
  :wordnet-sense-keys ("concentric%3:00:00")
@@ -4065,7 +4095,7 @@
  )
 
 ;; these are cardinal directions: northern, northeastern
-(define-type ONT::MAP-LOCATION-VAL
+(define-type ONT::subarea-LOCATION-VAL
  :parent ONT::spatial
  )
 
@@ -4132,32 +4162,38 @@
 
 
 (define-type ONT::NORTH
- :parent ONT::MAP-LOCATION-VAL
+    :parent ONT::subarea-LOCATION-VAL
+    :comment "modifiers that select a subarea of a larger area: e.g., northern Canada"
  ; Words: (W::NORTHERN W::NORTH)
  :wordnet-sense-keys ("north%3:00:00" "northerly%5:00:02:north:00" "northeastern%5:00:00:north:00" "northwestern%5:00:00:north:00")
  ; Antonym: ONT::SOUTH (W::SOUTHERN W::SOUTH)
  )
 
 (define-type ONT::SOUTH
- :parent ONT::MAP-LOCATION-VAL
+ :parent ONT::subarea-LOCATION-VAL
  ; Words: (W::SOUTHERN W::SOUTH)
  :wordnet-sense-keys ("southeasterly%5:00:02:south:00" "southerly%5:00:02:south:00" "southwesterly%5:00:02:south:00" "south%3:00:00")
  ; Antonym: ONT::NORTH (W::NORTHERN W::NORTH)
  )
 
 (define-type ONT::EAST
- :parent ONT::MAP-LOCATION-VAL
+ :parent ONT::subarea-LOCATION-VAL
  ; Words: (W::EASTERN W::EAST)
  :wordnet-sense-keys ("east%3:00:00" "eastern%5:00:00:east:00")
  ; Antonym: ONT::WEST (W::WESTERN W::WEST)
  )
 
 (define-type ONT::WEST
- :parent ONT::MAP-LOCATION-VAL
+ :parent ONT::subarea-LOCATION-VAL
  ; Words: (W::WESTERN W::WEST)
  :wordnet-sense-keys ("west%3:00:00" "western%5:00:00:west:00")
  ; Antonym: ONT::EAST (W::EASTERN W::EAST)
  )
+
+(define-type ont::central-val
+ :parent ont::subarea-location-val
+ :wordnet-sense-keys ("central%3:00:01")
+)
 
 (define-type ONT::INCOMING
  :parent ONT::DIRECTION-VAL

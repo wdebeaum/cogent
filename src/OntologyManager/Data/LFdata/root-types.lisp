@@ -59,7 +59,7 @@
 
 
 (define-type ont::occurring
-  :wordnet-sense-keys ("happen%2:30:00")
+  :wordnet-sense-keys ("happen%2:30:00" "come%2:30:01" "take_place%2:30:00" "come_about%2:30:00" "fall_out%2:30:00" "pass%2:30:00" "occur%2:30:00" "pass_off%2:30:00" "go_on%2:30:00" "hap%2:30:00" "happen%2:30:00" "happening%1:11:00" "occurrence%1:11:00" "occurrent%1:11:00" "natural_event%1:11:00" "come%2:42:13" "set_in%2:30:00")
      :parent ONT::SITUATION-ROOT
      :comment "event occurrence - e.g., an explosion happened"
      :arguments ((:essential ONT::neutral (f::situation (F::aspect F::dynamic)))
@@ -88,15 +88,18 @@
 
 (define-type ont::event-of-undergoing-action
      :parent ONT::event-of-change
-     :comment "A small class of events that take an affected but do not allow an AGENT"
+     :comment "A small class of events that take an affected but do not allow an AGENT construction (though might be caused as in he died from the plague"
      :sem (F::Situation)
-     :arguments ((:essential ONT::affected  ((? aff F::abstr-obj f::phys-obj f::situation) (F::tangible +)))))
+     :arguments ((:essential ONT::affected  ((? aff F::abstr-obj f::phys-obj f::situation) (F::tangible +)))
+		 (:optional ont::agent )))
 
 (define-type ont::event-of-causation 
      :parent ONT::event-of-action
      :comment "events involving an AGENT acting on an AFFECTED"
      :sem (F::Situation)
-     :arguments ((:essential ONT::affected ((? cau5 F::abstr-obj f::phys-obj f::situation) (F::tangible +))))
+     :arguments ((:essential ONT::affected ((? cau5 F::abstr-obj f::phys-obj f::situation) (F::tangible +)))
+		 (:essential ONT::agent ((? cau6 F::abstr-obj f::phys-obj f::situation) (F::tangible +)))
+		 )
      )
 
 (define-type ont::event-of-creation

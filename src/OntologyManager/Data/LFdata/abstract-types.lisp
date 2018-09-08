@@ -95,6 +95,11 @@
  :wordnet-sense-keys ("flavor%1:09:00")
 )
 
+(define-type ont::perceivable-sound-property
+ :parent ont::perceivable-property
+ :wordnet-sense-keys ("sound%1:07:00" "sound%1:09:00" "sound%1:19:00" "sound%1:11:00")
+)
+
 (define-type ONT::grouping
     :comment "a  classification, category, variety of things. Not a set of objects!"
     :parent ONT::version
@@ -636,7 +641,7 @@
 (define-type ONT::angle-UNIT
  :wordnet-sense-keys ("angular_unit%1:23:00")
  :parent ONT::formal-UNIT
- :sem (F::Abstr-obj (F::Scale Ont::Linear-scale))
+ :sem (F::Abstr-obj (F::Scale Ont::Linear-extent-scale))
  :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (f::trajectory +)))
              )
  )
@@ -651,7 +656,7 @@
 (define-type ONT::LEVEL
   :comment "words that act as predicates that return the value on a scale/domain: What is the X on this scale?  Note: We exclude words that are identical to the names of the scales they pertain to (e.g., What is the height on the height scale?)"
  :wordnet-sense-keys ("level%1:26:00" "level%1:07:00")
- :sem (F::Abstr-obj (F::Scale Ont::LINEAR-SCALE))
+ :sem (F::Abstr-obj (F::Scale Ont::LINEAR-extent-SCALE))
 ; :parent ONT::ordered-DOMAIN
  :parent ONT::ABSTRACT-OBJECT
  :arguments ((:ESSENTIAL ONT::FIGURE ((? of f::phys-obj F::Abstr-obj))) ;; noise, water
@@ -702,7 +707,7 @@
  )
 
 (define-type ONT::ASSETS
- :wordnet-sense-keys ("assets%1:21:00" "resource%1:21:00")
+ :wordnet-sense-keys ("assets%1:21:00" "resource%1:21:00" "reserve%1:21:00")
 ; :parent ONT::MEASURE-DOMAIN
  :parent ONT::FUNCTION-OBJECT
  :sem (F::Abstr-obj (F::Scale Ont::money-scale))
@@ -713,7 +718,7 @@
 
 ;; dollars -- need a unit definition for '5 dollars'
 (define-type ONT::MONEY-UNIT
- :wordnet-sense-keys ("monetary_unit%1:23:00")
+ :wordnet-sense-keys ("monetary_unit%1:23:00" "currency%1:21:00")
  :parent ONT::formal-UNIT
  :sem (F::Abstr-obj (F::Scale Ont::Money-scale))
  )
@@ -749,7 +754,7 @@
 (define-type ONT::information-function-object
  :parent ONT::FUNCTION-OBJECT
  :wordnet-sense-keys ("communication%1:03:00" "criminal_record%1:10:00" )
- :sem (F::Abstr-obj (F::information F::information-content) (F::intentional -) (F::container +))
+ :sem (F::Abstr-obj (F::information F::information-content) (F::intentional -) (F::container +) (F::mobility f::movable)) ; movable: spread the news
  :arguments (
 ;	     (:optional ONT::Associated-information)
 	     )
@@ -769,7 +774,7 @@
 
 ;; information
 (define-type ONT::information
- :wordnet-sense-keys ("information%1:10:00" "info%1:10:00" "indication%1:10:00")
+ :wordnet-sense-keys ("information%1:09:00" "information%1:10:00" "info%1:10:00" "indication%1:10:00")
  :parent ONT::information-function-object
  :arguments ((:optional ONT::formal (F::prop))) ; copied from ONT::MESSAGE
  )
@@ -866,7 +871,13 @@
  )
 
 (define-type ONT::commercial-activity
- :wordnet-sense-keys ("finance%1:04:00" "commerce%1:04:00" "base%1:06:06")
+ :wordnet-sense-keys ("finance%1:04:00" "commerce%1:04:00")
+ :parent ONT::activity
+ :sem (F::situation (F::cause (? cause F::agentive F::force)))
+ )
+
+(define-type ONT::agriculture
+ :wordnet-sense-keys ("agriculture%1:04:01")
  :parent ONT::activity
  :sem (F::situation (F::cause (? cause F::agentive F::force)))
  )
@@ -878,7 +889,7 @@
  )
 
 (define-type ONT::trouble
- :wordnet-sense-keys ("impairment%1:11:00" "harm%1:11:01" "damage%1:11:00" "problem%1:09:00" "trouble%1:09:00" "trouble%1:11:00")
+ :wordnet-sense-keys ("impairment%1:11:00" "harm%1:11:01" "damage%1:11:00" "problem%1:09:00" "trouble%1:09:00" "trouble%1:11:00" "disorder%1:26:00")
  :parent ont::situation
  :arguments ((:OPTIONAL ONT::assoc-with)
              )
@@ -1005,11 +1016,16 @@
 )
 
 (define-type ONT::knowledge-belief
-    :wordnet-sense-keys ("knowledge%1:03:00")
+    :wordnet-sense-keys ("knowledge%1:03:00" "wisdom%1:07:00")
     :parent ONT::mental-construction
     :arguments ((:OPTIONAL ONT::FIGURE) ;(f::situation (f::information f::mental-construct) (f::cause f::mental)))
 		(:optional ont::FORMAL (f::situation)))
     )
+
+(define-type ONT::doctrine
+ :wordnet-sense-keys("doctrine%1:09:00" "ideology%1:09:01")
+ :parent ONT::knowledge-belief
+)
 
 (define-type ONT::understanding
  :wordnet-sense-keys("understanding%1:09:01" "comprehension%1:09:00")
@@ -1018,11 +1034,11 @@
 
 (define-type ont::opinion
  :parent ONT::knowledge-belief
- :wordnet-sense-keys ("opinion%1:10:01" "viewpoint%1:09:00" "belief%1:09:00" "opinion%1:09:00")
+ :wordnet-sense-keys ("opinion%1:10:01" "viewpoint%1:09:00" "belief%1:09:00" "opinion%1:09:00" )
 )
 
 (define-type ont::concept-notion
-    :wordnet-sense-keys ("thought%1:09:01" "notion%1:09:00" "concept%1:09:00" "conceptualization%1:09:00")
+    :wordnet-sense-keys ("thought%1:09:01" "notion%1:09:00" "concept%1:09:00" "conceptualization%1:09:00" "proposition%1:10:00")
     :parent ONT::mental-construction
     :arguments ((:OPTIONAL ONT::FIGURE)
                 )
@@ -1338,21 +1354,30 @@
 
 ;;
 (define-type ONT::VALUE-COST
- :wordnet-sense-keys ("change%1:21:02" "return%1:21:00" "issue%1:21:00" "take%1:21:00" "takings%1:21:00" "proceeds%1:21:00" "yield%1:21:00" "payoff%1:21:02")
- :wordnet-sense-keys ("change%1:21:02" "return%1:21:00" "issue%1:21:00" "take%1:21:00" "takings%1:21:00" "proceeds%1:21:00" "yield%1:21:00" "payoff%1:21:02")
+ :wordnet-sense-keys ("change%1:21:02")
  :parent ONT::value
  :arguments (
 	     ;(:REQUIRED ONT::FIGURE (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
 	     (:REQUIRED ont::FIGURE ((? lo f::phys-obj f::abstr-obj)))
-	     (:REQUIRED ONT::GROUND (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
-	      )
+	     (:REQUIRED ONT::EXTENT (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
+	     )
+ )
+
+(define-type ont::expense
+ :wordnet-sense-keys ("cost%1:21:00")
+  :parent ont::value-cost
+  )
+
+(define-type ont::revenue
+ :wordnet-sense-keys ("financial_gain%1:21:00" "return%1:21:00")
+  :parent ont::value-cost
   )
 
 ;; unique lf for price
 (define-type ONT::PRICE
  :parent ONT::VALUE-COST
   :arguments ((:REQUIRED ont::FIGURE ((? lo f::phys-obj f::abstr-obj)))
-	      (:REQUIRED ONT::GROUND (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
+	      (:REQUIRED ONT::EXTENT (F::Abstr-obj (F::Scale Ont::money-scale) (f::object-function f::currency)))
              )
  )
 
@@ -1375,14 +1400,14 @@
 ;; bill, tab
 (define-type ONT::ACCOUNT-PAYABLE
  :wordnet-sense-keys ("bill%1:10:01" "account%1:10:02" "invoice%1:10:00")
- :wordnet-sense-keys ("bill%1:10:01" "account%1:10:02" "invoice%1:10:00")
  :parent ONT::ACCOUNT
  :sem (F::Abstr-obj (f::scale ont::money-scale))
  )
 
 ;; lack, shortage
 (define-type ONT::LACK
-  :parent ont::situation
+ :wordnet-sense-keys ("deficiency%1:07:00" "shortage%1:07:00")
+ :parent ont::situation
  :arguments ((:REQUIRED ONT::FIGURE)
              )
  )
@@ -1493,9 +1518,10 @@
 ;; changed parent to ont::discipline (from abstract-object)
 ;; 2005.04/20 Added by Myrosia to handle words like algebra, mathematics etc.
 (define-type ONT::science-discipline
- :parent ONT::discipline
- :sem (F::Abstr-obj (F::container +)) ;; why is this container +?
- )
+    :wordnet-sense-keys ("science%1:09:00")
+    :parent ONT::discipline
+    :sem (F::Abstr-obj (F::container +)) ;; why is this container +?
+    )
 
 ;; acid wash
 (define-type ONT::food-prep-process
@@ -1521,7 +1547,7 @@
 ;; We need f::situation counterparts for medical words classified as ont::treatment or ont::diagnostic for i2b2 because we don't have multiple inheritance
 ;; surgery
 (define-type ONT::medical-event
- :wordnet-sense-keys ("care%1:04:01" "attention%1:04:01" "aid%1:04:01" "tending%1:04:00" "regimen%1:09:00::" "regime%1:09:00::")
+ :wordnet-sense-keys ("care%1:04:01" "attention%1:04:01" "aid%1:04:01" "tending%1:04:00" "regimen%1:09:00" "regime%1:09:00" "immunization%1:04:00")
  :parent ONT::event-defined-by-activity
  :sem (F::Situation (F::aspect F::dynamic))
  :arguments ((:OPTIONAL ONT::FIGURE)
@@ -1570,80 +1596,4 @@
  :parent ONT::IDENTITY-VAL
  :wordnet-sense-keys ("other%3:00:00" "another%3:00:00")
  )
-
-(define-type ont::scale
-  :sem (F::Abstr-obj (F::Scale ?!sc))
-  :parent ont::abstract-object
-  :arguments ((:ESSENTIAL ONT::figure)
-		)
-  )
-
-(define-type ont::any-scale
-  :parent ont::scale
-  )
-
-(define-type ont::number-scale
-  :parent ont::scale
-  )
-
-(define-type ont::size-scale
-  :parent ont::scale
-  )
-
-(define-type ont::sound-scale
-  :parent ont::scale
-  )
-
-(define-type ont::weight-scale
-;  :parent ont::size-scale
-  :parent ont::scale
-  )
-
-(define-type ont::linear-scale
-;  :parent ont::size-scale
-  :parent ont::scale
-  )
-
-(define-type ont::area-scale
-;  :parent ont::size-scale
-  :parent ont::scale
-  )
-
-(define-type ont::volume-scale
-;  :parent ont::size-scale
-  :parent ont::scale
-  )
-
-(define-type ont::temperature-scale
-  :parent ont::scale
-  )
-
-(define-type ont::money-scale
-;  :parent ont::size-scale
-  :parent ont::scale
-  )
-
-(define-type ont::luminosity-scale
-  :parent ont::scale
-  )
-
-(define-type ont::time-measure-scale
-  :sem (F::Abstr-obj (F::Scale Ont::time-measure-scale))
-;  :parent ont::scale
-  :parent ont::linear-scale
-  )
-
-(define-type ont::duration-scale
-  :parent ont::time-measure-scale
-  )
-
-(define-type ont::age-scale
-;  :parent ont::scale
-;  :parent ont::linear-scale
-  :parent ont::duration-scale
-  )
-
-(define-type ont::other-scale
-  :parent ont::scale
-  )
 

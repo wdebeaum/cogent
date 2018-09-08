@@ -286,20 +286,22 @@ ONT::INTERACT
 	  :pattern '((ONT::SPEECHACT ?!sa ONT::ACCEPT)
 		     (ont::eval (find-attr :result (?prop :content ?!content :context ?!context) 
 				 :feature PROPOSAL-ON-TABLE))
+		     ;(ont::eval (extract-feature-from-act :result ?!goal :expr ?!content :feature :id))
 		     (ont::eval (extract-feature-from-act :result nil :expr ?!content :feature :query))
 		     -user-response1>
 		     (UPDATE-CSM (ACCEPTED :content ?!content :context ?!context))
 		     (NOTIFY-BA :msg-type REQUEST
 				:msg (COMMIT
 				      :content ?!content)) ;; :context ?!context))  SIFT doesn't want the context
-		     (RECORD ACTIVE-GOAL ?!content)
-		     (RECORD ACTIVE-CONTEXT ?!context)
+		     ;(RECORD ACTIVE-GOAL ?!goal)
+		     ;(RECORD ACTIVE-CONTEXT ?!context)
 		     (RECORD PROPOSAL-ON-TABLE nil)
+		     (QUERY-CSM :content (ACTIVE-GOAL))
 ;		     (NOTIFY-BA :msg (SET-SHARED-GOAL
 ;				      :content ?!content
 ;				      :context ?!context))
 		     )
-	  :destination 'what-next-initiative
+	  :destination 'what-next-initiative-on-new-goal ;'what-next-initiative
 	  )
 
 	 (transition
@@ -330,14 +332,15 @@ ONT::INTERACT
 		     (NOTIFY-BA :msg-type REQUEST
 				:msg (COMMIT
 				      :content ?!content)) ;; :context ?!context))  SIFT doesn't want the context
-		     (RECORD ACTIVE-GOAL ?!content)
-		     (RECORD ACTIVE-CONTEXT ?!context)
+		     ;(RECORD ACTIVE-GOAL ?!content)
+		     ;(RECORD ACTIVE-CONTEXT ?!context)
 		     (RECORD PROPOSAL-ON-TABLE nil)
+		     (QUERY-CSM :content (ACTIVE-GOAL))
 ;		     (NOTIFY-BA :msg (SET-SHARED-GOAL
 ;				      :content ?!content
 ;				      :context ?!context))
 		     )
-	  :destination 'what-next-initiative
+	  :destination 'what-next-initiative-on-new-goal ;'what-next-initiative
 	  )
 
 	 (transition
@@ -454,6 +457,7 @@ ONT::INTERACT
 	  :pattern '((ONT::SPEECHACT ?!sa (? t ONT::ANSWER ONT::IDENTIFY ONT::REQUEST-COMMENT) :what ?!ans)
 		     ;(?!spec ?!ans (? !t ONT::SITUATION-ROOT)) 
 		     (?!spec ?!ans (? !t ONT::EVENT-OF-CHANGE)) ; allow EVENT-TYPE but exclude commands 
+		     (ont::eval (find-attr :result ?!query :feature QUERY-ON-TABLE)) ; must have an outstanding query
 		     (ont::eval (generate-AKRL-context :what ?!ans :result ?akrl-context))
 		     (ont::eval (find-attr :result ?goal :feature ACTIVE-GOAL))
 		     -user-response4b>
@@ -1473,6 +1477,7 @@ ONT::INTERACT
 	  :destination 'set-answer-alarm ;'answers ;'segmentend ;;'propose-cps-act
 	  )
 
+	 #| ; maybe not used
 	  (transition
 	  :description "asking a question"
 	  :pattern '((BA-RESPONSE ?!X ASK-WH :content ?!ps-action :context ?context)
@@ -1489,6 +1494,7 @@ ONT::INTERACT
 		     )
 	  :destination 'set-answer-alarm ;'answers 
 	  )
+	 |#
 	 
 	 (transition
 	  :description "action completed!"
@@ -1739,7 +1745,7 @@ ONT::INTERACT
 	  :description "what next"
 	  :pattern '((ONT::WH-TERM ?!sa ONT::REFERENTIAL-SEM :proform w::WHAT)
 		     ;; ((? sp ONT::F ONT::EVENT) ?s1 ONT::SEQUENCE-VAL)
-		     (ONT::F ?s1 ONT::SEQUENCE-VAL)
+		     (ONT::F ?s1 ONT::SEQUENCE-POSITION)
 		     (ont::eval (find-attr :result ?!result :feature ACTIVE-GOAL))   ; we assume there is an ACTIVE-GOAL
 		     (ont::eval (find-attr :result ?context :feature ACTIVE-CONTEXT))
 		     -what-next>
@@ -1970,14 +1976,34 @@ ONT::INTERACT
 	:transitions
 	(list
 	 (transition
+	  :pattern '((ALARM ?!x ?!msg)
+		     -alarm-handler-rule>
+		     (RECORD ALARM-MSG ?!msg)
+		     (QUERY-CSM :content (ACTIVE-GOAL))
+		     )
+	  :destination 'alarm-handler-1
+	  )
+	 )
+	))
+
+(add-state 'alarm-handler-1
+ (state :action nil
+	:transitions
+	(list
+	 (transition
 	  :description "nothing has happened for a while ... we exclude cases when waiting-for-user or working-on-it.
                         we recheck with the BA"
-	  :pattern '((ALARM ?!x IDLE-CHECK)
+	  :pattern '((REPORT :content  (ACTIVE-GOAL :id ?goal :what ?what)  :context ?context)
+		     ;(ALARM ?!x IDLE-CHECK)
+		     (ont::eval (find-attr :result IDLE-CHECK :feature ALARM-MSG))
 		     (ont::eval (find-attr :result (? x NO) :feature WAITING))
-		     (ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
-		     (ont::eval (find-attr :result ?active-context :feature ACTIVE-CONTEXT))
+		     ;(ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
+		     ;(ont::eval (find-attr :result ?active-context :feature ACTIVE-CONTEXT))
 		     -no-interaction-for-a-while>
-		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?!active :context ?active-context
+		     (RECORD ACTIVE-GOAL ?goal)
+		     (RECORD ACTIVE-CONTEXT ?context)
+		     (RECORD ALARM-MSG nil)
+		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?goal :context ?context
 				      )
 		     ))
 	  :destination 'perform-ba-request
@@ -1985,15 +2011,20 @@ ONT::INTERACT
 
 	 (transition
 	  :description "system has been waiting for user for the determined threshold of time"
-	  :pattern '((ALARM ?!x ONT::WAITING-FOR-USER)
+	  :pattern '((REPORT :content  (ACTIVE-GOAL :id ?goal :what ?what)  :context ?context)
+		     ;(ALARM ?!x ONT::WAITING-FOR-USER)
+		     (ont::eval (find-attr :result ONT::WAITING-FOR-USER :feature ALARM-MSG))
 		     ;;(ont::eval (find-attr :result WAITING-FOR-USER :feature TIMEOUT-TYPE))
-		     (ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
-		     (ont::eval (find-attr :result ?active-context :feature ACTIVE-context))
+		     ;(ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
+		     ;(ont::eval (find-attr :result ?active-context :feature ACTIVE-context))
 		     (ont::eval (find-attr :result (? waiting ONT::WAITING-FOR-USER) :feature WAITING))
 		     -no-interaction-waiting>
+		     (RECORD ACTIVE-GOAL ?goal)
+		     (RECORD ACTIVE-CONTEXT ?context)
+		     (RECORD ALARM-MSG nil)
 		     (GENERATE
-		      :content (ONT::TELL :content (ONT::WAITING :agent *SYS* :id ?!active))
-		      :context ?active-context)
+		      :content (ONT::TELL :content (ONT::WAITING :agent *SYS* :id ?goal))
+		      :context ?context)
 		     (SET-ALARM :delay .01 :msg (ONT::WAITING-FOR-USER))  ;; Set alarm for a longr period of time before asking again
 		     )
 	  :destination 'segmentend
@@ -2001,15 +2032,20 @@ ONT::INTERACT
 
 	 (transition
 	  :description "system has been waiting for user for the determined threshold of time"
-	  :pattern '((ALARM ?!x ONT::WAITING-FOR-USER-ANSWER)
+	  :pattern '((REPORT :content  (ACTIVE-GOAL :id ?goal :what ?what)  :context ?context)
+		     ;(ALARM ?!x ONT::WAITING-FOR-USER-ANSWER)
+		     (ont::eval (find-attr :result ONT::WAITING-FOR-USER-ANSWER :feature ALARM-MSG))
 		     ;;(ont::eval (find-attr :result WAITING-FOR-USER :feature TIMEOUT-TYPE))
-		     (ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
-		     (ont::eval (find-attr :result ?active-context :feature ACTIVE-context))
+		     ;(ont::eval (find-attr :result ?!active :feature ACTIVE-GOAL))
+		     ;(ont::eval (find-attr :result ?active-context :feature ACTIVE-context))
 		     (ont::eval (find-attr :result (? waiting ONT::WAITING-FOR-USER-ANSWER) :feature WAITING))
 		     -no-interaction-waiting-answer>
+		     (RECORD ACTIVE-GOAL ?goal)
+		     (RECORD ACTIVE-CONTEXT ?context)
+		     (RECORD ALARM-MSG nil)
 		     (GENERATE
-		      :content (ONT::TELL :content (ONT::WAITING :agent *SYS* :id ?!active))
-		      :context ?active-context)
+		      :content (ONT::TELL :content (ONT::WAITING :agent *SYS* :id ?goal))
+		      :context ?context)
 		     (SET-ALARM :delay .01 :msg (ONT::WAITING-FOR-USER-ANSWER))  ;; Set alarm for a longr period of time before asking again
 		     )
 	  :destination 'answers
@@ -2019,13 +2055,18 @@ ONT::INTERACT
 	 ;; received alarm for working on it -- recheck with BA
 	 (transition
 	  :description "system has been working on it for the determined threshold of time"
-	  :pattern '((ALARM ?!x ONT::WORKING-ON-IT)
+	  :pattern '((REPORT :content  (ACTIVE-GOAL :id ?goal :what ?what)  :context ?context)
+		     ;(ALARM ?!x ONT::WORKING-ON-IT)
+		     (ont::eval (find-attr :result ONT::WORKING-ON-IT :feature ALARM-MSG))
 		     ;;(ont::eval (find-attr :result ONT::WORKING-ON-IT :feature TIMEOUT-TYPE))
-		     (ont::eval (find-attr :result ?!result :feature ACTIVE-GOAL))
-		     (ont::eval (find-attr :result ?context :feature ACTIVE-CONTEXT))
+		     ;(ont::eval (find-attr :result ?!result :feature ACTIVE-GOAL))
+		     ;(ont::eval (find-attr :result ?context :feature ACTIVE-CONTEXT))
 		     (ont::eval (find-attr :result (? waiting ONT::WORKING-ON-IT) :feature WAITING))
 		     -no-interaction-working>
-		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?!result
+		     (RECORD ACTIVE-GOAL ?goal)
+		     (RECORD ACTIVE-CONTEXT ?context)
+		     (RECORD ALARM-MSG nil)
+		     (INVOKE-BA :msg (WHAT-NEXT :active-goal ?goal
 				      :context ?context))
 		     )
 	  :destination 'perform-ba-request
@@ -2035,9 +2076,13 @@ ONT::INTERACT
 	 ;; if nothing else matches we just gobble up the message
 	 (transition
 	  :description "nothing to do"
-	  :pattern '((ALARM ?!x ?y)
+	  :pattern '((REPORT :content  (ACTIVE-GOAL :id ?goal :what ?what)  :context ?context)
+		     ;(ALARM ?!x ?y)
 		     -waiting-for-user-nop>
-		     (nop)
+		     (RECORD ACTIVE-GOAL ?goal)
+		     (RECORD ACTIVE-CONTEXT ?context)
+		     (RECORD ALARM-MSG nil)
+		     ;(nop)
 		     )
 	  :destination 'segmentend
 	 )

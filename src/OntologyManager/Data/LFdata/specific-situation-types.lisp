@@ -271,8 +271,8 @@
   :wordnet-sense-keys ("make%2:38:05" "take%2:38:05" "travel%2:38:00" "go%2:38:00" "move%2:38:03"  "move%2:38:01" "locomote%2:38:00" "ascend%2:38:10" "be_active%2:29:00" "draw%2:35:13" "go%2:42:06" "jaunt%2:38:00" "move%2:38:00" "move%2:38:02" "move_out%2:41:00" "wreathe%2:38:00" "mobilize%2:30:00" "go%2:33:00" "transport%1:04:01" "relocation%1:04:00")
  :parent ont::motion
  :sem (F::SITUATION (F::CONTAINER -) (F::Locative -) (F::trajectory +))
- :arguments ((:OPTIONAL ONT::agent (F::Phys-obj (:required (f::origin (? org f::human f::non-human-animal)))
-					       (:default (F::Mobility F::Self-Moving))))
+ :arguments (;(:OPTIONAL ONT::agent (F::Phys-obj (:required (f::origin (? org f::human f::non-human-animal)))
+					       ;(:default (F::Mobility F::Self-Moving))))
 ;             (:OPTIONAL ONT::purpose (F::Situation (F::Cause F::Agentive) (F::Aspect F::Dynamic)))
 	     (:OPTIONAL ONT::REASON (F::Situation (F::Cause F::Agentive) (F::Aspect F::Dynamic)))
              )
@@ -445,7 +445,9 @@
 (define-type ONT::SELF-LOCOMOTE
  :parent ONT::MOVE
  :sem (F::SITUATION (:required (F::Cause F::Agentive))(:default (F::Aspect F::unbounded) (F::Time-span F::extended)))
- :arguments ((:ESSENTIAL ONT::AGENT (F::Phys-obj (F::origin (? o f::non-human-animal F::human))) (:implements FORMAL))
+ :arguments (;(:ESSENTIAL ONT::AGENT (F::Phys-obj (F::origin (? o f::non-human-animal F::human))) (:implements FORMAL))
+	     (:ESSENTIAL ONT::AGENT (F::Phys-obj (:required (f::origin (? org f::human f::non-human-animal)))
+					       (:default (F::Mobility F::Self-Moving))))
 	     (:optional ont::neutral (F::phys-obj (f::type ont::geo-object))  ;; the path, road, as in "walk the path, walk the hills"
              )))
 
@@ -586,6 +588,7 @@
 
 (define-type ONT::fold
  :parent ONT::move
+ :wordnet-sense-keys ("fold%2:35:00")
  :sem (F::situation (F::Aspect F::dynamic))
  )
 
@@ -851,6 +854,11 @@
 (define-type ONT::PUSH-LIQUID
  :wordnet-sense-keys ("squirt%2:35:00" "squirt%2:35:10" "sprinkle%2:35:01" "spray%2:35:03")
   :parent ONT::apply-force
+  )
+
+(define-type ONT::water-irrigate
+ :wordnet-sense-keys ("water%2:30:00" "irrigation%1:04:00")
+  :parent ONT::apply-force
  )
 
 (define-type ONT::RUB-scrape-wipe
@@ -976,6 +984,7 @@
  )
 
 (define-type ONT::FLOODING
+ :wordnet-sense-keys ("flood%1:19:00" "flood%1:23:00" "flood%2:35:00" "flood%2:30:00" "flood%2:30:01")
  :parent ONT::natural-event
  :sem (F::SITUATION (F::Aspect F::Bounded) (F::Cause F::Force))
  :arguments ((:REQUIRED ONT::affected (F::Phys-obj (F::Mobility F::Movable)))
@@ -983,8 +992,16 @@
              )
  )
 
+(define-type ONT::DROUGHT
+ :wordnet-sense-keys ("drought%1:26:00")
+ :parent ONT::natural-event
+ :sem (F::SITUATION (F::Aspect F::Bounded) (F::Cause F::Force))
+ :arguments (
+             )
+ )
+
 (define-type ONT::STAY
- :wordnet-sense-keys ("stay%2:30:00" "remain%2:30:00" "rest%2:30:00" "dig_in%2:35:00" "settle%2:30:01" "stand_still%2:38:00" "stay%2:38:01")
+ :wordnet-sense-keys ("stay%2:30:00" "remain%2:30:00" "rest%2:30:00" "dig_in%2:35:00" "settle%2:30:01" "stand_still%2:38:00" "stay%2:38:01" "stay_in_place%2:38:00")
  :parent ONT::LOCATED-MOVE-STATE
  :sem (F::SITUATION (F::Aspect F::Unbounded) (F::Cause F::Force) (F::Time-span F::Extended))
  :arguments ((:REQUIRED ONT::affected (F::Phys-obj (F::Mobility F::Movable)))
@@ -1018,22 +1035,71 @@
   )
 
 (define-type ONT::change-integrity
-    :wordnet-sense-keys ("change_integrity%2:30:00" "clot%2:30:01")
+    :wordnet-sense-keys ("change_integrity%2:30:00")
     :parent ONT::change-state
-    :comment "an AFFECTED undergoes a change of physical state, e.g., thaw. Allows but does not require an AGENT"
+    :comment "an AFFECTED undergoes a change of physical or chemical state that affects its integrity, e.g., thaw. Allows but does not require an AGENT"
     :sem (F::Situation (F::Trajectory -))
     :arguments ((:OPTIONAL ONT::Result (F::Phys-obj))
 		)
     )
 
+(define-type ont::solidify
+ :wordnet-sense-keys ("clot%2:30:01" "freeze%2:30:02" "freeze%2:30:00" "solidify%2:30:00" "solidify%2:30:01" "crystallize%2:30:01")
+ :parent ont::change-integrity
+)
+
+(define-type ont::liquefy
+ :wordnet-sense-keys ("liquefy%2:30:00" "liquefy%2:30:01" "melt%2:30:01")
+ :parent ont::change-integrity
+)
+
+(define-type ont::dissolve
+ :wordnet-sense-keys ("dissolve%2:30:01" "dissolve%2:30:00")
+ :parent ont::change-integrity
+)
+
+(define-type ont::granulate
+ :wordnet-sense-keys ("granulate%2:30:00" "granulate%2:30:01")
+ :parent ont::change-integrity
+)
+
+(define-type ONT::life-transformation
+ :wordnet-sense-keys ("fruit%2:36:01" "cross-fertilize%2:29:00" "cross-fertilize%2:29:01" "work%2:30:14" "work%2:30:13" "ripen%2:30:01" "ripen%2:30:00")
+ :parent ONT::change-integrity
+ )
+
+(define-type ONT::burn
+ :wordnet-sense-keys ("scorch%2:30:07" "sear%2:30:07" "singe%2:30:07" "burn%2:43:02" "combust%2:30:00" "combust%2:43:00" "combust%2:43:02")
+ :parent ONT::change-integrity
+ )
+
+(define-type ont::chemical-change
+ :wordnet-sense-keys ("demulsify%2:30:01" "demulsify%2:30:00" "polymerize%2:30:02" "polymerize%2:30:00" "emulsify%2:30:01" "emulsify%2:30:00")
+ :parent ont::change-integrity
+)
+
+(define-type ONT::deteriorate
+ :wordnet-sense-keys ("decompose%2:30:02" "decay%2:30:01" "disintegrate%2:30:01" "decay%2:30:02" "acerbate%2:37:00" "decay%2:30:01" "decay%2:30:00" "decay%2:30:02")
+ :parent ONT::change-integrity
+ :arguments ((:REQUIRED ONT::Formal ((? tt f::phys-obj f::abstr-obj f::situation)))
+             (:OPTIONAL ONT::Agent)
+             )
+ )
+
+
 (define-type ONT::explode
- :wordnet-sense-keys ("set_off%2:30:00" "blow_up%2:30:03" "detonate%2:30:00" "detonate%2:30:01" "explode%2:30:01" "explode%2:30:00" "burst%2:30:09" "burst%2:38:04")
+ :wordnet-sense-keys ("set_off%2:30:00" "blow_up%2:30:03" "detonate%2:30:00" "detonate%2:30:01" "explode%2:30:01" "explode%2:30:00" "burst%2:30:09")
   :parent ONT::change-state
   )
 
+(define-type ont::collapse
+ :wordnet-sense-keys ("collapse%2:38:00" "collapse%2:38:03")
+ :parent ont::change-state
+)
+
 ;; revive, come to, energize, perk up
 (define-type ont::reviving
- :wordnet-sense-keys ("revive%2:29:01" "resuscitate%2:29:00" "stimulate%2:29:00" "arouse%2:29:00" "brace%2:29:00" "energize%2:29:00" "energise%2:29:00" "perk_up%2:29:01")
+ :wordnet-sense-keys ("revive%2:29:01" "resuscitate%2:29:00" "stimulate%2:29:00" "arouse%2:29:00" "brace%2:29:00" "energize%2:29:00" "energise%2:29:00" "perk_up%2:29:01" "revive%2:29:02")
   :parent ont::change-state
   )
 
@@ -1051,7 +1117,7 @@
 
 ;; break a window, a plate
 (define-type ont::break-object
- :wordnet-sense-keys ("wreck%1:11:00" "crash%1:11:00" "smash%1:04:00" "crash%1:04:00" "ram%2:35:01" "crash%2:35:00" "crash%2:38:04" "break_apart%2:35:00" "break_up%2:35:02" "crash%2:35:01" "come_apart%2:30:00" "fall_apart%2:30:03" "split_up%2:30:00" "separate%2:30:03" "break%2:30:00" "damage%2:30:00" "break%2:30:10" "break%2:30:15" "check%2:30:03" "crack%2:30:01" "tear%2:35:00" "rupture%2:35:00" "snap%2:35:01" "bust%2:35:02" "fracture%2:29:01" "fracture%2:29:01" "break%2:35:13")
+ :wordnet-sense-keys ("wreck%1:11:00" "crash%1:11:00" "smash%1:04:00" "crash%1:04:00" "ram%2:35:01" "crash%2:35:00" "crash%2:38:04" "break_apart%2:35:00" "break_up%2:35:02" "crash%2:35:01" "come_apart%2:30:00" "fall_apart%2:30:03" "split_up%2:30:00" "separate%2:30:03" "break%2:30:00" "break%2:30:10" "break%2:30:15" "check%2:30:03" "crack%2:30:01" "tear%2:35:00" "rupture%2:35:00" "snap%2:35:01" "bust%2:35:02" "fracture%2:29:01" "fracture%2:29:01" "break%2:35:13")
     :parent ont::object-change
     :arguments ((:required ONT::affected (F::Phys-obj (f::form (? f f::object f::solid))  ; "pizza" is (default) f::solid
 						  ;; Myrosia 2008/16/07 added origin non-living to account for "break a path", "break a stone"
@@ -1068,9 +1134,15 @@
   :parent ONT::object-change
   )
 
-(define-type ONT::sharpen-soft ;; GUM change : new class
-  :parent ONT::shape-change
-  )
+;(define-type ONT::sharpen ;; GUM change : new class
+;  :parent ONT::shape-change
+;  :wordnet-sense-keys ("sharpen%2:35:00")  
+;  )
+
+;(define-type ONT::soften
+;  :parent ont::shape-change
+;  :wordnet-sense-keys ("soften%2:30:01" "soften%2:30:00")
+;)
 
 (define-type ONT::nature-change
  :wordnet-sense-keys ("process%2:36:00" "work_on%2:36:00" "work%2:36:00" "process%2:30:00" "treat%2:30:01")
@@ -1141,7 +1213,7 @@
 
 ;; 20120523 GUM change new type
 (define-type ont::startoff-begin-commence-start
-    :wordnet-sense-keys ("get_going%2:38:00" "start%2:38:01" "start%2:41:00" "take_to%2:41:01")
+    :wordnet-sense-keys ("get_going%2:38:00" "start%2:38:01" "start%2:41:00" "take_to%2:41:01" "start%1:11:00" "start%1:28:00")
     :parent ont::start
     )
 
@@ -1307,7 +1379,7 @@
 
 ;;; When something happens, there are no agents
 (define-type ONT::Happen
- :wordnet-sense-keys ("come%2:30:01" "take_place%2:30:00" "come_about%2:30:00" "fall_out%2:30:00" "pass%2:30:00" "occur%2:30:00" "pass_off%2:30:00" "go_on%2:30:00" "hap%2:30:00" "happen%2:30:00" "happening%1:11:00" "occurrence%1:11:00" "occurrent%1:11:00" "natural_event%1:11:00" "come%2:42:13" "set_in%2:30:00" "stay_in_place%2:38:00")
+ :wordnet-sense-keys ("chance%2:41:01::")
  :parent ONT::event-of-state
  :sem (F::Situation (F::Cause F::Phenomenal))
  :arguments ((:optional ont::formal ((? tp f::situation f::abstr-obj)))
@@ -1460,7 +1532,7 @@
 
 ;; fight, struggle, contend, defend
 (define-type ONT::fighting
- :wordnet-sense-keys ("struggle%2:33:00" "fight%2:33:00" "contend%2:33:01" "compete%2:33:00" "vie%2:33:00" "contend%2:33:00")
+ :wordnet-sense-keys ("fight%2:33:00")
  :parent ONT::agent-interaction
  :arguments ((:optional ONT::neutral)  ;; fight with the proposal
 	     (:optional ont::formal)  ;; struggle to breath
@@ -1630,7 +1702,7 @@
  )
 
 (define-type ont::evoke-calm
- :wordnet-sense-keys ("pacify%2:37:00" "comfort%2:37:01" "mellow%2:30:01" "unwind%2:29:01" "ease%2:37:00" "soothe%2:37:00" "mellow%2:30:03" "mellow%2:30:00" "unwind%2:29:00" "unwind%2:29:01")
+ :wordnet-sense-keys ("pacify%2:37:00" "comfort%2:37:01" "mellow%2:30:01" "unwind%2:29:01" "ease%2:37:00" "soothe%2:37:00" "mellow%2:30:03" "mellow%2:30:00" "unwind%2:29:00" "unwind%2:29:01" "rest%2:32:01")
  :parent ont::subduing
 )
 
@@ -1663,7 +1735,7 @@
  )
 
 (define-type ont::evoke-hunger
- :wordnet-sense-keys ("starve%2:34:00" "starve%2:34:03")
+ :wordnet-sense-keys ("starve%2:34:00" "starve%2:34:03" "starvation%1:26:00" "starvation%1:04:00")
  :parent ont::evoke-discomfort
 )
 
@@ -1741,7 +1813,7 @@
 
 ;; 20120524 GUM change new type
 (define-type ONT::be
- :wordnet-sense-keys ("be%2:42:06" "be%2:42:07" "be%2:41:00" "be%2:42:02" "be_full%2:34:00" "be_quiet%2:32:00" "mean%2:42:03" "rest%2:41:00")
+ :wordnet-sense-keys ("be%2:42:06" "be%2:42:07" "be%2:41:00" "be%2:42:02" "be_full%2:34:00" "be_quiet%2:32:00" "mean%2:42:03" "rest%2:41:00" "equal%2:42:01")
  :parent ONT::in-relation
  )
 
@@ -1797,6 +1869,13 @@
              )
  )
 
+;; graduate
+(define-type ONT::advancing-status
+ :parent ONT::judgement
+ :wordnet-sense-keys ("graduate%2:40:01" "promote%2:41:00")
+ :arguments ((:OPTIONAL ONT::source ((? src f::phys-obj F::abstr-obj))))
+ )
+
 (define-type ont::grade-score
  :parent ont::judgement
 )
@@ -1814,6 +1893,7 @@
 (define-type ONT::approve-authorize
  :wordnet-sense-keys ("authorize%2:32:00" "approve%2:31:00" "authorize%2:41:00" "condone%2:32:00")
  :parent ONT::judgement
+ :arguments ((:required ONT::AFFECTED ((? t f::abstr-obj f::situation))))
  )
 
 (define-type ONT::abuse
@@ -2091,7 +2171,7 @@
     )
 
 (define-type ont::assert
-    :wordnet-sense-keys ("assert%2:32:01")
+    :wordnet-sense-keys ("assert%2:32:01" "statement%1:10:00")
     :comment "tell categorically"
     :parent ont::representative
     )
@@ -2183,9 +2263,23 @@
              )
  )
 
+(define-type ONT::compete
+ :parent ONT::agent-interaction
+  :wordnet-sense-keys ("compete%2:33:00")
+ )
+
+(define-type ONT::win-compete
+ :parent ONT::compete
+  :wordnet-sense-keys ("win%2:33:00")
+ )
+
+(define-type ONT::lose-compete
+ :parent ONT::compete
+  :wordnet-sense-keys ("lose%2:33:00")
+ )
 
 (define-type ONT::BELIEVE
-  :wordnet-sense-keys ("think%2:31:01" "believe%2:31:04" "consider%2:31:08" "conceive%2:31:00" "think%2:31:03" "opine%2:31:02" "suppose%2:31:00" "imagine%2:31:01" "reckon%2:31:02" "guess%2:31:00" "strike%2:37:00")
+  :wordnet-sense-keys ("think%2:31:01" "believe%2:31:04" "consider%2:31:08" "conceive%2:31:00" "think%2:31:03" "opine%2:31:02" "suppose%2:31:00" "imagine%2:31:01" "reckon%2:31:02" "guess%2:31:00" "strike%2:37:00" )
  :parent ONT::attitude-of-belief
  :sem (F::SITUATION (F::Aspect F::static) (F::Time-span F::Extended))
  :arguments ((:optional ont::neutral1)
@@ -2530,7 +2624,7 @@
 
 ;;; I dared to go, I dared John to go.
 (define-type ONT::provoke
- :wordnet-sense-keys ("persuade%2:32:00" "force%2:36:00" "impel%2:36:00" "coerce%2:41:00" "hale%2:41:00" "squeeze%2:41:01" "pressure%2:41:00" "force%2:41:00")
+ :wordnet-sense-keys ("persuade%2:32:00" "force%2:36:00" "coerce%2:41:00" "subject%2:39:03" "oblige%2:41:00")
  :parent ONT::cause-effect
  :arguments ((:ESSENTIAL ONT::affected ((? exp F::phys-obj f::abstr-obj) (f::intentional +))))
  )
@@ -2542,7 +2636,7 @@
 ; )
 
 (define-type ONT::cause-stimulate
- :wordnet-sense-keys ("persuade%2:32:00" "force%2:36:00" "impel%2:36:00" "coerce%2:41:00" "hale%2:41:00" "squeeze%2:41:01" "pressure%2:41:00" "force%2:41:00")
+ :wordnet-sense-keys ("persuade%2:32:00" "force%2:36:00" "coerce%2:41:00")
  :parent ONT::cause-effect
  :arguments ((:ESSENTIAL ONT::affected ((? exp F::phys-obj f::abstr-obj f::situation) (f::intentional -)))
 	     ))
@@ -2745,7 +2839,8 @@
 ;; collect, gather up
 (define-type ONT::collect
  :wordnet-sense-keys ("gather%2:35:00" "garner%2:35:00" "collect%2:35:00" "pull_together%2:35:00")
- :parent ont::event-of-causation
+; :parent ont::event-of-causation
+ :parent ont::acquire
  :arguments ((:ESSENTIAL ONT::agent)
 	     ;;(:essential ont::formal)
              )
@@ -2871,7 +2966,7 @@
  :wordnet-sense-keys ("empty%2:30:01")
  :parent ONT::cause-come-from
  :arguments ((:OPTIONAL ONT::Agent)
-             (:OPTIONAL ONT::affected-result (F::phys-obj (F::Container +)))
+             (:OPTIONAL ONT::affected-result (F::phys-obj)) ;(F::Container +)))
 	     (:OPTIONAL ONT::affected)
 	     )
  )
@@ -3128,57 +3223,344 @@
  :parent ONT::transformation
  )
 
+
 #|
 (define-type ONT::develop
     :parent ont::transformation ;; GUM change new parent 20121030
   )
 |#
 
-(define-type ONT::life-transformation
- :wordnet-sense-keys ("develop%2:30:00" "fruit%2:36:01")
- :parent ONT::continuous-change
- )
+;; CHANGE IN SCALE
+(define-type ont::change-in-scale
+ :parent ont::transformation
+ :arguments  ((:essential ont::scale (F::abstr-obj  (F::scale ont::domain))))
+)
+
+;; CHANGE IN MEASURE SCALE
+(define-type ont::change-in-measure-scale
+ :parent ont::change-in-scale
+ :arguments  ((:essential ont::scale (F::abstr-obj  (F::scale ont::measure-scale))))
+)
+
+; time measure scale
+(define-type ont::change-in-time-measure
+ :parent ont::change-in-measure-scale
+ :sem (F::SITUATION  (F::scale ont::time-measure-scale)) 
+ :arguments  ((:essential ont::scale (F::abstr-obj  (F::scale ont::time-measure-scale))))
+)
+
+(define-type ont::age
+ :wordnet-sense-keys ("age%2:30:02" "age%2:30:00" "age%2:30:01")
+ :parent ont::change-in-time-measure
+ :arguments ((:essential ONT::scale (f::abstr-obj (F::scale ont::age-scale) (F::orientation f::pos))))
+)
+
+(define-type ont::extend-time
+ :wordnet-sense-keys ("prolong%2:30:00")
+ :parent ont::change-in-time-measure
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::duration-scale) (F::orientation f::pos))))
+)
+
+(define-type ont::shorten-time
+ :wordnet-sense-keys ("shorten%2:30:01" "shorten%2:30:00")
+ :parent ont::change-in-time-measure
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::duration-scale) (F::orientation f::neg))))
+)
+
+; dimensional-scale
+(define-type ont::change-in-dimension
+ :wordnet-sense-keys ("grow%2:30:00")
+ :parent ont::change-in-measure-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::dimensional-scale))))
+)
+
+; intensity-scale
+(define-type ont::intensify
+ :wordnet-sense-keys ("augment%2:30:00" "intensify%2:30:01" "intensify%2:30:00" "sharpen%2:30:01" "sharpen%2:30:00")
+ :parent ont::change-in-dimension
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::intensity-scale) (F::orientation f::pos))))
+)
+
+(define-type ont::lessen-intensity
+ :wordnet-sense-keys ("weaken%2:30:03" "slack%2:30:04")
+ :parent ont::change-in-dimension
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::intensity-scale) (F::orientation f::neg))))
+)
+
+; lightened:  "I felt my burden lighten as I told the story"
+(define-type ont::lighten-weight
+ :wordnet-sense-keys ("lighten%2:35:00")
+ :parent ont::change-in-dimension
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::weight-scale) (F::orientation f::neg))))
+)
+
+; size-scale
+(define-type ont::change-in-size
+ :parent ont::change-in-dimension
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::size-scale))))
+)
+
+; size-scale
+(define-type ont::enlarge
+ :wordnet-sense-keys ("enlarge%2:30:00" "hypertrophy%2:29:00")
+ :parent ont::change-in-size
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::size-scale) (F::orientation f::pos))))
+)
 
 (define-type ONT::swell
- :wordnet-sense-keys ("swell%2:30:00" "swell_up%2:30:00" "intumesce%2:30:00" "tumefy%2:30:00" "tumesce%2:30:00")
- :parent ONT::continuous-change
+ :wordnet-sense-keys ("swell%2:30:00" "swell_up%2:30:00" "intumesce%2:30:00" "tumefy%2:30:00" "tumesce%2:30:00" "swell%2:30:01" "bloat%2:30:01" "bulk%2:30:00" "protrude%2:30:00" "rise%2:38:02" "raise%2:38:01")
+ :parent ONT::change-in-size
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::size-scale) (F::orientation f::pos))))
  )
 
-(define-type ONT::clog
- :wordnet-sense-keys ("clog%2:35:00" "choke_off%2:35:00" "clog_up%2:35:00" "back_up%2:35:00" "congest%2:35:00" "choke%2:35:01" "foul%2:35:00")
- :parent ONT::continuous-change
+; size-scale
+(define-type ONT::shrink
+ :wordnet-sense-keys ("shrink%2:30:02" "compress%2:35:01" "shrink%2:30:01" "shrink%2:30:00")
+ :parent ONT::change-in-size
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::size-scale) (F::orientation f::neg))))
  )
 
-(define-type ONT::burn
- :wordnet-sense-keys ("scorch%2:30:07" "sear%2:30:07" "singe%2:30:07" "burn%2:43:02")
- :parent ONT::continuous-change
- )
+
+; linear extent scale
+(define-type ont::change-in-linear-extent
+ :parent ont::change-in-size
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::linear-extent-scale))))
+)
+
+(define-type ont::extend
+ :wordnet-sense-keys ("stretch%2:30:04" "stretch%2:30:00" "extend%2:30:01" "broaden%2:30:00")
+ :parent ont::change-in-linear-extent
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::area-scale) (F::orientation f::pos))))
+)
+
+(define-type ont::widen
+ :wordnet-sense-keys ("widen%2:30:00" "widen%2:30:03")
+ :parent ont::change-in-linear-extent
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::width-scale) (F::orientation f::pos))))
+)
+
+(define-type ont::narrow
+ :wordnet-sense-keys ("narrow%2:30:00")
+ :parent ont::change-in-linear-extent
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::width-scale) (F::orientation f::neg))))
+)
+
+(define-type ont::deepen
+ :wordnet-sense-keys ("deepen%2:30:03")
+ :parent ont::change-in-linear-extent
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::depth-scale) (F::orientation f::pos))))
+)
+
+(define-type ont::shorten
+ :wordnet-sense-keys ("shorten%2:30:09" "shorten%2:30:02")
+ :parent ont::change-in-linear-extent
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::length-scale) (F::orientation f::neg))))
+)
+
+(define-type ont::lengthen
+ :wordnet-sense-keys ("lengthen%2:30:00" "lengthen%2:30:01")
+ :parent ont::change-in-linear-extent
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::length-scale) (F::orientation f::pos))))
+)
+
+;; strengthen 
+(define-type ont::strengthen
+ :wordnet-sense-keys ("strengthen%2:30:01" "strengthen%2:30:00")
+ :parent ont::change-in-dimension
+ ;; argument add
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::strength-scale) (F::orientation f::pos))))
+)
+
+;; weaken
+(define-type ont::weaken
+ :wordnet-sense-keys ("weaken%2:30:00" "weaken%2:30:01" "waste%2:30:01")
+ :parent ont::change-in-dimension
+ ;; argument add
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::strength-scale) (F::orientation f::pos))))
+)
+
+; temperature-scale
+(define-type ont::change-in-temperature
+ :parent ont::change-in-measure-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::temperature-scale))))
+)
 
 (define-type ONT::cool
  :wordnet-sense-keys ("cool%2:30:00" "chill%2:30:00" "cool_down%2:30:01")
- :parent ONT::continuous-change
+ :parent ONT::change-in-temperature
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::cold-scale) (F::orientation f::pos))))
  )
 
 (define-type ONT::heat
- :parent ONT::continuous-change
+ :wordnet-sense-keys ("heat%2:30:00" "heat%2:30:01" "overheat%2:30:01" "overheat%2:30:00")
+ :parent ONT::change-in-temperature
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::heat-scale) (F::orientation f::pos))))
  )
 
-(define-type ONT::deteriorate
- :wordnet-sense-keys ("decompose%2:30:02" "decay%2:30:01" "disintegrate%2:30:01" "decay%2:30:02" "acerbate%2:37:00")
- :parent ONT::continuous-change
- :arguments ((:REQUIRED ONT::Formal ((? tt f::phys-obj f::abstr-obj f::situation)))
-             (:OPTIONAL ONT::Agent)
-             )
+; ratio scale
+(define-type ont::change-in-ratio
+ :parent ont::change-in-measure-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::ratio-scale))))
+)
+
+;; rush, hasten, speed up
+(define-type ONT::increase-speed
+ :wordnet-sense-keys ("hasten%2:36:00" "rush%2:36:00" "stimulate%2:36:00" "induce%2:36:01" "hasten%2:41:00" "expedite%2:41:00" "step_on_it%2:38:00" "belt_along%2:38:00" "bucket_along%2:38:00" "cannonball_along%2:38:00" "rush_along%2:38:00" "pelt_along%2:38:00" "race%2:38:00" "speed%2:38:03" "hie%2:38:00" "hasten%2:38:00" "hotfoot%2:38:00" "rush%2:38:00" "rush%2:30:00" "hasten%2:30:00" "hurry%2:30:00" "look_sharp%2:30:00" "festinate%2:30:00")
+ :parent ONT::change-in-ratio
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::speed-scale) (F::orientation f::pos))))
  )
 
-(define-type ONT::shrink
- :wordnet-sense-keys ("shrivel%2:30:00" "shrivel_up%2:30:00" "shrink%2:30:02" "wither%2:30:00")
- :parent ONT::continuous-change
+(define-type ONT::decrease-speed
+ :wordnet-sense-keys ("slow%2:30:00" "slow%2:30:01")
+ :parent ONT::change-in-ratio
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::speed-scale) (F::orientation f::neg))))
  )
+
+
+;; CHANGE IN PHYSICAL PROPERTY SCALE
+(define-type ont::change-in-physical-property-scale
+ :parent ont::change-in-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::physical-property-scale))))
+)
+
+; configuration
+(define-type ont::change-in-configuration
+ :parent ont::change-in-physical-property-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::configuration-property-scale))))
+)
+
+; constriction
+(define-type ont::change-in-constriction
+ :parent ont::change-in-configuration
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::constriction-scale))))
+)
+
+; tighten
+(define-type ont::tighten
+ :wordnet-sense-keys ("tighten%2:30:00" "tighten%2:30:01")
+ :parent ont::change-in-constriction
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::tightness-scale) (F::orientation f::pos))))
+)
+
+; loosen
+(define-type ont::loosen
+ :wordnet-sense-keys ("loosen%2:30:00" "loosen%2:30:01" "slacken%2:30:00" "slacken%2:30:01")
+ :parent ont::change-in-constriction
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::looseness-scale) (F::orientation f::pos))))
+)
+
+
+; appearance-scale
+(define-type ont::change-in-appearance
+ :parent ont::change-in-physical-property-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::appearance-scale))))
+)
+
+(define-type ont::change-in-tactile-scale
+ :parent ont::change-in-appearance
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::tactile-scale))))
+)
+
+; thicken the soup
+(define-type ont::thicken
+ :wordnet-sense-keys ("thicken%2:30:01" "thicken%2:30:00" "thicken%2:30:02")
+ :parent ont::change-in-tactile-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::texture-thickness-scale) (F::orientation f::pos))))
+)
+
+; thin the soup
+(define-type ont::thin
+ :wordnet-sense-keys ("thin%2:30:01" "thin%2:30:00")
+ :parent ont::change-in-tactile-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::texture-thiness-scale) (F::orientation f::pos))))
+)
+
+; harden the clay
+(define-type ont::harden
+ :wordnet-sense-keys ("harden%2:30:01" "harden%2:30:00" "stiffen%2:30:01" "stiffen%2:30:00")
+ :parent ont::change-in-tactile-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::tactile-hardness-scale) (F::orientation f::pos))))
+)
+
+; soften the clay
+(define-type ont::soften
+ :wordnet-sense-keys ("soften%2:30:00" "soften%2:30:01")
+ :parent ont::change-in-tactile-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::tactile-softness-scale) (F::orientation f::pos))))
+)
+
+; sharpen (the rocks sharpened over time as tides crashed against them)
+(define-type ont::sharpen
+ :wordnet-sense-keys ("sharpen%2:35:00" "sharpen%2:30:08")
+ :parent ont::change-in-tactile-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::sharp-texture-scale) (F::orientation f::pos))))
+)
+
+; smooth
+(define-type ont::smoothen
+ :wordnet-sense-keys ("smoothen%2:30:00" "smooth%2:35:00")
+ :parent ont::change-in-tactile-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::smoothness-scale) (F::orientation f::pos))))
+)
+
+; visual scale
+(define-type ont::change-in-visual-scale
+ :parent ont::change-in-appearance
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::visual-scale))))
+)
+
+; lighten
+(define-type ont::lighten
+ :wordnet-sense-keys ("lighten%2:30:02")
+ :parent ont::change-in-visual-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::lightness-scale) (F::orientation f::pos))))
+)
+
+; darken
+(define-type ont::darken
+ :wordnet-sense-keys ("darken%2:30:01" "darken%2:30:00")
+ :parent ont::change-in-visual-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::darkness-scale) (F::orientation f::pos))))
+)
+
+; brighten
+(define-type ont::brighten
+ :wordnet-sense-keys ("brighten%2:30:01")
+ :parent ont::change-in-visual-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::brighteness-scale) (F::orientation f::pos))))
+)
+
+; dampness
+(define-type ont::change-in-moisture-content
+ :parent ont::change-in-physical-property-scale
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::moisture-content-scale))))
+)
+
+; dry
+(define-type ont::dry
+ :wordnet-sense-keys ("dry%2:30:00" "dry%2:30:01")
+ :parent ont::change-in-moisture-content
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::dry-scale) (F::orientation f::pos))))
+ :comment "simply dry, neither suggests the object undergoing the drying process is intrinsically moistured or contains moisture internally (consider 'the apples dried', 'the car dried')"
+)
+
+(define-type ont::dehydrate
+ :wordnet-sense-keys ("wither%2:30:00" "dehydrate%2:30:01" "dehydrate%2:30:00")
+ :comment "dehydrating process causes something that intrinsically contains moisture to be mosture-lacking (consider 'dehydrate the apples' is possible but 'dehydrate the car' is weird)"
+ :parent ont::dry
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::dehydrated-scale) (F::orientation f::pos))))
+)
+
+
+(define-type ont::dampen
+ :wordnet-sense-keys ("wet%2:30:00")
+ :parent ont::change-in-moisture-content
+ :arguments((:essential ONT::scale (f::abstr-obj (F::scale ont::wet-scale) (F::orientation f::pos))))
+)
 
 
 (define-type ONT::coloring
- :wordnet-sense-keys ("colour_in%2:30:00" "color_in%2:30:00" "colour%2:30:09" "colourize%2:30:03" "colourise%2:30:03" "colorise%2:30:03" "colorize%2:30:03" "color%2:30:00" "seal%2:35:04" "varnish%2:35:00" "discolor%2:30:00" "discolour%2:30:00" "colour%2:30:00" "color%2:30:01")
+ :wordnet-sense-keys ("colour_in%2:30:00" "color_in%2:30:00" "colour%2:30:09" "colourize%2:30:03" "colourise%2:30:03" "colorise%2:30:03" "colorize%2:30:03" "color%2:30:00" "seal%2:35:04" "varnish%2:35:00" "discolor%2:30:00" "discolour%2:30:00" "colour%2:30:00" "color%2:30:01" "discolor%2:30:02")
  :parent ONT::transformation
  :sem (F::SITUATION (F::Aspect F::Dynamic))
  :arguments (
@@ -3230,13 +3612,17 @@
 
 (define-type ONT::change-magnitude
  :wordnet-sense-keys ("change_magnitude%2:30:00" "change_intensity%2:39:00")
- :arguments ((:essential ONT::scale (f::abstr-obj (F::scale ont::domain)))
+ :arguments (;(:essential ont::affected (F::abstr-obj (f::type ont::ordered-domain) (f::scale ont::domain)))
+	     ;(:essential ont::affected (F::abstr-obj (f::scale ont::domain))) ; e.g., rainfall is physobj; flood is situation 
+	     (:essential ont::affected)
+	     (:essential ONT::scale (f::abstr-obj (F::scale ont::domain)))
 	     (:optional  ONT::result ((? cau2 F::situation F::Abstr-obj f::phys-obj) (F::type (? !t ont::in-loc ont::at-loc))))) 
- :parent ONT::adjust
+; :parent ONT::adjust
+ :parent ont::change-in-scale
  )
 
 (define-type ONT::increase
- :wordnet-sense-keys ("increase%2:30:00" "lengthen%2:30:01")
+ :wordnet-sense-keys ("increase%2:30:00")
  :parent ONT::change-magnitude
  )
 
@@ -3255,30 +3641,24 @@
  :parent ONT::increase-number
  )
 
-;; rush, hasten, speed up
-(define-type ONT::increase-speed
- :wordnet-sense-keys ("hasten%2:36:00" "rush%2:36:00" "stimulate%2:36:00" "induce%2:36:01" "hasten%2:41:00" "expedite%2:41:00" "step_on_it%2:38:00" "belt_along%2:38:00" "bucket_along%2:38:00" "cannonball_along%2:38:00" "rush_along%2:38:00" "pelt_along%2:38:00" "race%2:38:00" "speed%2:38:03" "hie%2:38:00" "hasten%2:38:00" "hotfoot%2:38:00" "rush%2:38:00" "rush%2:30:00" "hasten%2:30:00" "hurry%2:30:00" "look_sharp%2:30:00" "festinate%2:30:00")
- :parent ONT::increase
- )
 
-(define-type ONT::increase-time
- :wordnet-sense-keys ("prolong%2:30:00")
- :parent ONT::increase
- )
+
+;(define-type ONT::increase-time
+; :wordnet-sense-keys ("prolong%2:30:00")
+; :parent ONT::increase
+; )
 
 (define-type ONT::decrease
- :wordnet-sense-keys ("decrease%2:30:00" "decrease%2:30:01" "diminish%2:30:00" "lessen%2:30:00" "fall%2:30:06" "weaken%2:30:01" "mitigate%2:32:00")
+ :wordnet-sense-keys ("decrease%2:30:00" "decrease%2:30:01" "diminish%2:30:00" "lessen%2:30:00" "fall%2:30:06" "mitigate%2:32:00")
  :parent ONT::change-magnitude
  )
 
 (define-type ONT::decrease-completely
- :wordnet-sense-keys ("deplete%2:34:00" "exhaust%2:30:00")
+ :wordnet-sense-keys ("deplete%2:34:00" "exhaust%2:30:00" "reduction%1:04:00")
  :parent ONT::decrease
  )
 
-(define-type ONT::decrease-speed
- :parent ONT::decrease
- )
+
 
 (define-type ONT::fluctuate
  :wordnet-sense-keys ("fluctuate%2:30:00")
@@ -3300,12 +3680,12 @@
 |#
 
 (define-type ONT::HYDROLYSIS
-    :wordnet-sense-keys ("hydrolysis%1:22:00" "hydrolyze%2:30:00" "hydrolyse%2:30:00")
-    :parent ONT::adjust
-    )
+    :wordnet-sense-keys ("hydrolysis%1:22:00" "hydrolyze%2:30:00" "hydrolyse%2:30:00" "hydrolize%2:30:01")
+    :parent ONT::chemical-change
+)
 
 (define-type ont::post-translational-modification
-    :parent ont::adjust
+    :parent ont::chemical-change
     :arguments ((:essential ont::affected (F::PHYS-OBJ (F::type ont::molecular-part)))
 		(:optional  ont::location )
     ))
@@ -3360,7 +3740,7 @@
  )
 
 (define-type ONT::visual-adjust
- :wordnet-sense-keys ("sharpen%2:39:00" "soften%2:39:00" "blur%2:39:00")
+ :wordnet-sense-keys ("sharpen%2:39:00" "sharpen%2:30:03" "soften%2:39:00" "blur%2:39:00" "blur%2:30:01" "focus%2:30:00")
  :parent ONT::adjust
  )
 
@@ -3408,12 +3788,13 @@
  )
 
 (define-type ONT::cooking
- :wordnet-sense-keys ("prepare%2:36:01" "make%2:36:07" "ready%2:36:00" "fix%2:36:00" "cook%2:36:00" "cook%2:30:00" "brew%2:36:00" "steep%2:30:00" "flavor%2:39:00" "percolate%2:35:02" )
+ :wordnet-sense-keys ("prepare%2:36:01" "make%2:36:07" "ready%2:36:00" "fix%2:36:00" "cook%2:36:00" "cook%2:30:00" "brew%2:36:00" "steep%2:30:00" "flavor%2:39:00" "percolate%2:35:02")
  :parent ONT::cause-make-things
  :sem (F::SITUATION (F::Cause F::agentive) (F::Trajectory -))
  :arguments ((:REQUIRED ONT::Agent (F::Phys-obj (F::origin F::human)))
              ;;(:REQUIRED ONT::Formal (f::phys-obj (f::origin (? fo F::Natural-non-human f::non-living))))
-	     (:essential ont::affected);; (f::phys-obj))  ;; one of these gives an error - need to check when I have time
+	     (:essential ont::affected (f::phys-obj (f::type ont::food)
+						    (F::Object-Function F::comestible)))
 	     (:OPTIONAL ONT::affected-result  (f::phys-obj))
 	     ;;(:OPTIONAL ONT::result (f::phys-obj)
              )
@@ -3421,7 +3802,8 @@
 
 ;; specific types for caet
 (define-type ont::boil
-    :parent ont::cooking
+  :wordnet-sense-keys ("boil%2:30:02" "boil%2:30:01")
+  :parent ont::cooking
 )
 
 (define-type ont::steep
@@ -3434,7 +3816,7 @@
 
 ;; grow, thrive, flourish
 (define-type ONT::grow
- :wordnet-sense-keys ("grow%2:30:02" "bring_up%2:41:00" "cultivate%2:36:00")
+ :wordnet-sense-keys ("grow%2:30:02" "cultivate%2:36:00" "grow%2:30:01" "develop%2:30:01" "grow%2:30:00" "develop%2:30:00")
  :parent ONT::continuous-change
  :sem (F::SITUATION (F::Trajectory -))
  :arguments ((:optional ONT::Agent ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
@@ -3452,7 +3834,13 @@
 	     (:OPTIONAL ONT::Result (f::abstr-obj)) ;; why is the abstr-obj?
 ;	     (:OPTIONAL ONT::instrument (F::phys-obj (F::intentional -) (F::form F::solid-object)))
              )
+ :wordnet-sense-keys("damage%2:30:00")
  )
+
+(define-type ont::mangle
+ :parent ont::damage
+ :wordnet-sense-keys("mangle%2:30:01" "mar%2:30:00")
+)
 
 (define-type ONT::crush
  :wordnet-sense-keys ("squash%2:35:00" "crush%2:35:00" "squelch%2:35:00" "mash%2:35:00")
@@ -3485,31 +3873,45 @@
  :arguments ((:OPTIONAL ont::result ((? cthm f::situation f::phys-obj F::abstr-obj))))
  )
 
-;; graduate
-(define-type ONT::advancing
- :parent ONT::adjust
- :arguments ((:OPTIONAL ONT::source ((? src f::phys-obj F::abstr-obj))))
- )
-
 (define-type ONT::improve
- :wordnet-sense-keys ("enhancement%1:04:00" "sweetening%1:04:02")
+ :wordnet-sense-keys ("enhancement%1:04:00" "sweetening%1:04:02" "meliorate%2:30:01")
  :parent ONT::adjust
  :sem (F::SITUATION (F::Cause F::agentive) (F::Trajectory -))
  :arguments ((:REQUIRED ONT::Formal ((? thm F::abstr-obj f::situation f::phys-obj)))
              )
  )
 
-(define-type ONT::ATTACK
- :wordnet-sense-keys ("attack%2:33:00" "attack%2:32:00" "attack%2:33:02" "attack%2:29:00")
+(define-type ONT::transgress
+ :wordnet-sense-keys ("transgress%2:41:00" "transgress%2:41:02" "transgress%2:38:00" "infringe%2:41:00" "infringe%2:38:00" "intrude%2:41:00" "violate%2:42:00" "violate%2:41:00" "violate%2:41:02" "violate%2:35:00" "conflict%1:26:00")
  :parent ONT::event-of-causation
  )
 
+(define-type ONT::ATTACK
+ :wordnet-sense-keys ("attack%2:33:00" "attack%2:32:00" "attack%2:33:02" "attack%2:29:00" "attack%1:04:00")
+; :parent ONT::event-of-causation
+ :parent ONT::transgress
+ )
+
+; revolt, rebel, war, riot
+(define-type ONT::GROUP-CONFLICT
+ :wordnet-sense-keys ("riot%2:41:00" "military_action%1:04:00" "revolution%1:04:00" "conflict%1:04:00" "rebel%2:41:00")
+ :parent ONT::transgress
+ :sem (F::SITUATION (F::Cause F::Agentive) (F::Trajectory -) (F::Aspect F::Dynamic))
+ :arguments ((:REQUIRED ONT::AGENT  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
+             )
+ )
 
 
 ;; manage
 (define-type ONT::managing
  :parent ONT::control-manage
  :comment "take responsibility over the production of a project, a program, or a production" 
+)
+
+(define-type ont::nurturing
+ :parent ont::control-manage
+ :comment "to nurture, raise, or rear humans or other animate beings; take responsibility for the growth of animate beings (compare to ont::grow)"
+ :wordnet-sense-keys ("rear%2:41:00")
 )
 
 ;; guide, lead, direct, conduct
@@ -3561,9 +3963,12 @@
 )
 
 (define-type ont::governing
- :parent ont::control-manage
- :comment "control, influence, or regulate a process"
-)
+    :parent ont::control-manage
+    :arguments ((:REQUIRED ONT::Agent ((? aff F::situation F::phys-obj)))
+		(:required ont::affected ((? aff F::situation F::phys-obj)
+					  (F::type (? typ ont::device ont::located-event ont::molecular-part)))))
+    :comment "control, influence, or regulate a process"
+    )
 
 ;; for configure, arrange X (into Y) e.g. he arranged them into groups of three
 (define-type ONT::arranging
@@ -3619,7 +4024,7 @@
  )
 
 (define-type ONT::separation
- :wordnet-sense-keys ("separate%2:35:01" "disunite%2:35:00" "divide%2:35:01" "part%2:35:01" "break%2:41:13" "divide%2:38:00" "divide%2:42:00" "disjoint%2:35:00" "separate%2:35:00")
+ :wordnet-sense-keys ("separate%2:35:01" "disunite%2:35:00" "divide%2:35:01" "part%2:35:01" "break%2:41:13" "divide%2:38:00" "divide%2:42:00" "disjoint%2:35:00" "separate%2:35:00" "separate%2:35:02")
     :parent ONT::event-of-causation
     :comment "abstract, social or physical dissociation"
     :sem (F::SITUATION (:default (F::Cause F::agentive)) (:required (F::trajectory -)))
@@ -3926,8 +4331,19 @@
              )
  )
 
+#|
 (define-type ONT::RIOT
  :wordnet-sense-keys ("riot%2:41:00")
+ :parent ONT::located-event
+ :sem (F::SITUATION (F::Cause F::Agentive) (F::Trajectory -) (F::Aspect F::Dynamic))
+ :arguments ((:REQUIRED ONT::AGENT  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
+             )
+ )
+|#
+
+; accident, emergency, crisis, disaster
+(define-type ONT::EMERGENCY
+ :wordnet-sense-keys ("disaster%1:26:00" "disaster%1:11:00" "disaster%1:04:00" "crisis%1:26:00" "crisis%1:11:00" "accident%1:11:01")
  :parent ONT::located-event
  :sem (F::SITUATION (F::Cause F::Agentive) (F::Trajectory -) (F::Aspect F::Dynamic))
  :arguments ((:REQUIRED ONT::AGENT  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
@@ -3936,7 +4352,7 @@
 
 ;;; swift 11/26/01 -- added this for inchoative verbs, e.g. get as in 'get nauseous'
 (define-type ONT::BECOME
- :wordnet-sense-keys ("take%2:30:09" "come%2:30:03" "become%2:42:00" "become%2:30:00" "go%2:30:04" "get%2:30:00")
+ :wordnet-sense-keys ("take%2:30:09" "come%2:30:03" "become%2:42:00" "become%2:30:00" "go%2:30:04" "get%2:30:00" "open_up%2:30:01")
  :parent ONT::event-of-undergoing-action
  :sem (F::Situation (F::Aspect F::Dynamic) (F::Trajectory -))
  :arguments ((:ESSENTIAL ONT::affected)
@@ -3975,14 +4391,23 @@
  )
 
 (define-type ONT::ordering
- :wordnet-sense-keys ("rate%2:31:00" "rank%2:31:00" "range%2:31:00" "order%2:31:00" "grade%2:31:03" "place%2:31:01")
-  :parent ONT::categorization
-  )
+    :comment "Identify an ordering or ranking of objects along some dimention" 
+    :wordnet-sense-keys ("rate%2:31:00" "rank%2:31:00" "range%2:31:00" "order%2:31:00" "grade%2:31:03" "place%2:31:01")
+    :parent ONT::categorization
+    )
+
+(define-type ONT::attribute-impute
+    :comment "identify a cause of an event"
+    :wordnet-sense-keys ("impute%2:31:00" "attribute%2:31:01")
+    :arguments ((:essential ONT::NEUTRAL (F::situation))
+		(:essential ONT::NEUTRAL1 (F::situation)))
+    :parent ONT::categorization
+    )
 
 (define-type ONT::classify
- :wordnet-sense-keys ("classify%2:31:01" "relegate%2:31:02" "classify%2:41:00" "separate%2:31:00" "sort_out%2:31:00" "assort%2:31:00" "sort%2:31:00" "class%2:31:00" "classify%2:31:00" "categorise%2:31:00" "categorize%2:31:00" "take%2:31:07" "read%2:31:09" "describe%2:31:00" "discern%2:39:00" "discover%2:39:00")
-  :parent ONT::categorization
-  )
+    :wordnet-sense-keys ("classify%2:31:01" "relegate%2:31:02" "classify%2:41:00" "separate%2:31:00" "sort_out%2:31:00" "assort%2:31:00" "sort%2:31:00" "class%2:31:00" "classify%2:31:00" "categorise%2:31:00" "categorize%2:31:00" "take%2:31:07" "read%2:31:09" "describe%2:31:00" "discern%2:39:00" "discover%2:39:00")
+    :parent ONT::categorization
+    )
 
 (define-type ONT::rely
  :wordnet-sense-keys ("rely%2:31:11" "depend_on%2:42:00" "depend_on%2:42:01" "depend_on%2:42:02" "fall%2:40:03" "count%2:31:02" "bet%2:31:00" "depend%2:31:00" "look%2:31:02" "calculate%2:31:05" "reckon%2:31:05")
@@ -4177,6 +4602,7 @@
  :wordnet-sense-keys ("clean%2:35:00" "make_clean%2:35:00" "wash%1:04:01" "dental_care%1:04:00")
  :parent ONT::change-state-action
  :sem (F::Situation (F::Cause F::Agentive) (F::Trajectory -))
+ :arguments ((:optional ONT::result ((? res F::situation F::Abstr-obj f::phys-obj) (F::type (? !t ont::position-reln ont::path))))) 
  )
 
 (define-type ont::shower
@@ -4228,7 +4654,6 @@
  )
 
 (define-type ONT::Closure
- :wordnet-sense-keys ("open_up%2:35:00" "open%2:35:00" "close%2:35:00" "shut%2:35:00")
     :parent ONT::Change-state-action
     :arguments (
 		(:required ONT::affected (F::Phys-obj (f::form f::object)))
@@ -4236,14 +4661,20 @@
     )
 
 (define-type ONT::open
- :wordnet-sense-keys ("open%2:41:00" "premier%2:36:01")
+ :wordnet-sense-keys ("open%2:41:00" "premier%2:36:01" "open_up%2:35:00" "open%2:35:06" "open%2:35:00")
  :parent ONT::closure
  )
 
 (define-type ONT::close
- :wordnet-sense-keys ("close%2:41:00")
+ :wordnet-sense-keys ("close%2:41:00" "close%2:35:00" "close%2:35:06")
  :parent ONT::closure
  )
+
+(define-type ONT::clog
+ :wordnet-sense-keys ("obstruct%2:35:00" "clog%2:35:00" "choke_off%2:35:00" "clog_up%2:35:00" "back_up%2:35:00" "congest%2:35:00" "choke%2:35:01" "foul%2:35:00")
+ :parent ONT::closure
+ )
+
 
 ;; This is turn-on, turn-off, energize, de-energize
 ;; Eventually ONT::enable and ONT::disable should be moved here
@@ -4260,7 +4691,7 @@
 
 
 (define-type ONT::START-OBJECT
- :wordnet-sense-keys ("boot%2:29:00" "reboot%2:29:00" "bring_up%2:29:00")
+ :wordnet-sense-keys ("boot%2:29:00" "reboot%2:29:00" "bring_up%2:29:00" "trip%2:36:00" "start_up%2:38:00")
  :parent ONT::Change-device-state
  :sem (F::SITUATION (F::Aspect F::Dynamic))
  :arguments (;;(:REQUIRED ONT::Formal)
@@ -4317,7 +4748,7 @@
 		(:essential ont::extent (f::abstr-obj (f::scale ?!sc))) ;; the value of the measure, e.g. 5 lbs
 		))
 
-(define-type ont::weigh
+(Define-type ont::weigh
  :wordnet-sense-keys ("weigh%2:42:00" "librate%2:42:00")
     :parent ont::register
     :sem (f::situation (f::cause f::agentive) (f::trajectory -))
@@ -4352,14 +4783,14 @@
 
 ;; FN
 (define-type ont::fluidic-motion
- :wordnet-sense-keys ("course%2:38:00" "feed%2:38:04" "flow%2:38:00" "run%2:38:01" "flow%2:38:01" "flux%2:38:00" "flow%2:38:02" "pour%2:38:03")
+ :wordnet-sense-keys ("course%2:38:00" "feed%2:38:04" "flow%2:38:00" "run%2:38:01" "flow%2:38:01" "flux%2:38:00" "flow%2:38:02" "pour%2:38:03" "flow%1:11:00")
     :parent ont::motion
     :sem (f::situation (f::trajectory +))
     :arguments ((:required ont::formal (f::phys-obj (f::form (? ff f::liquid f::gas f::wave))))
 		))
 
 (define-type ONT::prevent
-  :wordnet-sense-keys ("prevent%2:41:00" "prevent%2:41:01" "prevention%1:04:00")
+  :wordnet-sense-keys ("prevent%2:41:00" "prevent%2:41:01" "prevention%1:04:00" "keep%2:40:01")
  :parent ONT::inhibit-effect
  )
 
@@ -4428,7 +4859,7 @@
 ;; Should be used for other words like "adhere" etc.
 ;; FN compliance,
 (define-type ONT::Compliance
- :wordnet-sense-keys ("keep%2:41:05" "celebrate%2:41:01" "observe%2:41:02" "keep%2:41:03" "observe%2:41:04" "obey%2:41:00" "break%2:42:00")
+ :wordnet-sense-keys ("keep%2:41:05" "celebrate%2:41:01" "observe%2:41:02" "keep%2:41:03" "observe%2:41:04" "obey%2:41:00")
     :parent ONT::event-of-action
     :sem (f::situation (f::cause f::agentive) (f::aspect f::dynamic))
     :arguments ((:optional ONT::Agent  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
@@ -4559,7 +4990,21 @@
 
 (define-type ont::status
   :parent ont::situation-root
-  :wordnet-sense-keys ("condition%1:26:00" "status%1:26:01" "state%1:26:02" "state_of_matter%1:26:00" "state%1:03:00")
+  :wordnet-sense-keys ("condition%1:26:00" "status%1:26:01" "state%1:26:02" "state_of_matter%1:26:00" "state%1:03:00" "situation%1:26:00")
+ :arguments ((:OPTIONAL ONT::FIGURE)
+             )
+ )
+
+(define-type ont::financial-condition
+  :parent ont::status
+  :wordnet-sense-keys ("financial_condition%1:26:00")
+ :arguments ((:OPTIONAL ONT::FIGURE)
+             )
+ )
+
+(define-type ont::poverty
+  :parent ont::financial-condition
+  :wordnet-sense-keys ("poverty%1:26:00")
  :arguments ((:OPTIONAL ONT::FIGURE)
              )
   )

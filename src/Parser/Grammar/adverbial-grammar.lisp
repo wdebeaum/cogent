@@ -31,7 +31,8 @@
      (head (adv (WH -) (sem ?sem) (ARGUMENT-MAP ?!argmap) ;;(Sort PRED) 
                 (VAR ?v) (SUBCAT -) (LF ?lf) (implicit-arg -) (constraint ?con)
 		(sem ($ F::ABSTR-OBJ (F::intensity ?ints) (F::orientation ?orient) (F::Scale ?scale)))
-		(comparative -) (prefix -)
+		;; (comparative -)   I think this rule now works for comparatives in the new treatment  JFA 2018
+		(prefix -)
 		(particle ?p) (particle-role-map ?prm)
 		)
       )
@@ -62,8 +63,8 @@
     ;; Many adverbials place restrictions on their argument (vform base), (stype decl) etc.
     ;; These weren't picked up and the whole system prone to failure
     ;; Instead, I re-wrote it so that now pp adverbials place restriction on case (which is the only reason I can see it here)
-    ;; TEST: instead of the house, from the store
-    ((ADVBL (ARG ?arg) (WH ?wh) (FOCUS ?subv)
+    ;; TEST: instead of the house, from the store, due to drought
+    ((ADVBL (ARG ?arg) (FOCUS ?subv)
             (LF (% PROP (VAR ?v) (CLASS ?lf) (CONSTRAINT (& (?submap ?subv) (?argmap ?arg)))
                    (sem ?sem) (transform ?trans)))
       (sem ?sem) (VAR ?v) (role ?lf) (subcatsem ?subcatsem) (gap ?gap)
@@ -73,7 +74,8 @@
             ;; make sure pp-word is not a sort here
             (sort (? !sort pp-word double-subcat))
 	    (argument (% ?cat2 (var ?arg) (lex ?arglex) (sem ?argsem) (subjvar ?subjvar)))
-            (subcat ?!sub) (SUBCAT (% ?cat (var ?subv) (sem ?subcatsem) (stype ?stype) (vform ?vform) (gap ?gap))) 
+            (subcat ?!sub) (SUBCAT (% ?cat (var ?subv) (sem ?subcatsem) (stype ?stype) (vform ?vform) (gap ?gap)))
+	    
             (subcat-map ?submap) (ARGUMENT-MAP ?argmap)
 	    (subcat2 -) ; to prevent e.g., if... then... to be used here (BINARY-CONSTRAINT-S-DECL-MIDDLE-WORD-SUBCAT-TEMPL)
             (IGNORE -)
@@ -81,11 +83,40 @@
             (sem ?sem))
            )
      ?!sub
-     (unify (pattern (% ?xx (WH ?wh))) (value ?!sub))    ;; fixes problem that WH don't seem to move up through variable constituents
+     ;;(unify (pattern (% ?xx (WH ?wh))) (value ?!sub))    ;; fixes problem that WH don't seem to move up through variable constituents
      ;; ((? cat) (stype ?stype) (var ?subv) (sem ?subcatsem) (case (? case obj -)) (gap -) (vform ?vform))
      )
 
-    
+    ;; e.g., due in part to drought, only allow for certain ADV and ADV modifiers!
+    ((ADVBL (ARG ?arg) (FOCUS ?subv)
+            (LF (% PROP (VAR ?v) (CLASS ?lf) (CONSTRAINT (& (?submap ?subv) (?argmap ?arg) (mod ?advbv)))
+                   (sem ?sem) (transform ?trans)))
+      (sem ?sem) (VAR ?v) (role ?lf) (subcatsem ?subcatsem) (gap ?gap)
+            )
+     -advbl-binary+qualifier> ;;.98 ;; rank slightly lower than a subcategorized complements
+     (head (adv (lf ?lf) ;;(SORT BINARY-CONSTRAINT) 
+            ;; make sure pp-word is not a sort here
+            (sort (? !sort pp-word double-subcat))
+	    (argument (% ?cat2 (var ?arg) (lex ?arglex) (sem ?argsem) (subjvar ?subjvar)))
+            (subcat ?!sub) (SUBCAT (% ?cat (var ?subv) (sem ?subcatsem) (stype ?stype) (vform ?vform) (gap ?gap)))
+	    
+            (subcat-map ?submap) (ARGUMENT-MAP ?argmap)
+	    (subcat2 -) ; to prevent e.g., if... then... to be used here (BINARY-CONSTRAINT-S-DECL-MIDDLE-WORD-SUBCAT-TEMPL)
+            (IGNORE -)
+	    (comparative -) (prefix -)
+            (sem ?sem) (sem ($ f::abstr-obj (f::type (? type ONT::RESPONSIBILITY-VAL ont::SITUATION-MODIFIER ))))
+      ))
+     (advbl (ATYPE POST) (VAR ?advbv) (ARG ?v) 
+      (sem ($ F::ABSTR-OBJ (F::type (? freq ont::part-whole-val ont::FREQUENCY))))
+      (sort PRED) (comparative -) (gap -)
+      (argument (% ADVBL (sem ?sem)
+		   (gap -))))
+     ?!sub
+     ;;(unify (pattern (% ?xx (WH ?wh))) (value ?!sub))    ;; fixes problem that WH don't seem to move up through variable constituents
+     ;; ((? cat) (stype ?stype) (var ?subv) (sem ?subcatsem) (case (? case obj -)) (gap -) (vform ?vform))
+     )
+
+    #|| ; merged with -advbl-binary-3part>
     ((ADVBL (ARG ?arg) (gap -) (WH ?wh) (FOCUS ?subv)
             (LF (% PROP (VAR ?v) (CLASS ?lf) (CONSTRAINT (& (?submap ?subv) (?argmap ?arg) (?sub2map ?sub2)))
                    (sem ?sem) (transform ?trans)))
@@ -103,10 +134,11 @@
            )
      ?!sub
      ?!sub2
+     (both-bound (subcat ?!sub) (subcat2 ?!sub2))
      (unify (pattern (% ?xx (WH ?wh))) (value ?!sub))    ;; fixes problem that WH don't seem to move up through variable constituents
      ;; ((? cat) (stype ?stype) (var ?subv) (sem ?subcatsem) (case (? case obj -)) (gap -) (vform ?vform))
      )
-    
+    ||#
    #||   This now can be handled compositionally
     ;; the meeting from 5 to 10 pm; the flight from here to there
     ((ADVBL (ARG ?arg) (gap -) (WH ?wh) (FOCUS ?subv)
@@ -150,33 +182,32 @@
            )
      )
     |#
+   
+    ;;; THREE PART ADVERBIALS:  for X to Y   - note if...then.. and as...as.. used to use this rule, but now are handled differently
     
-    ;;; THREE PART ADVERBIALS: if ... then, as ... as, for X to Y
-    
-    ((ADVBL (ARG ?arg) (gap -) (WH ?wh) (FOCUS ?subv)
+    ((ADVBL (ARG ?arg) (gap -) (WH ?wh) (wh-var ?wh-var) ;;(FOCUS ?subv)
             (LF (% PROP (VAR ?v) (CLASS ?lf) (CONSTRAINT (& (?submap ?subv) (?argmap ?arg) (?submap2 ?subv2)))
                    (sem ?sem) (transform ?trans)))
       (sem ?sem) (VAR ?v) (role ?lf) (subcatsem ?subcatsem)
             )
-     -advbl-binary-3part> ;;.98 ;; rank slightly lower than a subcategorized complements
+     -advbl-binary-3part> 1 ;; if something matches this rule, prefer it over two adverbials
      (head (adv (lf ?lf) ;;(SORT BINARY-CONSTRAINT) 
             ;; make sure pp-word is not a sort here
             (sort (? !sort pp-word))
-	    (subcat ?!sub) (SUBCAT (% ?cat (var ?subv) (sem ?subcatsem) (stype ?stype) (vform ?vform) (gap -) (lex ?slex))) 
+	    (subcat ?!sub) (SUBCAT (% ?cat (var ?subv) (sem ?subcatsem) (stype ?stype) (vform ?vform) (gap -) (wh ?wh1) (wh-var ?wh-var1) (lex ?slex))) 
             (subcat-map ?submap) (ARGUMENT-MAP ?argmap)
-            (subcat2 ?!sub2) (SUBCAT2 (% ?cat2 (var ?subv2) (sem ?subcatsem2) (stype ?stype2) (vform ?vform2) (gap -) (lex ?slex2))) 
-            (subcat2-map ?submap2) (ARGUMENT-MAP ?argmap2)
+            (subcat2 ?!sub2) (SUBCAT2 (% ?cat2 (var ?subv2) (sem ?subcatsem2) (stype ?stype2) (vform ?vform2) (wh ?wh2) (wh-var ?wh-var2) (gap -) (lex ?slex2))) 
+            (subcat2-map ?submap2) 
             (IGNORE -)
             (sem ?sem))
            )
      ?!sub
      ?!sub2
-     (unify (pattern (% ?xx (WH ?wh))) (value ?!sub2))    ;; fixes problem that WH don't seem to move up through variable constituents     
-     ;; ((? cat) (stype ?stype) (var ?subv) (sem ?subcatsem) (case (? case obj -)) (gap -) (vform ?vform))
-     )
+     (both-bound (subcat ?!sub) (subcat2 ?!sub2))
+     (combine-foot-features (feat wh) (val1 ?wh1) (val2 ?wh2) (result ?wh))
+     (combine-foot-features (feat wh-var) (val1 ?wh-var1) (val2 ?wh-var2) (result ?wh-var)))
+     
 
-    
-    
     ((ADVBL (ARG ?arg) (gap ?!gap)
       (LF (% PROP (VAR ?v) (CLASS ?lf) (CONSTRAINT (& (?submap ?subv) (?argmap ?arg)))
                    (sem ?sem) (transform ?trans)))
@@ -277,7 +308,7 @@
      (head (np (lf ?lf) (sem ?sem)  (var ?v)
 	       ;; 02/07/08 allow bare numbers here! 
 	      ;; (LF (% ?cat (STATUS (? !st number)))) ; disallowing bare numbers here to prevent 'more than 5' w/ bare (referential-sem) interp
-	       (lf (% ?cat (status (? !st ONT::PRO)))) ;; disallowing proforms here -- use pp1-pro>
+	       (lf (% ?cat (status (? !st ONT::PRO ONT::PRO-SET)))) ;; disallowing proforms here -- use pp1-pro>
 	       (sort (? sort pred descr wh-desc unit-measure)) (case (? case obj -)))
       ))
 
@@ -349,7 +380,7 @@
      -pp1-pro>
      (prep (LEX ?pt) (headcat ?hc))
      (head (np (lex (? !nlx w::one)) (lf ?lf) (sem ?sem) (var ?v)
-	       (lf (% ?cat (status ONT::PRO)))
+	       (lf (% ?cat (status (? s ONT::PRO ONT::PRO-SET))))
 	       (sort (? sort pred descr wh-desc unit-measure)) (case (? case obj -)))
       ))
 
@@ -409,8 +440,8 @@
      (VP vform var agr neg sem subj iobj dobj comp3 part cont gap class subjvar lex headcat transform subj-map tma aux template)
      (VP- vform var agr neg sem subj iobj dobj dobjvar comp3 part cont gap class subjvar lex headcat transform subj-map tma aux passive passive-map template result)
      (S vform neg cont stype gap sem subjvar dobjvar var  lex headcat transform subj)
-     (N1 case VAR AGR MASS SEM Changeagr class reln sort lex headcat transform set-restr result rate-activity-nom agent-nom) ;added features for nominalizations
-     (NP case VAR AGR MASS SEM Changeagr class reln sort lex headcat transform status)
+     (N1 case VAR AGR MASS SEM Changeagr class reln sort lex headcat transform set-restr result rate-activity-nom agent-nom subcat subcat-map) ;added features for nominalizations
+     (NP case VAR AGR MASS SEM Changeagr class reln sort lex headcat transform status subcat subcat-map)
      (ADVBL SORT ATYPE CONSTRAINT SA-ID PRED NEG TO LEX HEADCAT SEM ARGUMENT SUBCAT IGNORE transform neg)
      (ADV VAR ATYPE SORT ARG PRED ARGUMENT lex headcat transform)
      (UTT headcat lex ended subjvar)
@@ -448,7 +479,7 @@
      (advbl-needed ?avn)
       )
      -adv-vp-pre-s> 
-     (advbl (SORT PRED) (ATYPE (? x PRE-VP)) (ARGUMENT (% S (SEM ($ f::situation))))
+     (advbl (SORT PRED) (ATYPE (? x PRE-VP)) (ARGUMENT (% S (SEM ?sem))) ;;($ f::situation))))
       (GAP -) 
       (ARG ?v) (VAR ?mod)
       )
@@ -483,7 +514,8 @@
     
 
     ((vp- (constraint ?new) (tma ?tma) (class ?class) (sem ?sem) (var ?v)
-      (advbl-needed -) (complex +) (subjvar ?subjvar)(GAP ?gap)
+      (advbl-needed -) (complex +) (subjvar ?subjvar)
+      (GAP ?gap)
       )
      -adv-vp-post> .98   ;;  want to prefer explicitly subcategorized attachments
      (head (vp- (VAR ?v) 
@@ -495,15 +527,19 @@
 		(ellipsis -)
 		))
 
-     (advbl (particle -) (ATYPE POST) (ARGUMENT (% S (sem ?sem) (var ?v) (subjvar ?subjvar)))
-						   (GAP -)
+     (advbl (particle -) (ATYPE POST)
+      (ARGUMENT (% S (sem ?sem) (var ?v) ;;(subjvar ?subjvar)))   06/18 I commented out tis as it si sometimes not specified in the ADVBL, and thus sets it to -, and thus the S1> rule cannot match
+		   ))
+      (GAP -)
       ;;(subjvar ?subjvar)   ;Not sure why this was here - maybe for purpose clauses. Leaving it in causes many parses to fail as the SUBJVAR in the new VP is wrecked
      ;; the SUBJVAR is required in the argument to be able to pass in the subject for things like "the dog walked barking".
       (ARG ?v) (VAR ?mod)
       (role ?advrole)
       ;(SEM ($ f::abstr-obj (F::type (? !ttt ont::position-reln))))
       (SEM ($ f::abstr-obj (F::type (? !ttt ont::path ont::conventional-position-reln ont::direction ont::complex-ground-reln ont::back ont::front ont::left-of ont::off ont::orients-to ont::right-of ;ont::pos-as-containment-reln ; e.g. "decrease in Mexico"
-				       ont::pos-directional-reln ont::pos-distance ont::pos-wrt-speaker-reln ont::resulting-object))))
+				       ont::pos-directional-reln ont::pos-distance
+				       ; ont::pos-wrt-speaker-reln ; "I ate there"
+				       ont::resulting-object))))
       )
      (add-to-conjunct (val (MODS ?mod)) (old ?lf) (new ?new))
      )
@@ -652,19 +688,24 @@
 		;;(aux -) 
 		(gap ?gap)
 		(ellipsis -)
-		(result ?asem)
-		))
-
-     (advbl (ARGUMENT (% NP ;; (? xxx NP S)  ;; we want to eliminate V adverbials, he move quickly  vs he moved into the dorm
-			 (sem ?sem))) (GAP -) (particle -)
-      ;; (subjvar ?subjvar)
-			 (sem ?asem)
+		(result (? advsem ($ f::abstr-obj
+				     (F::type (? ttt ont::position-reln ont::resulting-object ont::path)))))
+#|
+;; do not remove this!  We can't have both (? ttt ...) and (? !ttt1 ...) but these are the types we want and don't want here.
+		
 			 (SEM ($ f::abstr-obj
 				 (F::type (? ttt ont::path ont::conventional-position-reln ont::direction ont::complex-ground-reln ont::back ont::front ont::left-of ont::off ont::orients-to ont::right-of ;ont::pos-as-containment-reln ; we allowed "in" for some reason, but I don't remember the example!
 					     ont::pos-directional-reln ont::pos-distance ont::pos-wrt-speaker-reln ont::resulting-object))))
-					;(F::type (? ttt ont::path ont::position-reln))))
+			 
 	      ;;(F::type (? !ttt1 ont::position-as-extent-reln ont::position-w-trajectory-reln ont::on ont::at-loc )))) ; take the trajectory senses instead of the position-as-extent-reln senses of words such as "across"
-;      (SEM ($ f::abstr-obj (F::type (? ttt ont::position-reln ont::goal-reln ont::direction-reln))))
+|#
+		))
+
+     (advbl (ARGUMENT (% NP ;; (? xxx NP S)  ;; we want to eliminate V adverbials, he move quickly  vs he moved into the dorm
+			 (sem ?sem)))
+      (GAP -) (particle -)
+      (sem ?advsem)
+      ;; (subjvar ?subjvar)
       (SET-MODIFIER -)  ;; mainly eliminate numbers 
       (ARG ?npvar) (VAR ?mod)
       ;;(role ?advrole) 
@@ -861,7 +902,7 @@
     ;; e.g., the train at avon, the route from Avon to Bath, the goal to get to Bath
     ;; TEST: The dog at the store.
     ;; TEST: The route from the house to the store.
-    ((N1 (RESTR ?new) (POSTADVBL +) (COMPLEX +)) 
+    ((N1 (RESTR ?new) (POSTADVBL +) (COMPLEX +) (gap ?gap)) 
      -adv-np-post> 
      (head (N1 (VAR ?v1) ;; (POSTADVBL -) 
 	    (SEM ?argsem) 
@@ -875,7 +916,7 @@
       (result-only -)  ;; only allow adverbials that may be interpreted as something other than a result
       (ARGUMENT (% NP (sem ?argsem) (constraint ?c) (var ?v1) ))
       (SEM ($ f::abstr-obj (F::type (? ttt ont::predicate ont::position-reln))))
-      (arg ?v1) (VAR ?mod) (WH -) (GAP -)
+      (arg ?v1) (VAR ?mod) (WH -) (gap ?gap) ;(GAP -)
       (particle -)  ;; exclude particles as they should attach to the verb
       )
      (add-to-conjunct (val (MODS ?mod)) (old ?restr) (new ?new))
@@ -1073,47 +1114,6 @@
       (add-to-conjunct (val (MODS ?advbv)) (old ?con) (new ?newc))
      
       )
-#||
-    ;;   more/as/so ADJP than/as/that 
-    ;;   e.g., more sensitive than that
-    ((ADJP (LF (% PROP (CLASS ?lf) (VAR ?v) (CONSTRAINT ?newc) (sem ?sem)))
-      (val ?val) (agr ?agr) (mass ?mass) (var ?v) (ARG ?arg) (gap ?gap) 
-      (argument ?argmt) (premod +) 
-      )
-     -comp-with-ground>
-     (head (ADJ (comparative +) (lf ?lf) (ground-subcat ?!gsub)
-		(ground-subcat (% ?cat (var ?vg)))
-		(val ?val) (agr ?agr) (mass ?mass) (argument ?argmt) (arg ?arg)
-		(gap ?gap) (premod -) 
-		))
-     ?!gsub
-     ;;(word (lex ?pt))
-     ;;(np (var ?vnp))
-     (add-to-conjunct (val (& (figure ?arg) (ground ?vg))) (old ?con) (new ?newc))
-     )
-
-    ;; e.g.,  more sensitive to heat than that
-    ((ADJP (LF (% PROP (CLASS ?lf) (VAR ?v) (CONSTRAINT ?newc) (sem ?sem)))
-      (val ?val) (agr ?agr) (mass ?mass) (var ?v) (ARG ?arg) (gap ?gap) 
-      (argument ?argmt) (premod +) 
-      )
-     -comp-with-subcat+ground>
-     (head (ADJ (comparative +) (lf ?lf) (subcat ?!subcat)
-		(subcat (% ?subcatcat (var ?vsc)))
-		(subcat-map ?sc-map)
-		(ground-subcat ?!gsub)
-		(ground-subcat (% ?cat (var ?vg)))
-		(val ?val) (agr ?agr) (mass ?mass) (argument ?argmt) (arg ?arg)
-		(gap ?gap) (premod -) 
-		))
-     ?!subcat
-     ?!gsub
-     ;;(word (lex ?pt))
-     ;;(np (var ?vnp))
-     (add-to-conjunct (val (& (figure ?arg) (ground ?vg) (?sc-map ?vsc))) (old ?con) (new ?newc))
-     )
-||#
-    
 
     ;;  as ADJ as-PP
     ((ADJP (LF (% PROP (CLASS (:* ONT::AS-MUCH-AS ?w)) (VAR ?v) (CONSTRAINT ?newc) (sem ?sem)))
@@ -1336,33 +1336,39 @@
      (head (number (VAR ?v) (lf ?lf) (lex ?l) (agr ?agr) (MASS ?mn) (sem ?sem) (val ?val) (premod -)
 		      ))
      )
-
+#||
     ;; TEST: more than five (trucks)
     ((number (agr ?agr) (VAR ?v) (MASS ?mn) (lf ?lf) (sem ?sem) (premod +) ;;(val ?val)
 	     (nobarespec +) ; this can't be a specifier -- that goes through the cardinality rules
 	     (restr (& (mods (% *PRO* (status ont::F) (class ?lfa) (var ?v1) 
-				(constraint (& (FIGURE ?v) 
-					       (GROUND (% *PRO* (status ont::indefinite) (var *) (class ont::number) (constraint (& (value ?val)))))))))))
+				(constraint (& (FIGURE ?v) 					       (GROUND (% *PRO* (status ont::indefinite) (var *) (class ont::number) (constraint (& (value ?val)))))))))))
 	     )
      -advbl-bare-number-pre-than>
-     (adv (VAR ?v1) (argument (% number)) (Mass ?m) (lf ?lfa))
+     (quan (VAR ?v1) ;;(argument (% number))
+      (Mass ?m) (lf ?lfa) (agr ?agr)
+      (Qcomp (% pp (VAR ?v) (ptype w::than)))
+		);;(lf ?lf) (lex ?l) (agr ?agr) (MASS ?mn) (sem ?sem) (val ?val) (premod -)))
      (word (lex w::than))
      (head (number (VAR ?v) (lf ?lf) (lex ?l) (agr ?agr) (MASS ?mn) (sem ?sem) (val ?val) (premod -)
-		      ))
-     )
+		   ))
+     )||#
+     
     
     ;; TEST: eight or so
     ((number (agr ?agr) (VAR ?v) (MASS ?mn) (lf ?lf) (sem ?sem) (premod +) ;;(val ?val)
 	     (nobarespec +) ; this can't be a specifier -- that goes through the cardinality rules
-	     (restr (& (mods (% *PRO* (status ont::F) (class (:* ont::precision-val w::approximate)) (var *) 
+      (restr (& (mods (% *PRO* (status ont::F) (class ?lfa)
+					;;	(:* ont::precision-val w::approximate))
+			 (var *) 
 				(constraint (& (FIGURE ?v) 
 					       (GROUND (% *PRO* (status ont::indefinite) (var **) (class ont::number) (constraint (& (value ?val)))))))))))
 	     )
      -number-or-so>
      (head (number (VAR ?v) (lf ?lf) (lex ?l) (agr ?agr) (MASS ?mn) (sem ?sem) (val ?val) (premod -)
 		   ))
-     (word (lex w::or))
-     (word (lex w::so))
+    ;; (word (lex w::or))
+     (adv (VAR ?v1) (argument (% number)) (Mass ?m) (lf ?lfa))
+     ;;(word (lex w::so))
      )
     
     ;; and the special case for "a" -- e.g., only a week, just a candy, ..
@@ -1372,10 +1378,13 @@
 			 (constraint ?new)))
       (sort ?sort) (case ?case))
      -only-a> 
-     (adv (ATYPE PRE) (VAR ?v) (argument (% number)) (Mass ?m) (lf ?lfa))
+     (adv (ATYPE PRE) (VAR ?v)
+      (LF ONT::EVAL-WRT-EXPECTATion)
+      (argument (% number)) (Mass ?m) (lf ?lfa))
      (head (NP (VAR ?v1) (lex ?nlex) (agr 3s)
                (sort ?sort) (case ?case)
-	       (LF (% description (status ont::indefinite) (sem ?lfsem) (class ?class) (constraint  ?restr)))
+	       (LF (% description (status ont::indefinite) (sem ?lfsem)
+		      (class ?class) (constraint  ?restr)))
 	       )
       )
      (add-to-conjunct (val (MODS (% *PRO* (status ont::F) (class ?lfa) (var ?v) 
@@ -1535,7 +1544,7 @@
      (add-to-conjunct (val (result ?mod)) (old ?con) (new ?new))  ; The RESULT will be remapped to TRANSIENT-RESULT
      )
 
-((vp- (constraint ?new)
+   ((vp- (constraint ?new)
      (tma ?tma)
      (gap ?!gap) (var ?v)
      (class ?class) (sem ?argsem) (vform ?vf)      
@@ -1578,7 +1587,8 @@
 	   (sort binary-constraint) (sem ?sem)
 	   (LF (% PROP (VAR *) (CLASS ONT::extent-predicate) (sem ?sem)
 		  ;(CONSTRAINT (& (FIGURE ?arg) (scale ?scale) (GROUND ?v)))
-		  (CONSTRAINT ?newcon)
+		  ;(CONSTRAINT ?newcon)
+		  (CONSTRAINT (& (FIGURE ?arg) (GROUND ?v)))
 		  ))
 	   (atype (? x W::PRE W::POST))
      (argument (% W::S (subjvar ?anysubj)
@@ -1597,14 +1607,40 @@
 	      ;; well, 'he walked miles before he reached water'; 'he crawled inches to the next exit' ...; and this restriction prevents the non-unit NPs so if it's reinstated we need two rules
 ;	      (lf (% description (sort set))) ;; this restriction is needed to prevent bare measure units as adverbials
 	      ))
-    (add-to-conjunct (val (& (FIGURE ?arg) (GROUND ?v))) (old ?con) (new ?newcon))
+    ;(add-to-conjunct (val (& (FIGURE ?arg) (GROUND ?v))) (old ?con) (new ?newcon)) ; commented out because ?con contains the :AMOUNT and :UNIT and we don't want these duplicated in the ADVBL
     )
+
+
+;; adjectival extent adverbials. He jumped three feet high, He jumped three feet higher than than
+   ((advbl (arg ?arg) ;;(role (:* ONT::distance W::quantity)) 
+     (var *) (subj ?anysubj)
+	   (sort binary-constraint) (sem ?sem)
+	   (LF (% PROP (VAR *) (CLASS ONT::extent-predicate) (sem ?sem)
+		  (CONSTRAINT (& (figure ?arg)
+				 (ground (% *PRO* (status definite)
+					    (var **) (class ANYSEM)
+					    (constraint (& (MOD ?v)))))
+				 ))
+		  ))
+     (atype W::POST)
+     (argument (% W::S (subjvar ?anysubj)
+		  (SEM ($ F::situation (f::type (? xx ont::event-of-action ont::event-of-state))))))
+     )
+    -extent-adj-advbl> 1.0 ;.97
+    (head (Adjp (var ?v) (sem ?sem)  (arg **)
+	      (bare -) 
+	      (lf (% prop (class (? cc ont::more-val ont::less-val ont::at-scale-val))))
+	      (sem ($ f::abstr-obj (f::scale (? sc ont::scale ont::measure-scale)))) 
+	      
+	      ))
+     )
 
       ;; ing VPs as adverbials
       ;; TEST: Barking, the dog chased the cat.
    ;; TEST: The dog chased the cat barking.
    ((advbl (arg ?arg) (sem ($ f::abstr-obj (f::information -) (f::intentional -)))
-     (argument (% S (sem ($ f::situation (f::aspect f::dynamic))) (subjvar ?!subjvar) (subj ?!subj))) 
+     (argument (% S (sem ($ f::situation (f::aspect f::dynamic))) (subjvar ?!subjvar) (subj ?!subj)
+		  (var ?arg))) 
      (sort pred) (gap -) (atype (? atp pre post))
      (role ONT::MANNER) (var **)
      (LF (% PROP (CLASS ONT::IMPLICIT-OVERLAP) (VAR **) 
@@ -1614,7 +1650,7 @@
     -vp-ing-advbl> .97
     (head (vp (vform ing) (var ?v) (gap -) (aux -) (advbl-necessary -)
 	   (constraint ?con)  (transform ?transform) (class ?class)
-	   (subj (% np (var ?subjvar) (agr ?subjagr) (sem ?subjsem) (gap -)))
+	   (subj (% np (var ?!subjvar) (agr ?subjagr) (sem ?subjsem) (gap -)))
 	   ;(subjvar (% *PRO* (VAR *) (gap -) (sem ?subjsem)))
 	   (subjvar ?!subjvar)
 	   (subj ?!subj)

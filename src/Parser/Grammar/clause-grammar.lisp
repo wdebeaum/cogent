@@ -249,13 +249,53 @@
     (utt (lf ?lf1) (var ?v1) (sa-seq -))
     (head (utt (lf ?lf2) (var ?v2) (uttword +) (sa-seq -))))
    
+   ;;  FRAGMENTS AS UTTERANCES
 
- 
+    ((UTT (no-post-adv +) (lf (% SPEECHACT (VAR **) (CLASS ONT::SA_PRED-FRAGMENT) (no-post-adv +) (constraint (& (content ?v))))) (var **))
+    -advbl-utt> 
+    (head (advbl (WH -) (SORT (? !sort DISC)) (VAR ?v) (ARGUMENT (% ?x (SEM ?sem))) 
+		 (ARG (% *PRO* (VAR *) (gap -) (class ?lf) (sem ?sem)))
+		 (gap -))))
+     ;;(compute-ont-type-from-sem (sem ?sem) (lf ?lf)))
+   
+   ;; e.g., In what corner?
+   ((UTT (no-post-adv +) (lf (% SPEECHACT (VAR **) (CLASS ONT::SA_wh-question)
+				(constraint (& (content ?v) (focus ?foc))))) (var **))
+    -advbl-utt-wh> 
+    (head (advbl (WH Q) (SORT (? !sort DISC)) (VAR ?v) (wh-var ?foc) (ARGUMENT (% ?x (SEM ?sem))) 
+	   (ARG (% *PRO* (VAR *) (gap -) (sem ?sem)))
+	   (gap -))))
+
+       ;; adjective utts
+   ;; TEST: Horizontal.
+   ((UTT (no-post-adv +) (lf (% SPEECHACT (VAR **) (CLASS ONT::SA_PRED-FRAGMENT) (constraint (& (content ?v))))) (var **))
+    -adjp-utt> .96
+    (head (adjp  (VAR ?v) (ARGUMENT (% ?x (SEM ?sem))) ;; (WH -)  I eliminated this to allow the question  "how red?"
+		 (set-modifier -) (WH -) ;; disallows numbers as ADJP fragments - they already have a number interpretation 
+		(ARG (% *PRO* (VAR *) (gap -) (sem ?sem) (constraint (& (CONTEXT-REL UTT-FRAG))))))
+     ))
    ;; what do you think the red x means? that the battery is damaged
    ;;
    ((utt (var *) (punctype decl) (no-post-adv +) (lf (% speechact (var *) (class ont::sa_pred-fragment) (constraint (& (content ?v)))))) 
     -utt-s-that> 0.9
     (head (cp (ctype s-that-overt) (gap -) (var ?v) (wh -) (lf ?lf) (advbl-needed -))))
+
+   #| ; This is broken: need to pass up subj, but it can go through -VP-UTT-INFORM> instead?
+   ;; climbed the mountain, running to the store
+   ((utt (var **) (punctype decl) (no-post-adv +)
+     (lf (% speechact (var **) (class ont::sa_tell)
+	    (constraint (& (content ?v)))))) 
+    -base-vp> .98
+    (head (vp (gap -)
+	      (subjvar *)
+	      (subj (% np (var (% *pro* (class ont::person) (var *) (sem ?subjsem) (constraint (& (proform *you*)))
+				))
+		       (sem ($ f::phys-obj (f::form f::solid-object)
+			       (f::information -) (f::trajectory -) (f::container -) (f::group -)
+			       (f::mobility f::self-moving) (f::origin f::human) (f::intentional +)))
+		       (sem ?subjsem)))
+	      (var ?v) (wh -) (lf ?lf) (advbl-needed -))))
+   |#
 
    ;;  request and suggestions
    
@@ -531,7 +571,7 @@
      (advbl-needed -)
        )
     -wh-advbl-q2> .98 ;; don't want this to apply before gaps
-    (np (wh q) (var ?tv) (sem ($ f::time (f::time-scale f::point))))  ;; should only be time points, not intervals
+    (np (wh q) (var ?tv) (sem ($ f::time (F::TYPE ont::time-object) (f::time-function (? ttt F::time-of-day f::time-of-year)))))
     (head (s (stype ynq) (var ?v) (gap -) (subj ?subj) (tag -)
 	   (lf (% prop (sem ?sem) (class ?c) (constraint ?con) (tma ?tma) (transform ?transform)))
 	   (advbl-needed -)
@@ -592,7 +632,9 @@
 	 (lex ?plex)
      (agr ?agr) (case sub) (headcat ?vcomp))
     (head (vp (subj (% np (var ?arg) (sem ?argsem) ;(sem ($ ?!type))
-		       )) (agr ?agr) 
+		       ))
+	      (ellipsis -)
+	      (agr ?agr) 
 	      (gap -)  ;; my guess is there are some eliiptical glosses that motivated allowing a gap here, but i'm deleting it for now(gap ?g) 
 	      (wh -)
 	      (class ?c) (constraint ?con) (vform fin) (tma ?tma)
@@ -1195,8 +1237,8 @@
       (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
 		       (liobj ?iobjvar) ;;(beneficiary ?iobjvar)
 		       (?lsubj-map ?subjvar) (?dobj-map ?dobjvar)
-		       (beneficiary (% *pro* (status ont::f)
-				(class (:* ont::beneficiary iobj)) (var *) (sem ?subjsem) (constraint (& (ground ?iobjvar) (figure ?v)))))
+		       (beneficiary ?iobjvar);;(% *pro* (status ont::f)
+				;;(class (:* ont::beneficiary iobj)) (var *) (sem ?subjsem) (constraint (& (ground ?iobjvar) (figure ?v)))))
 		       (?comp3-map ?compvar)
 		       
                        ))
@@ -1332,7 +1374,7 @@
       (postadvbl -) (vform ?vf)
       )
      -vp1-pre-arg-adv> .96 ;; only use if needed; prefer predicate adverbial modification 
-     ;; require non-null dobj to avoid using with intransitive verbs (maybe also need a non-null comp rule??)
+     ;; require non-null dobj to avoid using with intransitive verbs (maybe also need a non-null comp rule??) UPDATE:: 6/18  I removed this to allow passives - e.g., "This was supported in part by the company"
      (head (v (aux -)
 	    (lf ?c)
 	    (lex ?lx)
@@ -1342,7 +1384,7 @@
 				  (sem ?subjsem) (gap -))) ;; note double matching required
 	    (iobj (% -))
 	    (part ?part) 
-	    (dobj ?!dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
+	    (dobj ?dobj)	(dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap -)))
 	    (comp3 ?comp) (comp3 (% ?s4 (case (? ccase obj -)) (var ?compvar) (sem ?compsem) (gap -)))
 	    (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
 	     
@@ -1350,7 +1392,7 @@
      (advbl (atype pre-vp) (gap -)
       (argument (% s (sem ?argsem)))
       (arg ?v) (var ?mod) (role ?advrole) (subcat -))      
-     ?!dobj  
+     ?dobj  
      ?part
      ?comp
      )
@@ -2003,7 +2045,10 @@
               (subj-map ?subjvar) (dobj-map ?dobjvar)
 	    (comp3-map ?compvar))))
 
-   
+;   
+; Now we use the expletive template constructions?   
+;   
+#|   
    ;; there transformation - be and exist forms can take there as a subject
    ;; for objects
    ;; test: there exists a dog
@@ -2029,7 +2074,6 @@
 	    (part (% -))
 	    )))   
 
-
     ;; for properties  e.g., there is a man in the corner
    ((v (vform ?vform) (be-there +)
       (subj (% np (lex there) (agr ?agr) (sem ($ -)))) (subj-map -)
@@ -2042,7 +2086,8 @@
      -be-there-sense1> .97
      (head (v (vform ?vform) (be-there -)
 	    (agr ?agr)
-	    (lf ont::have-property) (transform ?transform)
+	    (lf ont::exists) ;(lf ont::have-property)
+	    (transform ?transform)
 	    (lex (? lex be was were been is ^s are))
 	    (sem ?sem)
 	    (subj ?!subj) (subj-map ?subj-map)
@@ -2052,7 +2097,7 @@
 	    (comp3 (% -)) (comp3-map -)
 	    (part (% -))
 	    )))   
-
+|#
    
    ;; a transformation on be to take expletive + filled predicate
    ;; It is...
@@ -2428,7 +2473,7 @@
      (advbl-needed ?avn)
      )
     -s-ynq-be-adv>
-    (head (v (sem ?sem) (aux -)
+    (head (v (aux -)
 	   (lf ?belf)
 	   (subj-map ?subj-map) (dobj-map ?dobj-map) (comp3-map ?comp3-map)
 	   
@@ -2455,11 +2500,55 @@
     (add-to-conjunct (val (tense (? vf past pres fut))) (old ?tma) (new ?newtma))
     ?subj
     (advbl (atype pre-vp) (gap -)  ; pre-vp: Is the block eventually red?
-     (argument (% s (sem ?argsem)))
+     (argument (% s (sem ?sem)))
      (arg ?v) (var ?mod) (role ?advrole) (subcat -))           
     ?dobj
-    ?comp) 
+    ?comp)
 
+      ; Is the pizza cold quickly?
+   ((s (stype ynq) (main +) (aux -) (gap -)
+     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
+     (sort pred) 
+     
+     (var ?v) ;; propagate up explicitly because not a head feature	   
+     (agr ?subjagr) ;; propagate up explicitly because not a head feature
+     (sem ?sem) ;; propagate up explicitly because not a head feature
+     (transform ?transform) ;; propagate up explicitly because not a head feature
+      ;; propagate up explicitly because not a head feature	
+     (subjvar ?subjvar) (dobjvar ?dobjvar)
+     
+     (lf (% prop (var ?v) (class ?belf)
+	    (constraint ?newcon)
+	    (sem ?sem) (tma ?tma)
+	    (transform ?transform)
+	    ))
+     (advbl-needed ?avn)
+     )
+    -s-ynq-be-adv2>
+    (head (s (stype ynq) (main +) (aux -) (gap -)
+	     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
+	     (sort pred) 
+	     
+	     (var ?v) ;; propagate up explicitly because not a head feature	   
+	     (agr ?subjagr) ;; propagate up explicitly because not a head feature
+	     (sem ?sem) ;; propagate up explicitly because not a head feature
+	     (transform ?transform) ;; propagate up explicitly because not a head feature
+	     ;; propagate up explicitly because not a head feature	
+	     (subjvar ?subjvar) (dobjvar ?dobjvar)
+	     
+	     (lf (% prop (var ?v) (class ?belf)
+		    (constraint ?con)
+		    (sem ?sem) (tma ?tma)
+		    (transform ?transform)
+		    ))
+	     (advbl-needed ?avn)
+	     ))
+    (advbl (atype post) (gap -)  ; post: Is the block red eventually?
+     (argument (% s (sem ?sem)))
+     (arg ?v) (var ?mod) (role ?advrole) (subcat -))
+    (add-to-conjunct (val (mod ?mod)) (old ?con) (new ?newcon))
+    )
+#||
    ; Is the pizza cold quickly?
    ((s (stype ynq) (main +) (aux -) (gap -)
      (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
@@ -2518,7 +2607,7 @@
      (argument (% s (sem ?argsem)))
      (arg ?v) (var ?mod) (role ?advrole) (subcat -))           
     ) 
-   
+   ||#
    
     ;; conditionals
     ;;; md commented out 2008/16/06 because conditionals are now handled as regular adverbials.
@@ -2607,9 +2696,16 @@
    ; The dog?
    ((utt (lf (% speechact (var *) (class ont::SA_YN-QUESTION) (constraint (& (content ?v) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p)) 
-    -np-utt-simple-q> .97
+    -np-utt-simple-q> 
     (head (np (wh -) (sort (? x pred unit-measure)) (complex -) (var ?v) (sem ($ ?!type))))
     (punc (punctype ?p) (lex w::punc-question-mark))
+    )
+
+    ; which dog?
+   ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?whv) (punctype ?p))) )) (var *)
+	 (punc +) (punctype ?p)) 
+    -np-utt-simple-q-no-punc> .98
+    (head (np (wh Q) (sort (? x pred unit-measure)) (complex -) (var ?v) (wh-var ?whv) (sem ($ ?!type))))
     )
    
    ; What next?  What color?
@@ -2623,11 +2719,18 @@
    ; How big?
    ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?whv) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p)) 
-    -how-adj-utt-simple-q> .97
+    -how-adj-utt-simple-q> .98
     (head (adjp (wh Q) (sort (? x pp-word)) (complex -) (var ?v) (wh-var ?whv) (sem ($ ?!type))))
-    (punc (punctype ?p) (lex w::punc-question-mark))
+    ;;(punc (punctype ?p) (lex w::punc-question-mark))
     )
 
+    ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?whv) (punctype ?p))) )) (var *)
+      (punc +) (punctype ?p)) 
+     -how-adj-utt-simple-q-with-punc> 
+     (head (adjp (wh Q) (sort (? x pp-word)) (complex -) (var ?v) (wh-var ?whv) (sem ($ ?!type))))
+     (punc (punctype ?p) (lex w::punc-question-mark))
+     
+)
    ;; complex nps (e.g., disjunctions, conjunctions) are dispreferred over parses with disjunction more deeply attached
     ((utt (lf (% speechact (var *) (class ont::sa_identify) (constraint (& (content ?v))))) (var *))
      -np-utt> .97
@@ -2838,7 +2941,7 @@
 	    ;; no uniform & unique lf's for main verb be uses, so have to match the lex
 	    ;; unless we can match the lf-form be
 	    (lex (? lx am are is was were ^s))
-	    (subj (% ?s1 (var ?subjvar) (sem ($ -)) (lex it) (gap -))) 
+	    (subj (% ?s1 (var ?subjvar) (sem ($ -)) (lex it) (gap -) (expletive +))) 
 	    (iobj (% -))
 	    (part ?part) 
 	    (dobj ?dobj) (dobj (% ?s3 (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) 
@@ -2938,6 +3041,7 @@
 	    ;;			(f::information -) (f::trajectory -) (f::container -) (f::group -)
 	    ;;			(f::mobility f::self-moving) (f::origin f::human) (f::intentional +)))))
 		
+	    (dobj (% ?d (lex (? !lex you))))
 	    (class ?c) (lf ?lf)
 	    (vform base) (postadvbl ?pa) (main ?ma)
 	    (transform ?transform)
@@ -3341,10 +3445,10 @@
 	   (vform ?vform)
 	   (agr ?a)
 	   (sem ($ f::situation (f::aspect ?aspect) (f::time-span ?time)))
-	   (subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
+	   ;;(subj ?subj) (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 	   (iobj (% -)) (part (% -)) (dobj (% -))
 	   (comp3 ?comp) 
-	   (comp3 (% vp- (class ?class)  (constraint ?con1) (tma ?tma1) (var ?var)
+	  #|| (comp3 (% vp- (class ?class)  (constraint ?con1) (tma ?tma1) (var ?var)
 		     (case (? ccase obj -)) (var ?compvar)  
 		     (gap ?gap)	(lex ?lex)	     
 		     (sem ?compsem) ;; (sem ($ f::situation (aspect (? !asp f::indiv-level))))  ;; constraints are in lf
@@ -3353,10 +3457,19 @@
 		     (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -)))
 		     (advbl-needed -) (subj-map ?lsubj-map)
 		     (auxname ?compauxname)
-		     ))
+		     ))||#
 	    (comp3-map ?comp3-map)
 	   ))
-    ?comp
+    (vp- (class ?class)  (constraint ?con1) (tma ?tma1) (var ?var)
+		     (case (? ccase obj -)) (var ?compvar)  
+		     (gap ?gap)	(lex ?lex)	     
+		     (sem ?compsem) ;; (sem ($ f::situation (aspect (? !asp f::indiv-level))))  ;; constraints are in lf
+		     (subjvar ?subjvar) (dobjvar ?dobjvar) (transform ?transform)
+		     (subj ?subj)
+		     (subj (% ?s1 (lex ?subjlex) (var ?subjvar) (sem ?subjsem) (agr ?a) (gap -) (expletive ?exp)))
+		     (advbl-needed -) (subj-map ?lsubj-map)
+		     (auxname ?compauxname)
+     )
     (add-to-conjunct (old ?tma1) (val ?tma-contrib) (new ?newtma)) ;; add aux feature to tma
     ;; change the temporal values in sem to be consistent with the aux
     (change-feature-values (old ?compsem) (new ?newsem) (newvalues ?sem-contrib))
@@ -3846,33 +3959,33 @@
      )
 
         ;;  He talked me deaf.
-      ((vp (lf (% prop (class ONT::CAUSE-EFFECT) (var *) 
-        (constraint (& (agent ?ag) (affected ?npvar) (method ?v) (formal ?mod)))
-        (tma ?tma) 
-        ;(transform ?transf) 
-        (sem ?newsem)
-        ))
+   ((vp (lf (% prop (class ONT::CAUSE-EFFECT) (var *) 
+	       (constraint (& (agent ?ag) (affected ?npvar) (method ?v) (formal ?mod)))
+	       (tma ?tma) 
+					;(transform ?transf) 
+	       (sem ?newsem)
+	       ))
      (tma ?tma) (class ONT::CAUSE-EFFECT) (var *)
-         ;;(LF (% PROP (constraint ?new) (class ?class) (sem ?sem) (var ?v) (tma ?tma)))
-;      (advbl-needed -) (complex +) (result-present +) (GAP ?gap)
-      ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))
-      ;(subjvar ?npvar)
-      (advbl-needed -) (complex +) (GAP ?gap)
-      )
+     ;;(LF (% PROP (constraint ?new) (class ?class) (sem ?sem) (var ?v) (tma ?tma)))
+					;      (advbl-needed -) (complex +) (result-present +) (GAP ?gap)
+					;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))
+					;(subjvar ?npvar)
+     (advbl-needed -) (complex +) (GAP ?gap)
+     )
      -vp-result-adj-intransitive-to-transitive> 0.98  ; prefer the transitive sense if there is one
-     (head (vp (VAR ?v) 
-        (seq -)  ;;  post mods to conjoined VPs is very rare
-        ;(DOBJVAR -)  ; This doesn't work because it could unify with a dobjvar not yet instantiated
-	(dobj (% -)) ; cannot use (dobj -) because dobj is (% - (W::VAR -))
-        ;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))  
-        ;(subjvar ?npvar)
-        (constraint ?con) (tma ?tma) (result-present -)
-	(subjvar ?ag)
-	(subj-map ONT::AGENT)
-	(COMP3 (% -))
-        ;;(aux -) 
-        (gap ?gap)
-        (ellipsis -)
+    (head (vp (VAR ?v) 
+	      (seq -)  ;;  post mods to conjoined VPs is very rare
+					;(DOBJVAR -)  ; This doesn't work because it could unify with a dobjvar not yet instantiated
+	      (dobj (% -)) ; cannot use (dobj -) because dobj is (% - (W::VAR -))
+					;(SUBJ (% NP (Var ?npvar) (sem ?sem) (lex ?lex)))  
+					;(subjvar ?npvar)
+	      (constraint ?con) (tma ?tma) (result-present -)
+	      (subjvar ?ag)
+	      (subj-map ONT::AGENT)
+	      (COMP3 (% -))
+	      ;;(aux -) 
+	      (gap ?gap)
+	      (ellipsis -)
         ))
      (np (Var ?npvar) (sem ?sem))
      (adjp (ARGUMENT (% NP (sem ?sem) (var ?npvar))) 
@@ -3888,3 +4001,45 @@
 
       )     
  )
+
+;;  Constructions involving nouns that have propositional subcats
+
+(parser::augment-grammar
+ '((headfeatures
+    (s vform agr comp3 cont postadvbl  aux modal lex headcat tma transform subj-map advbl-needed template subj subjvar))
+
+   ;; the news/message arrived that X  ==>   The news that X arrived
+   ;;   also variants such as the news came that ...,
+   ;; and overgeneralizing for now to include things like The goal arose to find the dog, the belief grew that he was lying, the theorem was proved that x equals y
+
+   ((s (stype decl) (var ?v) (subjvar ?npvar) (gap ?g) (focus ?npvar)
+     (lf ?lf)
+     (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex)
+	      (pp-word -) (changeagr -) (gap -))
+	   )
+
+     (advbl-needed ?avn)
+     )
+    -news-arrive+that>
+    (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) (sort pred)
+     (sem ($ F::abstr-obj  (F::type (? ft ont::information-function-object ont::mental-construction))
+	     (F::information F::information-content)))
+     ;;(lf (% description (constraint ?con)))
+     (subcat ?!subcat) (subcat (% ?xx (var ?sc)))
+     (pp-word -) (changeagr -) (gap -) (expletive ?exp))
+    (head (vp (lf ?lf)
+	      (gap ?g)
+	      (SEM ($ F::situation (f::type (? vtype ONT::ARRIVE ont::come ont::appear ont::grow ont::show))))
+              (template (? !x  lxm::propositional-equal-templ))
+	      (subjvar ?npvar)
+	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex)
+		       (pp-word -) (changeagr -) (gap -) (expletive ?exp)))
+	      (var ?v) (vform fin) (agr ?a)
+	      (advbl-needed ?avn)
+	      (neg ?neg)
+	      )
+     )
+    ?!subcat
+   ;; (add-to-conjunct (old ?con) (val (Formal ?sc)) (new ?newcon))
+    )
+   ))

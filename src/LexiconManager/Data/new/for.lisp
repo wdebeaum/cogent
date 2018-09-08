@@ -96,7 +96,7 @@
      (example "she is happy for him to come; switch X has to be open for bulb A to light")
      (TEMPL adv-double-subcat-control-templ)
      )
-    ;;;;; Reason convers just about everything, therefore, slightly lovered priority
+        ;;;;; Reason convers just about everything, therefore, slightly lovered priority
     ;;;;; taking aspirin for foot, for headaches
     ;; 2006/05/24 these cases covered by purpose
 ;    ((LF-PARENT ONT::REASON)
@@ -130,6 +130,7 @@
      (meta-data :origin calo :entry-date 20040423 :change-date nil :comments calo-y1v4)
      (example "I want a computer for five dollars")
      (TEMPL BINARY-CONSTRAINT-NP-TEMPL)
+     (PREFERENCE 0.98)
      )
     )
    )

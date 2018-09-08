@@ -12,7 +12,7 @@
 		))
 
 (define-type ont::ACTIVITY-EVENT
- :wordnet-sense-keys ("activity%1:04:00" "action%1:04:02" "act%1:03:00" "act%2:41:00" "act%2:41:07")
+ :wordnet-sense-keys ("action%1:04:02" "act%1:03:00" "act%2:41:00" "act%2:41:07") ; "activity%1:04:00" is in ONT::ACTIVITY
     :parent ont::event-of-action
     :arguments ((:required ont::FORMAL)
 		))
@@ -34,7 +34,7 @@
 
 (define-type ONT::cause-effect
     :wordnet-sense-keys ( "cause%2:32:00" "do%2:36:02" "make%2:36:08"
-					  "drive%2:35:00" "get%2:30:02" "get%2:30:00")
+					  "drive%2:35:00" "get%2:30:02" "get%2:30:00" "open_up%2:30:00")
  :parent ONT::acting
  :comment "an AGENT causes some event to occur or proposition to become true. Usually the verbs that fall under this category are very general causal verbs that take other events as their arguments and are positive causes- i.e., events are caused to happen as opposed to negative causes as in an event is prevented."
  :sem (F::Situation (F::Cause (? cz F::Force f::agentive)) (F::Trajectory -))
@@ -202,8 +202,8 @@
  :sem (F::Situation (F::Cause F::Mental) (F::Trajectory -))
  :comment "a state in which an EXPERIENCER holds some attitude towards a proposition"
  :arguments ((:ESSENTIAL ONT::Formal)
-	     (:OPTIONAL ont::neutral  ((? cg f::abstr-obj F::Phys-obj)))
-	     (:OPTIONAL ont::neutral1  ((? cg1 f::abstr-obj F::Phys-obj)))  ;; backwards compatability
+	     (:OPTIONAL ont::neutral)  ;((? cg f::abstr-obj F::Phys-obj)))
+	     (:OPTIONAL ont::neutral1) ;((? cg1 f::abstr-obj F::Phys-obj)))  ;; backwards compatability
              )
  )
 
@@ -262,7 +262,7 @@
  :wordnet-sense-keys ("declare%2:32:04" "adjudge%2:32:00" "hold%2:32:11" "see%2:31:00")
  :parent ONT::event-of-action
  :sem (F::Situation (F::Cause F::Agentive (F::trajectory -)))
- :arguments ((:ESSENTIAL ONT::Agent ((? cog f::abstr-obj F::phys-obj) (F::intentional +)))
+ :arguments ((:ESSENTIAL ONT::Agent ((? cog f::abstr-obj F::phys-obj F::situation))) ;(F::intentional +))) ;situation: It is characterized/marked by a decrease in temperature
              ;;; Item
              (:REQUIRED ONT::neutral ((? th2 F::Phys-obj F::Abstr-obj F::situation)))
              ;;; Category
@@ -317,7 +317,7 @@
  :parent ONT::attitude-of-belief
  :comment "EXPERIENCER expects some proposition to hold"
  :sem (F::SITUATION (F::Aspect F::static) (F::Time-span F::extended) (F::Trajectory -))
-  :arguments ((:ESSENTIAL ONT::neutral (F::phys-obj (F::intentional +)))
+  :arguments (;(:ESSENTIAL ONT::neutral (F::phys-obj (F::intentional +)))
 	     (:OPTIONAL ONT::Formal)
 	      )
   )
@@ -384,7 +384,7 @@
 
 ;; cognizer evaluates something
 (define-type ONT::Scrutiny
-    :wordnet-sense-keys ("take%2:31:02" "read%2:31:05" "study%2:31:00" "learn%2:31:02" "inspect%2:31:00" "scrutinise%2:31:00" "scrutinize%2:31:00" "audit%2:31:01" "inspect%2:39:00" "try%2:41:06" "adjudicate%2:41:03" "judge%2:41:09" "measure%2:31:01" "evaluate%2:31:00" "valuate%2:31:00" "assess%2:31:00" "appraise%2:31:01" "value%2:31:00" "analyse%2:31:00" "analyse%2:31:01" "analyse%2:31:04" "check%2:42:09" "check_out%2:40:00" "follow%2:30:01" "follow%2:39:13" "experiment%2:41:02" "experiment%2:41:01")
+    :wordnet-sense-keys ("take%2:31:02" "read%2:31:05" "study%2:31:00" "learn%2:31:02" "inspect%2:31:00" "scrutinise%2:31:00" "scrutinize%2:31:00" "audit%2:31:01" "inspect%2:39:00" "try%2:41:06" "adjudicate%2:41:03" "judge%2:41:09" "measure%2:31:01" "evaluate%2:31:00" "valuate%2:31:00" "assess%2:31:00" "appraise%2:31:01" "value%2:31:00" "analyse%2:31:00" "analyse%2:31:01" "analyse%2:31:04" "check%2:42:09" "check_out%2:40:00" "follow%2:30:01" "follow%2:39:13" "experiment%2:41:02" "experiment%2:41:01" "surveillance%1:04:01")
     :parent ONT::cogitation
     :arguments ((:REQUIRED ONT::neutral ((? th6 f::phys-obj f::abstr-obj f::situation))) ;;Ground
 		(:OPTIONAL ONT::formal1 ((? cth f::phys-obj f::abstr-obj f::situation)))  ;;Phenomenon
@@ -512,7 +512,7 @@
 
 (define-type ONT::life-process
  :parent ONT::EVENT-OF-undergoing-action
- :arguments ((:OPTIONAL ONT::affected ((? F::phys-obj F::abstr-obj) (F::origin F::living)
+ :arguments ((:OPTIONAL ONT::affected ((? aff F::phys-obj F::abstr-obj) (F::origin F::living)
 				       (F::tangible +))) ; abstr-obj: disease
              )
  )
@@ -549,7 +549,7 @@
  :parent ont::touch
  :sem (F::Situation (F::Cause F::Force) )
  :arguments ((:ESSENTIAL ONT::agent)
-             (:OPTIONAL ont::result (F::abstr-obj (F::type (? t ont::position-reln ont::path))))
+             (:OPTIONAL ont::result (F::abstr-obj (F::type (? t ont::position-reln ont::direction ont::path))))
              )
  )
 

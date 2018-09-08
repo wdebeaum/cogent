@@ -149,6 +149,47 @@
   (if (not (check-if-bound var)) *success*)
   )
 
+(define-predicate 'w::both-BOUND
+  #'(lambda (args)
+      (both-bound args)))
+
+(defun both-bound (args)
+  "succeeds only if the two constits are both non null"
+  (let ((subcat (get-fvalue args 'w::subcat))
+	(subcat2  (get-fvalue args 'w::subcat2)))
+    (if (and (non-null-constit subcat) (non-null-constit subcat2))
+	*success*
+	)))
+
+(defun non-null-constit (x)
+  (cond ((var-p x)
+	 (if (constit-p (var-values x))
+	     (let ((var (get-value (var-values x) 'w::var)))
+	       (not (or (var-p var)
+			(eq var '-))))
+	     nil))
+	(t (format t "~% SUBCAT is not a var: ~S" x))))
+		  
+		   
+(define-predicate 'w::combine-foot-features
+  #'(lambda (args)
+      (combine-foot-features args)))
+
+(defun combine-foot-features (args)
+  "succeeds only if the two constits are both non null"
+  (let ((feat (get-fvalue args 'w::feat))
+	(val1 (get-fvalue args 'w::val1))
+	(val2 (get-fvalue args 'w::val2))
+	(result (get-fvalue args 'w::result)))
+    (if (and val1 (not (eq val1 '-)))
+	(if (and val2 (not (eq val2 '-)))
+	    (if (eq val1 val2)
+		(match-vals 'w::sem val1 result))
+	    (match-vals 'w::sem val1 result))
+	(match-vals 'w::sem val2 result)))
+  )
+
+
 (define-predicate 'w::recompute-atype
   #'(lambda (args)
       (recompute-atype args)))
@@ -166,6 +207,22 @@
 	    )
 	(match-vals nil result (read-expression '(? atp w::postpositive w::predicative-only)))
       (match-vals nil result atype)
+      )
+   ))
+
+
+(define-predicate 'w::recompute-agr
+  #'(lambda (args)
+      (recompute-agr args)))
+  
+(defun recompute-agr (args)
+  (let ((in1 (get-fvalue args 'w::in1))
+	(in2 (get-fvalue args 'w::in2))
+	(out (get-fvalue args 'w::out))
+	)
+    (if (and (eq in1 'w::3s) (eq in2 'w::3s))
+	(match-vals nil out (read-expression '(? agr-out w::3s w::3p)))
+      (match-vals nil out 'w::3p)
       )
    ))
 
@@ -297,7 +354,9 @@
   
 (defun compute-lf-from-sem (args)
   (let* ((sem (second (assoc 'w::sem args)))
+	 (newlf (om::find-most-specific-lfs-for-sem sem om::*lf-ontology*))
 	 (lf (second (assoc 'w::lf args))))
+    (format t "~% BEST LEF for sem ~S is ~S" sem newlf)
     (match-vals nil lf (or (;; finish when new SEM strctures are installed
 			    )))))
 
@@ -711,14 +770,22 @@
   )
 
 (defun combine-status (args)
+  "Here we have two or more NP specs in a conjunction, and need to compute the SPEC for the conjunct"
   (let ((in1 (second (assoc 'w::in1 args)))
         (in2 (second (assoc 'w::in2 args)))
 	(out (second (assoc 'w::out args)))
 	)
-    (if (and (member in1 '(ONT::DEFINITE ONT::DEFINITE-PLURAL))
+    (cond
+      ;; if both definite, we get a definite-plural
+      ((and (member in1 '(ONT::DEFINITE ONT::DEFINITE-PLURAL))
 	     (member in2 '(ONT::DEFINITE ONT::DEFINITE-PLURAL)))
-	(match-vals nil out 'ONT::DEFINITE-PLURAL)
-        (match-vals nil out 'ONT::INDEFINITE-PLURAL)
+       (match-vals nil out 'ONT::DEFINITE-PLURAL))
+      ;; if both WH terms, we get a WH term
+      ((and (member in1 '(ont::wh ont::wh-plural))
+	    (member in2 '(ont::WH ont::wh-plural)))
+       (match-vals nil out 'ONT::WH-PLURAL))
+      (t ;; otherwise an indefinite plural
+       (match-vals nil out 'ONT::INDEFINITE-PLURAL)
       )
-))
+)))
 

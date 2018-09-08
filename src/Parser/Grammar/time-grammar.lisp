@@ -292,17 +292,19 @@
 	       (mass count)
 	       )))||#
 
+    ;; e.g., three times a day
     ((ADVBL (ARG ?arg) 
       (SORT BINARY-CONSTRAINT) (var *)
       (LF (% PROP (var *) (CLASS ONT::ITERATION-PERIOD) 
 	     (Constraint (& (FIGURE ?arg) (GROUND ?v)))))
       (ATYPE w::post) (focus ?v)
-      (lex ?hlex) (headcat ?hcat)
+      (headcat ?hcat)
       (SUBJVAR ?subjvar)
       (ARGUMENT (% (? x W::VP W::S) (sem ?sss) (subjvar ?subj)))
       (SEM ?sem))
      -rate-advbl> .98
      (head (np (agr 3s) (var ?v)
+	       (ratenumsem ($ F::ABSTR-OBJ (F::type ont::repetition)))   ;; the numerator of the RATE should be "times"
 	       ;;(sem ($ f::abstr-obj (f::type f::rate)))
 	       (lf (% description (status ont::indefinite) (class ont::rate))
 	      	       )))
@@ -317,31 +319,53 @@
    
     ;; rate expressions
     ;; 7 miles per hour; 7 degrees per second
-    ((np (LF (% description (var ?v) (class ont::rate) (status ont::indefinite) (constraint (& (repeats ?v1) (over-period ?per)))))
-            (var ?v) (case (? case sub obj)) (SORT PRED) (AGR 3s)
-            (time-converted +)
-            (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -)
-		    (f::type ont::rate) (f::scale ont::rate-scale)))
-            )
-     -units-per-period> 
-     (head (np (lf ?lf) (sort unit-measure) (wh -) (var ?v1)
+    ((np (LF (% description (var *) (class ont::rate) (status ont::indefinite) (constraint (& (repeats ?v1) (over-period ?per)))))
+      (var *) (case (? case sub obj)) (SORT unit-measure) (AGR 3s)
+      (time-converted +) (class ?cl)
+      (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -)
+	      (f::type ont::rate) (f::scale ont::rate-scale)))
+      (ratenumsem ?sem1)
+       )
+      -units-per-period> 
+      (head (np (lf ?lf) (sort unit-measure) (wh -) (var ?v1) (sem ?sem1) (class ?cl)
 	       ))
-     (advbl (var ?v) (lf (% prop (class ont::iteration-period)))
-		(focus ?per)	    ;;(constraint (& (val ?per))))))
+     (advbl (var ?per) (lf (% prop (class ont::iteration-period)))
       ))
 
     ;; $125 a share
-    ((np (LF (% description (var *) (class ont::rate) (status ont::indefinite) (constraint (& (repeats ?v1) (over-period ?per)))))
-            (var *) (case (? case sub obj)) (SORT PRED) (AGR 3s)
-            (time-converted +)
-            (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -) 
-		    (f::type ont::rate) (f::scale ont::rate-scale)))
-            )
-     -units-per-period2> .98
-     (head (np (lf ?lf) (sort unit-measure) (wh -) (var ?v1)
+    ((np (LF (% description (var *) (class ont::rate) (status ont::indefinite)
+		(constraint (& (repeats ?v1) (over-period ?per)))))
+      (var *) (case (? case sub obj)) (SORT unit-measure) (AGR 3s)
+      (time-converted +) (lex ?x) (class ?cl)
+      (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -) 
+	      (f::type ont::rate) (f::scale ont::rate-scale)))
+      (ratenumsem ?sem1)
+      (ratedenomsem ?sem2)
+       )
+     -units-per-period2> 
+     (head (np (lf ?lf) (sort unit-measure) (wh -) (var ?v1) (lex ?x) (sem ?sem1) (class ?cl)
 	       ))
-     (head (np (agr 3s) (var ?per) (lf (% description (status ont::indefinite))) (mass count)
-	       )))
+     (np (agr 3s) (var ?per) (lf (% description (status ont::indefinite)))
+      (sem ?sem2) (mass count)
+      ))
+
+    ;; Twice a week
+    ((np (LF (% description (var *) (class ont::rate) (status ont::indefinite)
+		(constraint (& (repeats ?v1) (over-period ?per)))))
+      (var *) (case (? case sub obj)) (SORT unit-measure) (AGR 3s)
+      (time-converted +) (lex ?x) (class ONT::REPETITION)
+      (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -) 
+	      (f::type ont::rate) (f::scale ont::rate-scale)))
+      (ratenumsem ?sem1)
+      (ratedenomsem ?sem2)
+       )
+     -number-of-time-per-period2> 
+     (head (advbl (lf ?lf) (wh -) (var ?v1) (lex ?x) (sem ?sem1)
+		  (lf (% PROP (class ONT::REPETITION)))
+	       ))
+     (np (agr 3s) (var ?per) (lf (% description (status ont::indefinite)))
+      (sem ?sem2) (mass count)
+      ))
 
 
      ;; m/s = meters per second
@@ -350,13 +374,16 @@
             (time-converted +)
             (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -)
 		    (f::type ont::rate) (f::scale ont::rate-scale)))
+	(ratenumsem ?sem1)
+	(ratedenomsem ?sem2)
 	)
        -units-slash-time>
        (head (np (lf ?lfd) (sort unit-measure) (wh -) (var ?v1)
+		 (sem ?sem1)
 	          ))
        (punc (lex (? l slash punc-slash)))
        (n (w::agr w::3s) (var ?v)	(LF ?per) (mass count)
-	(sem ($ f::time (f::scale ont::duration-scale)))
+	(sem ($ f::time (f::scale ont::duration-scale))) (sem ?sem2)
 	))
   
     ;; e.g., the gdp / gtp ratio
@@ -480,24 +507,27 @@
 	       (Lex ?lf2)))
      )
 
-        
-    ;; do it 3 times
+       
+    ;; do it 3 times/many times
+    ;;   here we through away the NP LF in order to build a simpler LF
     ((advbl (sort constraint)
       (argument (% S (var ?argvar) (sem ($ f::situation)) ))
       (subcatsem ?valsem) (generated +)
       (role ont::frequency)
       (var *)
       ;;(var ?var)
-      (lf (% PROP (class ONT::repetition) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?!val)))))
+      (lf (% PROP (class ONT::iteration-period) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?v)))))
       (atype post)
       (arg ?argvar)
+      (sem ?sem)
       )
      -repetition-number-advbll>
-     ;;(head (number (val ?val)))
-     (head (cardinality (var ?val) (agr 3p)))
-     (word (lex (? t W::time W::times)))
+     (head (np (lex W::times) (VAR ?v)
+	       (LF (% description (class (? xx ont::quantity ont::rate)) (constraint ?con)))))
+     (compute-sem-features (lf ont::repetition) (sem ?sem))
+     (add-to-conjunct (val (FIGURE ?argvar)) (old ?con) (new ?newcon))
      )
-
+#||
     ;; do it many times
     ;; 2011/09/19 this rule was commented out -- reinstating it so that "many times" parses as an adverbial
     ;; as in "he woke up many times during the night"
@@ -507,32 +537,37 @@
       (role ont::frequency)
       (var *)
       ;;(var ?var)
-      (lf (% PROP (class ONT::repetition) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?!card)))))
+      (lf (% description (status ?spec) (class ONT::repetition) (var *) (constraint ?con)))
       (atype post)
       (arg ?argvar)
+      (sem ?sem)
       )
      -repetition-quan-advbll>
-     (head (spec (mass count) (lf ont::indefinite-plural)))
-     (word (lex (? t W::time W::times)))
-     )
-
+     (spec (mass count) (lf ont::indefinite-plural) (lf ?spec) (restr ?restr))
+     (head (word (lex (? t W::time W::times))))
+     (compute-sem-features (lf ont::repetition) (sem ?sem))
+     (add-to-conjunct (val (FIGURE ?argvar)) (old ?restr) (new ?con))
+    )
+||#
     ;; every/each/some/many/ day/morning/year
 
     ((advbl (sort constraint)
-	    (argument (% S (var ?argvar) (sem ($ f::situation)) ))
-	    (subcatsem ?valsem) (bare-advbl +)
-	    (role ont::frequency)
-	    (var *) (case ?case)
-	    ;;(var ?var)
-	    (lf (% PROP (class ONT::iteration-period) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?valvar)))))
-	    (atype post)
-	    (arg ?argvar)
-	    )
+      (argument (% S (var ?argvar) (sem ($ f::situation)) ))
+      (subcatsem ?valsem) (bare-advbl +)
+      (role ont::frequency)
+      (var *) (case ?case)
+      ;;(var ?var)
+      (lf (% PROP (class ONT::iteration-period) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?valvar)))))
+      (atype post)
+      (sem ?sem)
+      (arg ?argvar)
+      )
      -period-value-advbl1> .98
      (head (np (sem ?valsem) (var ?valvar)
 	       (sem ($ f::time (f::time-scale F::INTERVAL))) (headless -)
 	       (LF (% DESCRIPTION (status (? xx ont::quantifier)))) ;; indefinite))))   
 	       ))
+     (compute-sem-features (lf ont::iteration-period) (sem ?sem))
      )
 
      ;; 30 miles per hour
@@ -549,20 +584,22 @@
      )
 
      ;; this morning, this year, that week, next week, ...
-      ((advbl (sort constraint)
-	    (argument (% S (var ?argvar) (sem ($ f::situation)) ))
-	    (subcatsem ?valsem)  (bare-advbl +)
-	    (var *)
-	    (lf (% PROP (class ONT::event-time-rel) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?valvar)))))
-	    (atype (? atp pre post))
-	    (arg ?argvar)
-	    )
+    ((advbl (sort constraint)
+      (argument (% S (var ?argvar) (sem ($ f::situation)) ))
+      (subcatsem ?valsem)  (bare-advbl +)
+      (sem ?sem)
+      (var *)
+      (lf (% PROP (class ONT::event-time-rel) (var *) (constraint (& (FIGURE ?argvar) (GROUND ?valvar)))))
+      (atype (? atp pre post))
+      (arg ?argvar)
+      )
      -deictic-time-advbl> 1
      (head (np (sem ?valsem) (var ?valvar) (headless -) (coerced -)
 	       (sem ($ f::time (f::time-scale F::INTERVAL)))
 	       (LF (% DESCRIPTION (status ont::definite) (class ont::time-object);;(CONSTRAINT (& (proform (? cr W::THIS W::THAT W::THOSE W::THESE)))))) ;;(? cr this that those these))))))
+		      ))
 	       ))
-     )))
+     (compute-sem-features (lf ont::event-time-rel) (sem ?sem)))
 
     ;;  Special construction for last year/next week/ etc which doesn't seem to generalize to non-temporal
     ((np (var ?v) (sort pred) (agr 3s) 
@@ -765,6 +802,18 @@
      (less-than (val1 ?!v1) (val2 ?!v2))    ;; eliminate two thousand hundred, allows two hundred thousand
      (compute-val-and-ntype (expr (W::TIMES* ?!v1 ?!v2)) (newval ?newval) (ntype ?ntype)))
 
+    ;;   half a million/billion/trillion
+    ((number (VAL ?newval) (agr 3p) (lex ?l2) ;;(lex (?l1 ?l2)) ;;me
+			 (ntype ?ntype) (unit +)
+      (var *) (LF ?lf) (coerce ?coerce) (nobarespec ?nbs) (sem ?sem)
+      )
+     -half-a-million>
+     (word (lex half))
+     (word (lex a))
+     (head (number-unit (val ?!v2) (lex ?l2) (digits -)))
+     (less-than (val1 999999) (val2 ?!v2))    ;; eliminate two thousand hundred, allows two hundred thousand
+     (compute-val-and-ntype (expr (/ ?!v2 2)) (newval ?newval) (ntype ?ntype)))
+
     ;; explicit unit number followed by a lower values: e.g., two thousand three hundred, three hundred thirty four
     ;;   Note that two hundred three thousand should NOT work here, it has an interpretation via -number-unit> producing 203000
     ;;  NB: This does overgenerate in that it parses "three thousand two thousand" as 5000! If we want to eliminate this,
@@ -821,7 +870,7 @@
       (var *) (LF ?lf) (coerce ?coerce) (nobarespec ?nbs)
       )
      -number-unit-bare> .9
-     (head (number-unit (val ?!v2) (lex ?l2) (digits -) (sem ?sem)))
+     (head (number-unit (val ?!v2) (lex ?l2) (digits -) (agr 3s) (sem ?sem) (lf ?lf)))
      (compute-val-and-ntype (expr (W::TIMES* 1 ?!v2)) (newval ?newval) (ntype ?ntype)))
 		
     ;; Myrosia 05/14/00

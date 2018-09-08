@@ -35,13 +35,18 @@
  :words (
   (W::WHAT
    (SENSES
-    ((LF ONT::WHAT)
+    ((LF ONT::WH-TERM)
      (non-hierarchy-lf t)(TEMPL wh-qtype-TEMPL)
-     (SYNTAX (W::agr (? agr W::3s W::3p)))
+     (SYNTAX (W::agr W::3s)) ;(W::mass W::count)); n1-from-name gives mass (e.g., microRNA)
+     )
+    ((LF ONT::WH-plural)
+     (non-hierarchy-lf t)
+     (TEMPL wh-qtype-TEMPL)
+     (SYNTAX (W::agr W::3p)) ;(W::mass W::count))
      )
     )
    )
-))
+  ))
 
 (define-words :pos W::UttWord :boost-word t :templ NO-FEATURES-TEMPL
  :words (

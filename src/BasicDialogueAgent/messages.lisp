@@ -2,7 +2,7 @@
 ;;;; messages.lisp for PlowAgent
 ;;;;
 ;;;;
-;;;; Time-stamp: <Tue Jan 17 09:23:51 EST 2017 jallen>
+;;;; Time-stamp: <Tue Aug 14 18:15:19 CDT 2018 james>
 ;;;;
 
 (in-package :dagent)
@@ -161,4 +161,20 @@
   '(request &key :content (get-wizard-names))
   (lambda (msg)
     (reply-to-msg msg 'tell :content (get-wizard-names)))
+  :subscribe t)
+
+(defvar *user-utterance-processing-in-progress8)
+
+(defcomponent-handler
+  '(tell &key :content (started-speaking . *))
+  #'(lambda (msg args)
+      (setq *user-utterance-processing-in-progress* t))
+  :subscribe t)
+
+
+;;  this is sent by speech out and currently we don't do anything with it
+(defcomponent-handler
+  '(tell &key :content (done . *))
+    #'(lambda (msg args)
+      nil)
   :subscribe t)

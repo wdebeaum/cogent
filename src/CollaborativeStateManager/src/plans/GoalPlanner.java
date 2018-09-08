@@ -699,7 +699,7 @@ public class GoalPlanner {
 			// Queries can have no parent
 			if (activeGoal != null)
 				parent = activeGoal.getVariableName();
-			else
+			else if (underDiscussion != null)
 				parent = underDiscussion.getVariableName();
 		}
 		
