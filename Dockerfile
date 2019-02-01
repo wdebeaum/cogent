@@ -44,4 +44,4 @@ RUN ./configure --with-lisp=sbcl
 RUN make
 RUN make install
 
-CMD ['/cogent/bin/trips-cogent', '-nochat', '-nolisp']
+CMD ["/cogent/bin/trips-cogent", "-nochat", "-nolisp"]
