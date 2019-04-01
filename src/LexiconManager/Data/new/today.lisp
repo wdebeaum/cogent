@@ -2,6 +2,7 @@
 ;;;; W::TODAY
 ;;;;
 
+
 (define-words :pos W::adv :templ PPWORD-ADV-TEMPL
  :tags (:base500)
  :words (
@@ -9,21 +10,22 @@
    (wordfeats (W::ATYPE (? atype W::pre W::post w::pre-vp)))
    (SENSES
     ((LF-PARENT ONT::EVENT-TIME-REL)
-     (SYNTAX (W::IMPRO-CLASS (:* ONT::TIME-LOC W::TODAY)))
+     (SYNTAX (W::IMPRO-CLASS ONT::TODAY)))
      )
     )
    )
-))
+)
 
-(define-words :pos W::n :templ PPWORD-N-TEMPL
+
+(define-words :pos W::pro :templ pronoun-templ
  :tags (:base500)
  :words (
   (W::TODAY
    (SENSES
-    ((LF-PARENT ONT::time-lOC)
-     (PREFERENCE 0.97)
+    (;(LF-PARENT ONT::time-lOC)
+     (LF-PARENT ONT::TODAY)
+     ;(PREFERENCE 0.97)
      )
     )
    )
 ))
-

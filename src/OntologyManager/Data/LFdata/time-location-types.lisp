@@ -19,7 +19,8 @@
  :arguments (;(:ESSENTIAL ONT::OF ((? of F::Phys-obj F::Situation f::abstr-obj)))
 	     ;(:ESSENTIAL ONT::val ((? val F::Phys-obj F::Situation f::abstr-obj)))
 	     (:ESSENTIAL ONT::FIGURE ((? fig F::Phys-obj F::Situation f::abstr-obj)))
-	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj F::Situation f::abstr-obj)) (f::type (? !t ONT::TIME-MEASURE-SCALE))
+	     (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj F::Situation f::abstr-obj)
+				      (f::scale (? !sc ONT::TIME-MEASURE-SCALE)))
              ))
  )
 
@@ -43,11 +44,14 @@
 (define-type ont::at-loc
     :comment "prototypical locating of a FIGURE wrt a point-like GROUND"
     :parent ont::position-as-point-reln
+    :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj f::abstr-obj) 
+					 (f::scale (? !t ONT::TIME-MEASURE-SCALE ONT::RATE-SCALE ONT::MONEY-SCALE ONT::NUMBER-SCALE)) ; excludes "at four"
+				       )))
     )
 
 ; figure is viewed as a point and related to ground by (abstract) containment
 (define-type ont::pos-wrt-containment-reln
-    :comment "locating an object (typically rthe FIGURE) within an extended object (typically the GROUND)"
+    :comment "locating an object (typically the FIGURE) within an extended object (typically the GROUND)"
     :parent ont::position-reln
     )
 
@@ -81,6 +85,7 @@
   :parent ont::outside
   )||#
 
+#|
 (define-type ont::delimit-reln
     :comment "the FIGURE has a value in a rnage that is delimited by the GROUND, e.g., within five dollars of the estimate, within five miles of starbucks"
   :parent ont::pos-wrt-containment-reln
@@ -88,6 +93,7 @@
 	      (:ESSENTIAL ONT::GROUND ((? val F::phys-obj f::abstr-obj)))
 	      )
   )
+|#
 
 					; figure is spatially related to a group of objects (the ground)
 (define-type ont::complex-ground-reln
@@ -178,7 +184,9 @@
 
 ; figure is related by inherent orientation of ground
 (define-type ont::oriented-loc-reln
-    :comment "FIGURE is located by a directional relationship with the GROUD"
+    :comment "FIGURE is located by a directional relationship with the GROUND"
+    :arguments ((:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj f::abstr-obj)
+					 (f::type (? !t ONT::TIME-MEASURE-SCALE)))))
     :parent ont::position-as-point-reln
     )
 
@@ -840,7 +848,7 @@
 ;; temporal locations of events, things
 (define-type ONT::temporal-location
  :parent ONT::TEMPORAL-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE ((? of F::abstr-obj f::situation f::time))) ; abstr-obj: price
+ :arguments ((:ESSENTIAL ONT::FIGURE ((? of F::phys-obj F::abstr-obj f::situation f::time))) ; abstr-obj: price; phys-obj: plant
              )
  )
 
@@ -859,6 +867,7 @@
 #|
 (define-type ONT::LONG
  :parent ONT::event-duration-modifier
+
  :wordnet-sense-keys ("permanent%3:00:00" "lasting%5:00:00:long:02")
  :arguments ((:ESSENTIAL ONT::FIGURE ((? of f::situation f::time)))
              (:essential ont::GROUND (f::abstr-obj (F::Scale F::duration-scale)))
@@ -889,6 +898,7 @@
 
 ;;; this is a fixed frequency - e .g. do it 3 times
 (define-type ONT::repetition
+ :wordnet-sense-keys ("repeatedly%4:02:00" "over_and_over%4:02:00")
  :parent ONT::FREQUENCY
  )
 
@@ -924,8 +934,9 @@
 ;; so I uncommented the first defn of ONT::VAL
 (define-type ONT::time-span-rel
  :parent ONT::temporal-location
- :arguments ((:ESSENTIAL ONT::GROUND (F::time (F::time-scale f::interval)
-			 (F::time-function (? funcn F::month-name F::year-name F::day-period))))
+ :arguments ((:ESSENTIAL ONT::GROUND (F::time ;(F::time-scale f::interval)
+					      ;(F::time-function (? funcn F::month-name F::year-name F::day-period))
+					      ))
 
 ;	     (:ESSENTIAL ONT::SIT-VAL (F::situation))
 	     ;;(:ESSENTIAL ONT::VAL (F::time ((? vl F::abstr-obj f::time) (F::scale ont::duration-scale))) ;; five minutes/days/hours
@@ -937,12 +948,16 @@
 ;; the meeting next week; he arrives next week
 (define-type ONT::event-time-rel
  :parent ONT::temporal-location
- :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation (F::aspect (? asp F::dynamic F::stage-level))))
+ :arguments ((:ESSENTIAL ONT::FIGURE ((? f F::Situation F::time))) ; time: recent weeks ;(F::aspect (? asp F::dynamic F::stage-level)))) ; can be indiv-level: I was a pumpkin before midnight
              (:ESSENTIAL ONT::GROUND ((? vl F::time f::situation)))
 	     ; 3/2011 conflating time and situation in the val role to reduce search space
 ;             (:ESSENTIAL ONT::SIT-VAL (F::situation)) ;; swift 04/14/02 added this to handle when/before/as soon as/etc. + S, e.g. when I go
              )
  )
+
+(define-type ont::start-time
+    :parent ont::event-time-rel
+    )
 
 (define-type ont::before
     :parent ont::event-time-rel
@@ -978,10 +993,26 @@
              )
  )
 
-(define-type ONT::event-time-rel-now
-     :wordnet-sense-keys ("now%4:02:05" "now%4:02:01")
-     :parent ONT::event-time-rel
- )
+(define-type ONT::event-time-wrt-now
+    :parent ONT::event-time-rel
+     )
+
+(define-type ONT::now
+     :wordnet-sense-keys ("now%4:02:05" "presently%4:02:00")
+     :parent ONT::event-time-wrt-now
+     )
+
+(define-type ONT::recent
+     :wordnet-sense-keys ("new%3:00:00" "past%3:00:00")
+     :parent ONT::event-time-wrt-now
+     )
+
+(define-type ONT::soon
+     :wordnet-sense-keys ("soon%4:02:00")
+     :parent ONT::event-time-wrt-now
+     )
+
+
 
 (define-type ONT::implicit-overlap
     :comment "this is the implicit relation between the events in sentences like He walked down the street whistling a tune"
@@ -1014,18 +1045,28 @@
 ;             )
 ; )
 
-;;; some things apply only to day names
+;;; some things apply only to day names, etc
 ;; on Monday, on the next day
 (define-type ONT::time-on-rel
- :parent ONT::temporal-location
+ ;:parent ONT::temporal-location
+ :parent ONT::time-span-rel
  :arguments ((:ESSENTIAL ONT::GROUND (F::time (f::type ont::date-object-on))
+             )
+ ))
+
+;;; some things apply only to month names, etc
+;; in June
+(define-type ONT::time-in-rel
+ ;:parent ONT::temporal-location
+ :parent ONT::time-span-rel
+ :arguments ((:ESSENTIAL ONT::GROUND (F::time (f::type ont::date-object-in))
              )
  ))
 
 ;;; some things apply only to time specifications like 5am/noon
 (define-type ONT::time-clock-rel
  :parent ONT::temporal-location
- :arguments ((:ESSENTIAL ONT::GROUND (F::time (F::time-function (? fn F::clock-time F::day-point)) (f::time-scale f::point)))
+ :arguments ((:ESSENTIAL ONT::GROUND (F::time (F::time-function (? fn F::clock-time F::day-point)))) ;(f::time-scale f::point)))
 ;	     (:ESSENTIAL ONT::SIT-VAL (F::situation))
              )
  )
@@ -1034,7 +1075,7 @@
 ;; short term parking; a long day
 (define-type ONT::interval-duration-modifier
  :parent ONT::event-duration-modifier
- :arguments ((:essential ONT::FIGURE (F::time (f::time-function f::time-frame) (f::time-scale f::interval)))
+ :arguments ((:essential ONT::FIGURE (F::time (f::time-function f::time-frame))) ;(f::time-scale f::interval)))
              )
  )
 
@@ -1074,14 +1115,14 @@
 ;;; this is used only for "that/it". Most normal time object denote intervals or units
 (define-type ONT::Any-Time-object
     :parent ONT::ANY-SEM
-    :sem (F::time (F::time-function F::Any-time-function) (F::time-scale (? sc F::interval F::point)))
+    :sem (F::time (F::time-function F::Any-time-function) (F::scale ONT::TIME-LOC-SCALE)) ;(F::time-scale (? sc F::interval F::point)))
     )
 
 (define-type ONT::Time-object
     :comment "objects that refer to temporal locations in some way"
     :parent ONT::ANY-TIME-OBJECT
     :arguments ((:OPTIONAL ONT::FIGURE))
-    :sem (F::time (F::time-scale (? sc F::point F::interval)))
+    ;:sem (F::time (F::time-scale (? sc F::point F::interval)))
     )
 
 ;; these are intervals such as "duration", which cannot generally be counted
@@ -1089,11 +1130,14 @@
 (define-type ONT::Time-interval
  :wordnet-sense-keys ("interval%1:28:00" "time_interval%1:28:00" "time%1:28:03" "clock_time%1:28:00" "time%1:28:00" "time%1:28:05" "time_period%1:28:00")
  :parent ONT::TIME-OBJECT
- :sem (F::time (F::time-scale (? sc F::interval)) (F::Scale -)) ;;Ont::duration-scale))
- :arguments ((:OPTIONAL ONT::GROUND (F::time (f::time-function f::time-frame) (f::time-scale f::interval) (f::scale ont::duration-scale)))
+ ;:sem (F::time (F::time-scale (? sc F::interval)) (F::Scale -) (F::Tangible +)) ;;Ont::duration-scale))
+ :sem (F::time (F::Tangible +)) ;;Ont::duration-scale))
+ :arguments ((:OPTIONAL ONT::GROUND (F::time (f::time-function f::time-frame) ;(f::time-scale f::interval)
+					     (f::scale ont::duration-scale)))
              ;;; a time of two hours
-             (:OPTIONAL ONT::FIGURE ((? t f::situation f::abstr-obj)))
-	     (:OPTIONAL ONT::EXTENT (F::Abstr-obj (f::time-scale f::interval) (f::scale ont::duration-scale)))
+             (:OPTIONAL ONT::FIGURE ((? t f::situation f::abstr-obj f::time)))
+	     (:OPTIONAL ONT::EXTENT (F::Abstr-obj ;(f::time-scale f::interval)
+						  (f::scale ont::duration-scale)))
              )
  )
 
@@ -1112,7 +1156,8 @@
 ;;  direct reference to times (e.g. now, then, ...)
 ;;  this type is also constructed by the grammar for dates, times of day, etc.
 (define-type ONT::TIME-LOC
- :parent ONT::time-object)
+    :wordnet-sense-keys ("date%1:28:03")
+    :parent ONT::time-object)
 
 (define-type ONT::recurring-time-of-day
     :comment "recurring moments of the day, defined by some event"
@@ -1133,6 +1178,11 @@
 
 (define-type ONT::month
     :comment "time interval of a named month"
+    :parent ont::time-interval
+    )
+
+(define-type ONT::week
+    :comment "time interval of a week"
     :parent ont::time-interval
     )
 
@@ -1157,7 +1207,7 @@
 (define-type ONT::Time-point
  :wordnet-sense-keys ("time%1:28:06" "clip%1:11:00" "time%1:11:00" "point%1:28:00" "point_in_time%1:28:00")
  :parent ONT::TIME-OBJECT
- :sem (F::time (f::time-scale f::point))
+ ;:sem (F::time (f::time-scale f::point))
  :arguments ((:OPTIONAL ONT::FIGURE ((? lof f::situation F::time)))
 	     ;; this is because we may have things "the end of an event". In reality, there should be a coercion rule, but we are not doing it yet
 	     ;; middle of the meeting
@@ -1167,22 +1217,39 @@
              )
  )
 
+#||
 (define-type ONT::date-object
  :wordnet-sense-keys ("date%1:28:03" "time%1:03:00")
  :comment "classification of time intervals with respect to some conceptual organization (e.g., calendar)"
  :parent ONT::TIME-Object
- :sem (F::time (F::time-function F::time-of-year) (f::time-scale f::interval))
- )
+ :sem (F::time (F::time-function F::time-of-year)) ;(f::time-scale f::interval))
+ )||#
 
 (define-type ont::date-object-on
     :comment "date objects that use ON - e.g., on Monday, on my birthday"
     :parent ONT::TIME-Object
     )
 
+; if considering moving date-object-in to under date-object, check -dt-dow> ("June" is a NAME but should not go through -dt-dow>)
 (define-type ont::date-object-in
     :comment "temporal objects that use IN - e.g., in June"
     :parent ONT::TIME-Object
     )
+
+(define-type ONT::today
+     :wordnet-sense-keys ("today%4:02:00" "today%1:28:01")
+     :parent ONT::time-loc
+         )
+
+(define-type ONT::yesterday
+     :wordnet-sense-keys ("yesterday%4:02:00" "yesterday%1:28:01")
+     :parent ONT::time-loc
+     )
+
+(define-type ONT::tomorrow
+     :wordnet-sense-keys ("tomorrow%4:02:00" "tomorrow%1:28:01")
+     :parent ONT::time-loc
+     )
 
 ;;; future, past
 (define-type ONT::time-span
@@ -1250,9 +1317,9 @@
  :sem (F::time (F::time-function F::month-name))
  )
 
-(define-type ONT::week
+(define-type ONT::week-object
     :parent ONT::year-stage
-    :wordnet-sense-keys ("week%1:28:00" )
+    :wordnet-sense-keys ("calendar_week%1:28:00" )
     :sem (F::time (F::time-function F::time-of-year))
     )
 

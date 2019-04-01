@@ -38,15 +38,25 @@
          (old-fl-type (car old-sem-disj))
 	 (old-fl (cdr old-sem-disj))
 	 )
-    ;; for now just flatten :required and :default
+    ;; for now just flatten :required and :default (but only use :default if
+    ;; part-p, since it has no effect for role restrictions)
     (setf old-fl
           (mapcan
 	      (lambda (x)
-	        (if (member (car x) '(:required :default))
-		  (cdr x)
-		  (list x)
+	        (cond
+		  ((eq :required (car x))
+		    (cdr x))
+		  ((not (eq :default (car x)))
+		    (list x))
+		  ;; NOPE! actually :defaults in define-type are never used
+		  ;(part-p
+		  ;  (cdr x))
+		  (t nil) ; :default and not part-p
 		  ))
 	      old-fl))
+    ;; get rid of fl-type if it's just a variable
+    (when (util::variable-p old-fl-type)
+      (setf old-fl-type nil))
     (cond
       ((and old-fl-type old-fl)
           `(ld::sem-feats (ld::inherit ,old-fl-type) ,@old-fl))
@@ -58,6 +68,54 @@
         `(ld::sem-feats ,@old-fl))
       (t 'ld::t)
       )))
+
+(defun convert-feature-value-hierarchy (tree)
+  (mapcar
+    (lambda (child)
+      `(ld::concept ,(intern (symbol-name (car child)) :f) ; for f::+/-
+        ,@(convert-feature-value-hierarchy (cdr child))))
+    tree))
+
+(defun prepend-any (feat-name)
+  (intern (concatenate 'string "ANY-" (symbol-name feat-name)) :F))
+
+(defmacro ld::define-feature (feat-name &key values name-only)
+  `(ld::concept ,feat-name
+    ;; for F::foo, make an alias F::ANY-foo
+    (ld::alias ,(prepend-any feat-name))
+    ;; check that values/name-only are specified correctly; turn values tree
+    ;; into a hierarchy of concepts named by the feature values
+    ,@(cond
+        ((and values name-only)
+	  (error "expected feature ~s definition to have either :values or :name-only, but got both" feat-name))
+	(name-only nil)
+	(values (convert-feature-value-hierarchy values))
+	(t (error "expected feature ~s definition to have either :values or :name-only, but got neither" feat-name))
+	)))
+
+(defmacro ld::define-feature-rule (rule-name &key feature implies)
+    (declare (ignore rule-name)) ; FIXME?
+  ;; FIXME: this assumes that feature values used in rules like this are not
+  ;; shared among multiple features, which is true for now, but only because
+  ;; the shared +/- values aren't used for rules
+  `(ld::concept ,(second feature)
+    ,(convert-old-sem implies :part-p t)))
+
+(defmacro ld::define-feature-list-type (fltype-name &key features defaults)
+  (unless (assoc 'f::type defaults)
+    (push '(f::type ont::any-sem) defaults))
+  ;; the default default for a feature is the feature name with "ANY-"
+  ;; prepended, except for F::type/ONT::any-sem handled above
+  (dolist (f features)
+    (unless (assoc f defaults)
+      (push (list f (prepend-any f)) defaults)))
+  `(ld::sem-feats ,fltype-name
+    ;; FIXME: for historical reasons, feature names/values are referred to as
+    ;; plain symbols (in LD package) instead of the concepts (with names in F
+    ;; package) they now are (also need to account for f::type values that are
+    ;; ONT types instead of F symbols like other feature values)
+    ,@(convert-variables-to-disjunctions
+          (util::convert-to-package defaults :ld))))
 
 (defun convert-sense-key (sk-str)
   "Convert a WordNet sense key string as it appears in the Lisp TRIPS ontology
@@ -81,7 +139,8 @@
     ,@(when wordnet-sense-keys
       `((ld::overlap ,@(mapcar #'convert-sense-key wordnet-sense-keys))))
     ,@(when sem
-      (list (convert-old-sem sem :part-p t)))
+      (let ((sem-with-type `(,(car sem) (f::type ,type) ,@(cdr sem))))
+	(list (convert-old-sem sem-with-type :part-p t))))
     ,@(when arguments
       `((ld::sem-frame
         ,@(mapcar
@@ -96,7 +155,7 @@
 				role))
 		       (restr (convert-old-sem restr-sem))
 		       )
-		  `(,roles ,restr ,@(when (eq :optional optionality) '(ld::optional))))))
+		  `(,roles ,restr ,@(unless (eq :required optionality) '(ld::optional)))))) ; :essential is (confusingly) a kind of optional
 	    arguments))))
     ;; TODO coercions is only used once in the entire ontology, is it worth it?
     ))

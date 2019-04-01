@@ -39,8 +39,10 @@ public class Query extends Goal {
 		
 		if (queryObject != null)
 			querySymbol = queryObject.stringValue();
-		else
+		else if (parent != null)
 			querySymbol = parent.getId();
+		else
+			querySymbol = "-";
 		
 		String what;
 		queryWhat = null;

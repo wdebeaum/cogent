@@ -115,6 +115,11 @@ public class GoalPlanner {
 	
 	}
 	
+	public void clearActiveGoal()
+	{
+		activeGoal = null;
+	}
+	
 	public Goal getGoalUnderDiscussion()
 	{
 		return underDiscussion;
@@ -295,7 +300,8 @@ public class GoalPlanner {
 			System.out.println("Set goal: " + newGoal.getVariableName() + " as active goal");
 			activeGoal = newGoal;
 		}
-		removeGoal(oldGoal.getVariableName());
+		
+		GoalRemover.removeGoal(this,oldGoal.getVariableName());
 		if (parent == null)
 			addGoal(newGoal,null);
 		else
@@ -304,24 +310,7 @@ public class GoalPlanner {
 		return true;
 	}
 	
-	public boolean removeGoal(String variableName)
-	{
-		String upperCaseVariableName = variableName.toUpperCase();
-		if (variableGoalMapping.containsKey(upperCaseVariableName))
-		{
-			Goal goalToRemove = variableGoalMapping.get(upperCaseVariableName);
-			if (activeGoal == goalToRemove)
-				activeGoal = null;
-			variableGoalMapping.remove(upperCaseVariableName);
-			if (idGoalMapping.containsKey(goalToRemove.getId()))
-				idGoalMapping.remove(goalToRemove.getId());
-			goalConnections.remove(goalToRemove);
-			return true;
-			// TODO: Remove child goals of removed parent
-		}
-		
-		return false;
-	}
+
 	
 	public Goal rollback()
 	{
@@ -556,6 +545,7 @@ public class GoalPlanner {
 		
 	}
 	
+	// Not currently used?
 	public boolean createAskFromAct(String cpsa, KQMLList act, KQMLList context)
 	{
 		if (act.getKeywordArg(":WHAT") == null && act.getKeywordArg(":QUERY") == null)
@@ -744,23 +734,25 @@ public class GoalPlanner {
 			else
 				addGoal(newGoal,parent);
 			
+			queryMapping.put(newGoal.getId(), (Query)newGoal);
 			
 			// Hacky crap
-			String query = null;
-			if (act.getKeywordArg(":QUERY") != null)
-				query = act.getKeywordArg(":QUERY").stringValue();
-			if (query == null && act.getKeywordArg(":OF") != null)
-				query = act.getKeywordArg(":OF").stringValue();
-			
-			KQMLObject whatObject = act.getKeywordArg(":WHAT");
-			if (query == null)
-				query = "";
-			String what = "";
-			if (whatObject != null)
-				what = whatObject.stringValue();
-			String mapping = query + what;
-			queryMapping.put(mapping, (Query)newGoal);
-			queryMapping.put(query, (Query)newGoal);
+			// IP: Taken out because we should have IDs now
+//			String query = null;
+//			if (act.getKeywordArg(":QUERY") != null)
+//				query = act.getKeywordArg(":QUERY").stringValue();
+//			if (query == null && act.getKeywordArg(":OF") != null)
+//				query = act.getKeywordArg(":OF").stringValue();
+//			
+//			KQMLObject whatObject = act.getKeywordArg(":WHAT");
+//			if (query == null)
+//				query = "";
+//			String what = "";
+//			if (whatObject != null)
+//				what = whatObject.stringValue();
+//			String mapping = query + what;
+//			queryMapping.put(mapping, (Query)newGoal);
+//			queryMapping.put(query, (Query)newGoal);
 		}
 		
 		if (cpsa.equals("ACCEPT"))
@@ -832,6 +824,14 @@ public class GoalPlanner {
 
 	public HashMap<String, Goal> getIdGoalMapping() {
 		return idGoalMapping;
+	}
+
+	public HashMap<String, Goal> getVariableGoalMapping() {
+		return variableGoalMapping;
+	}
+
+	public HashMap<Goal, Goal> getGoalConnections() {
+		return goalConnections;
 	}
 	
 	

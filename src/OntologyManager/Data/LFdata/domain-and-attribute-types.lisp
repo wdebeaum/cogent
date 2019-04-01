@@ -137,22 +137,22 @@
  ;; WORDS: flexibility
 )
 
-(define-type ont::tactile-hardness-scale
+(define-type ont::texture-scale
  :parent ont::tactile-scale 
+ :wordnet-sense-keys ("texture%1:07:00")
+ ;; WORDS: texture
+)
+
+(define-type ont::tactile-hardness-scale
+ :parent ont::texture-scale 
  :wordnet-sense-keys ("hardness%1:07:01")
  ;; WORDS: hardness
 )
 
 (define-type ont::tactile-softness-scale
- :parent ont::tactile-scale 
+ :parent ont::texture-scale 
  :wordnet-sense-keys ("softness%1:07:00")
  ;; WORDS: softness
-)
-
-(define-type ont::texture-scale
- :parent ont::tactile-scale 
- :wordnet-sense-keys ("texture%1:07:00")
- ;; WORDS: texture
 )
 
 (define-type ont::texture-thickness-scale
@@ -242,7 +242,7 @@
 
 (define-type ont::redness-scale
  :parent ont::color-quality-scale
- :wordnet-sense-keys ("redness%1:26:00")
+ :wordnet-sense-keys ("redness%1:07:00")
  ;; WORDS: redness
 )
 
@@ -611,17 +611,27 @@
   :parent ont::measure-scale
  )
 
-(define-type ont::age-scale
- :parent ont::time-measure-scale
- :wordnet-sense-keys ("age%1:28:00" "age%1:07:00")
-)
-
 (define-type ont::duration-scale
   :parent ont::time-measure-scale
 )
 
+(define-type ont::age-scale
+ ;:parent ont::time-measure-scale
+ :parent ont::duration-scale
+ :wordnet-sense-keys ("age%1:28:00" "age%1:07:00")
+)
+
+(define-type ont::time-loc-scale
+  :parent ont::time-measure-scale
+)
+
+(define-type ont::number-scale
+  :parent ont::measure-scale
+)
+
 (define-type ont::total-scale
- :parent ont::measure-scale
+; :parent ont::measure-scale
+ :parent ont::number-scale
  :wordnet-sense-keys ("total%1:06:00" "count%1:23:00")
  ;; WORDS: aggregate, total, count
 )
@@ -1072,6 +1082,11 @@
  :parent ont::body-condition-scale
 )
 
+(define-type ont::not-well-nourished-scale
+ :parent ont::negative-body-condition-scale
+ :wordnet-sense-keys ("hunger%1:26:00" "thirst%1:26:00")
+)
+
 (define-type ont::illness-scale
  :parent ont::negative-body-condition-scale
  :wordnet-sense-keys ("unhealthiness%1:26:00" "illness%1:26:00")
@@ -1466,12 +1481,6 @@
  :parent ont::medical-symptom
  :wordnet-sense-keys("tightness%1:09:00")
 )
-
-; for chill                                                                                                         
-(define-type ONT::chill
- :parent ONT::medical-symptom
- :wordnet-sense-keys ("chill%1:26:01")
- )
 
 ; for constipation                                                                                                  
 (define-type ONT::constipation

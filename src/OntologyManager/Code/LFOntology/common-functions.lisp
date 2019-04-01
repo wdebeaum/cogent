@@ -1,3 +1,4 @@
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Functions used by multiple modules dealing with LF ontology and features
@@ -183,6 +184,39 @@
 		  ))
    ))
 
+
+;; T1 must be identical or a subtype of PAT
+(defun satisfies-types (t1 pat &key (typeh nil) (lfontology nil) (two-way nil))  
+  (let ((t1 (if (consp t1)
+		(if (is-variable-name (car t1))
+		    (cddr t1)
+		    t1)
+		(list t1)))
+	(pat (if (consp pat)
+		 (if (is-variable-name (car PAT))
+		     (cddr PAT)
+		     pat)
+		 (list pat))))
+    
+    (if (null pat) t1
+	(every #'(lambda (x) (sat-types x pat typeh))
+	       t1
+	       ))))
+
+(defun sat-types (type pat typeh)
+  (some #'(lambda (y)
+		   (cond
+		     ((eql type y) type)
+		     (typeh
+		      (subtype-in type y typeh)
+		      )
+		     (lfontology
+		      ;;(or (sub-semvalue x y lfontology) (and two-way (sub-semvalue y x lfontology))))
+		      (and (eql type y) type))
+		     (t nil)
+		     ))
+	 Pat))
+
 ;; Takes 2 feature list structures and attempts to merge them together
 ;; both for types and names
 (defun merge-feature-list-with-defaults (features defaults &key (typeh nil))
@@ -285,7 +319,10 @@
 
 ;; takes a typed feature list in the format type <feature list>
 ;; and makes it into a structure
-(defun make-typed-sem (tsem)
+;; Note there are two input forms: one is (<type> (<feat> <val>)*)
+;;  and the other is (<type> :required (<feat> <val>)* :optional (<feat> <val>)*)
+;;p  if RENAME-VARS is non null, we generte a new var name to make sure its unique
+(defun make-typed-sem (tsem &optional rename-vars)
   (when tsem
     (let* ((type (make-var-unique (car tsem)))
 	   (flist (cdr tsem))
@@ -299,19 +336,32 @@
       (setq required flist))
     (make-feature-list
      :type type
-     :features required
-     :defaults default)
+     :features (if rename-vars (mapcar #'(lambda (x)
+					   (list (car x) (make-var-unique (cadr x))))
+				       required)
+		   required)
+     :defaults (if rename-vars
+		   (mapcar #'(lambda (x)
+			       (list (car x) (make-var-unique (cadr x))))
+			   default)
+		   default)
+     )
     )))
 
 (defun make-var-unique (class)
-  (if (and (consp class)
-	   (eq (car class) '?))
-      (list* '? (make-name-unique (cadr class)) (cddr class))
-      class))
+  (cond ((and (consp class)
+	      (eq (car class) '?))
+	 (list* '? (make-name-unique (cadr class)) (cddr class)))
+	((is-variable-name class)
+	 (make-name-unique class))
+	(t
+	 class)))
 
 (defun make-name-unique (id)
-  (gensym (symbol-name id)))
-  
+  (intern (symbol-name (gensym (symbol-name id))) *ont-package*))
+
+(defun strip-first-char (id)
+  (intern (string-trim '(#\?) (symbol-name id))))
 
 ;; takes an untyped feature list in the format type <feature list>
 ;; and makes it into a structure with variable type
@@ -493,7 +543,9 @@
   "Calls subtype if typeh is defined and equality otherwise, returns the most specific compatible value"
   ;;(trace subtype-in compatible-symbol-values)
   (cond    
-   ((eql v1 v2) v1)
+    ((eql v1 v2) v1)
+    ((null v2) v1)
+    ((null v1) v2)
    (t (subtype-in v1 v2 typeh))
    ))
 

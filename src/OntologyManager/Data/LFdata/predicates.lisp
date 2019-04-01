@@ -66,6 +66,13 @@
              )
  )
 
+(define-type ONT::in-scale
+	:parent ONT::SITUATION-MODIFIER 
+	:arguments ((:ESSENTIAL ONT::FIGURE ((? xxx F::Situation))) 
+		    (:REQUIRED ONT::GROUND ((? x F::ABSTR-OBJ) (F::type (? t ONT::DOMAIN))))
+		    )
+	)
+
 (define-type ONT::CONJUNCT
  :parent ONT::PREDICATE
  )
@@ -379,13 +386,17 @@
              )
  )
 
+; moved into numerical-grouping-val
+#|
 (define-type ONT::exclusive   ; alone, myself
- :parent ONT::MANNER
+ :wordnet-sense-keys ("alone%4:02:00")
+  :parent ONT::MANNER
  )
 
 (define-type ONT::inclusive  ; co-, together
  :parent ONT::MANNER
  )
+|#
 
 ;; in that event
 (define-type ONT::situated-in

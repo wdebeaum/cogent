@@ -400,13 +400,21 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 
 		KQMLList whatTerm = TermExtractor.extractTerm(what, (KQMLList) context);
 		String suchThat = null;
+		
+		boolean hasSuchThat = (innerContent.getKeywordArg(":SUCHTHAT") != null && 
+				!KQMLUtilities.isKQMLNull(innerContent.getKeywordArg(":SUCHTHAT")));
+		boolean hasWhatSuchThat = (whatTerm != null && whatTerm.getKeywordArg(":SUCHTHAT") != null &&
+										KQMLUtilities.isKQMLNull(whatTerm.getKeywordArg(":SUCHTHAT")));
 
-		if (innerContent.getKeywordArg(":SUCHTHAT") != null)
+		if (hasSuchThat)
 			suchThat = innerContent.getKeywordArg(":SUCHTHAT").stringValue();
-		else if (whatTerm != null && whatTerm.getKeywordArg(":SUCHTHAT") != null)
+		else if (hasWhatSuchThat)
 			suchThat = whatTerm.getKeywordArg(":SUCHTHAT").stringValue();
 
-		KQMLList suchThatTerm = TermExtractor.extractTerm(suchThat, context);
+		
+		KQMLList suchThatTerm = null;
+		if (suchThat != null)
+			suchThatTerm = TermExtractor.extractTerm(suchThat, context);
 
 		KQMLList askWhatIsContent = new KQMLList();
 		askWhatIsContent.add("ASK-WH");
@@ -417,7 +425,7 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 
 		KQMLList conditionalContent = new KQMLList();
 
-		if (conditional || suchThatTerm.getKeywordArg(":CONDITION") != null) {
+		if (conditional || (suchThatTerm != null && suchThatTerm.getKeywordArg(":CONDITION") != null)) {
 			conditional = true;
 			conditionalContent.add("ont::RELN");
 			String newConditionalId = IDHandler.getNewID();
@@ -432,7 +440,7 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 				conditionalContent.add(":factor");
 				String condition = conditionObject.stringValue();
 				conditionalContent.add(condition);
-			} else if (suchThatTerm.getKeywordArg(":CONDITION") != null) {
+			} else if (suchThatTerm != null && suchThatTerm.getKeywordArg(":CONDITION") != null) {
 				conditionalContent.add(":factor");
 				String condition = suchThatTerm.getKeywordArg(":CONDITION").stringValue();
 				conditionalContent.add(condition);

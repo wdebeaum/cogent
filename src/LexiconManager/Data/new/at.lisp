@@ -49,12 +49,14 @@
   (W::AT
    (SENSES
     ((LF-PARENT ONT::time-clock-rel)
-     (TEMPL BINARY-CONSTRAINT-S-TEMPL)
+     (TEMPL BINARY-CONSTRAINT-S-or-NP-TEMPL)
      )
+    #|
      ((LF-PARENT ONT::time-clock-rel)
       (TEMPL BINARY-CONSTRAINT-NP-TEMPL)
       (preference .97)
       )
+    |#
     #||((LF-PARENT ONT::time-clock-rel)
      (TEMPL BINARY-CONSTRAINT-adj-postpos-TEMPL)
      (meta-data :origin cernl :entry-date 20110114 :change-date nil :comments hpi-acn-3)
@@ -103,8 +105,7 @@
  :words (
   ((W::at w::the W::moment)
    (SENSES
-    (;(LF-PARENT ONT::event-time-rel)
-     (LF-PARENT ONT::EVENT-TIME-REL-NOW)
+    ((LF-PARENT ONT::NOW)
      (meta-data :origin asma :entry-date 20110921 :change-date nil :comments nil)
      (TEMPL PRED-S-VP-templ)
      )
@@ -117,8 +118,7 @@
   ((W::at w::present)
    (SENSES
     ((meta-data :origin cernl :entry-date 20110317 :change-date nil :comments nil)
-;     (LF-PARENT ONT::event-time-rel)
-     (LF-PARENT ONT::EVENT-TIME-REL-NOW)
+     (LF-PARENT ONT::NOW)
      (LF-FORM W::NOW)
      (example "at present he is president / he is president at present")
      (TEMPL PRED-S-TEMPL)

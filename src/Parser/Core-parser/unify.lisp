@@ -429,9 +429,13 @@
 	(values *success* nil undos)
       (if (and (var-non-empty constitval) 
 	       (member patternval (list '- *empty-constit*)))
-	  (progn
-	    (if FAILURE-TRACE (failure-message constitval patternval feat))
-	    (values nil nil undos))
+	  (if (var-values constitval)
+	      ;; if it can't be certain values, then we're OK with '-
+	      (values (make-binding-list constitval patternval) nil undos)
+	      ;; the constitval simply must be non empty
+	      (progn
+		(if FAILURE-TRACE (failure-message constitval patternval feat))
+		(values nil nil undos)))
 	  (multiple-value-bind
 		(intersection bndgs prob newundos)
 	      (variable-intersect feat constitval patternval 'reversed undos)
@@ -466,9 +470,10 @@
 	       (not (member '- (var-values patternval))))
 	       (values *success* nil undos))
 	 ;; otherwise we just fail
-	 (FAILURE-TRACE
-	   (failure-message constitval patternval feat)
-	   (values nil nil undos)))
+	 (t
+	  (when FAILURE-TRACE
+	    (failure-message constitval patternval feat))
+	  (values nil nil undos)))
       ;; either patternval does not have EXLUSION values, or constitval is not - or *empty-constit*
       (multiple-value-bind
 	  (intersection bndgs prob newundos)

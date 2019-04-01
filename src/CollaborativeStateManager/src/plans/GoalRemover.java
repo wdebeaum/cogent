@@ -38,4 +38,24 @@ public class GoalRemover {
 		
 		return false;
 	}
+	
+	public static boolean removeGoal(GoalPlanner gp, String variableName)
+	{
+		String upperCaseVariableName = variableName.toUpperCase();
+		
+		if (gp.getVariableGoalMapping().containsKey(upperCaseVariableName))
+		{
+			Goal goalToRemove = gp.getVariableGoalMapping().get(upperCaseVariableName);
+			if (gp.getActiveGoal() == goalToRemove)
+				gp.clearActiveGoal();
+			gp.getVariableGoalMapping().remove(upperCaseVariableName);
+			if (gp.getIdGoalMapping().containsKey(goalToRemove.getId()))
+				gp.getIdGoalMapping().remove(goalToRemove.getId());
+			gp.getGoalConnections().remove(goalToRemove);
+			return true;
+			// TODO: Remove child goals of removed parent
+		}
+		
+		return false;
+	}
 }

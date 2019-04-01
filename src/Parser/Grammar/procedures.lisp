@@ -138,7 +138,7 @@
   "succeeds only if arg is bound to something not equal to -"
   (if (var-p var) 
     (and (var-values var) (not (eq (var-values var) '-)) *success*)
-    *success*))
+    (if (not (eq var '-)) *success*)))
 
 (define-predicate 'w::NOT-BOUND
   #'(lambda (args)
@@ -220,7 +220,7 @@
 	(in2 (get-fvalue args 'w::in2))
 	(out (get-fvalue args 'w::out))
 	)
-    (if (and (eq in1 'w::3s) (eq in2 'w::3s))
+    (if (and (member in1 '(w::3s (? agr-out w::3s w::3p))) (eq in2 'w::3s))
 	(match-vals nil out (read-expression '(? agr-out w::3s w::3p)))
       (match-vals nil out 'w::3p)
       )
@@ -283,13 +283,13 @@
 	(result (get-fvalue args 'w::result)))
     (case spec
       ((ONT::DEFINITE W::DEFINITE)
-       (if (match-vals nil agr 'w::|3P|) ;(equal agr 'w::|3P|) ; agr can be a variable
-	   (match-vals nil result 'ONT::DEFINITE-PLURAL)
-	 (match-vals nil result 'ONT::DEFINITE)))
+       (if (match-vals nil agr 'w::|3S|) ;(equal agr 'w::|3P|) ; agr can be a variable
+	   (match-vals nil result 'ONT::DEFINITE)
+	 (match-vals nil result 'ONT::DEFINITE-PLURAL)))
       ((ONT::INDEFINITE W::INDEFINITE)
-       (if (match-vals nil agr 'w::|3P|) ;(equal agr 'w::|3P|)
-	   (match-vals nil result 'ONT::INDEFINITE-PLURAL)
-	 (match-vals nil result 'ONT::INDEFINITE)))
+       (if (match-vals nil agr 'w::|3S|) ;(equal agr 'w::|3P|)
+	   (match-vals nil result 'ONT::INDEFINITE)
+	 (match-vals nil result 'ONT::INDEFINITE-PLURAL)))
       ((ONT::wh ONT::what ONT::which ONT::whose ONT::*wh-term*)
        (if (match-vals nil agr 'w::|3P|) ;(equal agr 'w::|3P|)
 	   (match-vals nil result 'ONT::WH-PLURAL)
@@ -373,7 +373,26 @@
    ((or (null oldconstraint) (eq oldconstraint '-) (var-p oldconstraint))
     (match-vals nil newconstraintvar (make-constit :cat '& :feats feats))
     )))
-  
+
+(define-predicate 'w::add-constraints-to-lf
+  #'(lambda (args)
+      (add-constraint-to-LF args)))
+
+(defun add-constraint-to-LF (args)
+  "takes an LF and adds new constraints and returns a *PRO* structure (so it can override the original LF!)"
+  (let* ((lf (second (assoc 'w::lf args)))
+	 (oldconstraint (get-value lf 'w::constraint))
+	 (newc (second (assoc 'w::new args)))
+	 (result (second (assoc 'w::result args)))
+	 (newlf (add-feature-value (replace-feature-value lf 'w::constraint 
+					       (make-constit :cat '& 
+							     :feats  (append newc
+									     (remove-if #'(lambda (c) (eq (car c) '-))
+											(constit-feats oldconstraint)))))
+				   'w::status (constit-cat lf))))
+    (setf (constit-cat newlf) 'w::*PRO*)
+    ;(format t "Received ~S with new constaints ~S ~% New constraint is ~S " lf newc newlf)
+    (match-vals nil result newlf)))
   
 (define-predicate 'w::Append-conjuncts
   #'(lambda (args)
@@ -585,7 +604,23 @@
       (progn
 	(format t "~%Failed trying to cons ~S to ~S" out (cons in1 in2))
 	nil))))
-		
+
+(define-predicate 'w::simple-cons1
+  #'(lambda (args)
+      (simple-cons args)))
+
+(defun simple-cons (args)
+  (let ((in1 (second (assoc 'w::in1 args)))
+        (in2 (second (assoc 'w::in2 args)))
+	(OUT (second (assoc 'w::out args))))
+    ;(if (and (symbolp in1) (listp in2))
+      (match-vals nil out
+		  (cons in1 in2))
+      ;(progn
+	;(format t "~%Failed trying to cons ~S to ~S" out (cons in1 in2))
+	;nil)
+))
+
 (define-predicate 'W::substitute-vars
   #'(lambda (args)
       (subst-var args)))
@@ -665,7 +700,7 @@
       (if (consp x)
 	  (cond
 	    ((eq (car x) 'w::decimal-point)
-	     (calculate-fraction-value (add-em-up (second x)) (add-em-up (third x))))
+	     (calculate-fraction-value (add-em-up (second x)) (add-em-up (third x)) (fourth x)))
 	    ((eq (car x) 'w::fraction)
 	     (calculate-fraction (add-em-up (second x)) (add-em-up (third x))))
 	    ((eq (car x) '+)
@@ -685,11 +720,14 @@
 	  0)))
 
 
-(defun calculate-fraction-value (n1 n2)
+(defun calculate-fraction-value (n1 n2 decimal-places) ; n1=2; n2=5 decimal-places=2 --> 2.05
   "Given n1 and n2, return the value n1.n2, taking into account that n1 may be positive or negative"
   ;; convert n2 into a fractional value
   ;;(loop while (>= n2 1) do (setq n2 (* n2 0.1)))   -- this gets us into trouble with floating poitn arithmetic!
-  (setq n2 (read-from-string (format nil ".~A" n2)))
+  (if decimal-places
+      (setq n2 (read-from-string (format nil ".~v,,,'0@A" decimal-places n2)))
+      (setq n2 (read-from-string (format nil ".~A" n2)))
+    )
   (if (>= n1 0)
       (+ n1 n2)
       (- n1 n2)

@@ -19,7 +19,7 @@
 	       ))
   
 (define-feature-list-type F::Situation
-    :features (F::aspect F::time-span F::cause F::trajectory F::locative F::intentional F::information F::container F::kr-type F::type f::origin f::iobj)
+    :features (F::aspect F::time-span F::cause F::trajectory F::locative F::intentional F::information F::container F::kr-type F::type f::origin f::iobj f::tangible)
     :defaults (
 	       (F::type ont::situation) 	       
 	       (F::intentional -)
@@ -29,6 +29,7 @@
 	       (F::Locative -)
 	       (f::origin f::any-origin)
 	       (f::iobj -)
+	       (f::tangible -)
 	       )) 
 
 ;; swier added gradability feature
@@ -48,6 +49,7 @@
 	       (F::tangible -)
 	       ))
 
+#|
 (define-feature-list-type F::Proposition
     :features (F::intentional F::information F::container F::gradability F::kr-type f::type f::origin)
     :defaults (
@@ -57,15 +59,16 @@
 	       (F::information F::information-content) (F::container -)
 	       (f::origin f::any-origin)
 	       ))
- 
+|# 
 
 (define-feature-list-type F::time
-    :features (F::time-function f::scale F::time-scale F::kr-type f::type)
+  :features (F::time-function f::scale ;F::time-scale
+			      F::kr-type f::type)
     :defaults (
 	       (F::type ont::any-time-object)
 	       (F::time-function F::Any-time-function)
-	       (F::time-scale F::point)
-	       (f::scale -)
+	       ;(F::time-scale F::point)
+	       (F::SCALE ONT::TIME-LOC-SCALE) ;(f::scale -)
 	       ;;ont::time-measure-scale) ;; a default -- we need f::scale to allow role restriction sharing between durations such as abstract quantities w/ times, like five minutes, which are (f::scale f::duration), and ont::time-intervals
 	       )
     )

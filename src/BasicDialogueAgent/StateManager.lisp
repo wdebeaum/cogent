@@ -105,6 +105,7 @@
   (immediately-prior-turns-that-failed 0)
   role 
   transcript   ;; record of interction to ease debugging
+  implicit-confirm-state
   )
 
 (defun save-pending-alarm (user msg)
@@ -396,6 +397,20 @@
   (send-status '(OK :in-state nil))
   (setf (user-current-dstate user) nil))
 
+(defun restore-implicit-confirm-state (user)
+  (trace-msg 2 "~%Restoring to state: ~S" (user-implicit-confirm-state user))
+  (setf (user-current-dstate user) (user-implicit-confirm-state user))
+  (setf (user-implicit-confirm-state user) nil))
+
+(defun remember-implicit-confirm-state (state user)
+  (trace-msg 2 "~%Storing state: ~S" (user-current-dstate user))
+  (setf (user-implicit-confirm-state user) (user-current-dstate user)))
+
+
+(defun clear-implicit-confirm-state (user)
+  (trace-msg 2 "~%Clearing stored implicit accept state: ~S" (user-implicit-confirm-state user))
+  (setf (user-implicit-confirm-state user) nil))
+
 (defun record-for-current-user (act user)
   (if (> (list-length act) 2)
       (let ((feature (cadr act))
@@ -557,8 +572,11 @@
   (let* ((user (lookup-user channel)))
     (trace-msg 1 "~%Processing END-OF-TURN message ...")
     (if (not *interpretable-utt*)
-	(uninterpretable-utterance-handler nil nil nil (if (user-p user) (user-channel-id user) channel)
-					   words nil nil user uttnum)
+	(progn
+	  (remember-implicit-confirm-state (current-dstate user) user)
+	  (uninterpretable-utterance-handler nil nil nil (if (user-p user) (user-channel-id user) channel)
+					     words nil nil user uttnum)
+	  )
       )
     (setq *interpretable-utt* nil)  ; reset for next turn
     (release-pending-speech-act)
@@ -634,6 +652,7 @@
 				 (mapcar #'execute-action (state-implicit-confirm dstate)))
 			     (trace-msg 2 "~%Popping state ~S to try triggers"
 					(state-id (current-dstate user)))
+			      (remember-implicit-confirm-state dstate user)
 			     (go-to-restart-state user)
 			     (check-for-triggers lfs hyps context newchannel words user *segments* uttnum))
 			   ;; we failed to interpret utterance, release send part of input and try again
@@ -665,6 +684,7 @@
 		      (mapcar #'execute-action (state-implicit-confirm dstate)))
 		  (trace-msg 2 "~%Popping state ~S to try triggers"
 			     (state-id (current-dstate user)))
+		  (remember-implicit-confirm-state dstate user)
 		  (go-to-restart-state user)
 		  (check-for-triggers lfs hyps context newchannel nil user *segments* uttnum))
 		;; we failed to interpret utterance, release send part of input and try again
@@ -1163,9 +1183,11 @@
 	(context (find-arg msg :context))
 	(content1 (find-arg-in-act content :content)))
     ;; quick hack as sometimes we get a multiply nested propose
-    (if (and (eq (car content) 'ont::propose) (consp content1) (member (car content1) '(ont::ask-if ont::ask-wh ont::clarify-goal ont::request ont::propose ont::answer ont::unacceptable ont::tell ont::assertion )))
+    (if (and (eq (car content) 'ont::propose)
+	     (consp content1)
+	     (member (car content1) '(ont::ask-if ont::ask-wh ont::clarify-goal ont::request ont::propose ont::answer ont::unacceptable ont::tell ont::assertion )))
 	(setq content content1))
-    
+    (trace-msg 2 "Quick generator processing ~S" content)
     (case (car content)
 	((ask-if ont::ask-if)
 	 (let* ((query (find-lf-in-context (find-arg-in-act content :query) context))
@@ -1188,12 +1210,14 @@
 	((ask-wh ont::ask-wh)
 	 (let ((query (find-lf-in-context (find-arg-in-act content :query) context))
 	       (what (find-lf-in-context (find-arg-in-act content :what) context)))
-	   (if (and query what))
-	   (let ((ground (find-lf-in-context (find-arg query :ground) context)))
-	     (if ground
-		 (concatenate 'string "What is the value of " (symbol-name (find-arg what :instance-of))
-					     " associated with " (or (symbol-name (find-arg ground :instance-of))
-								     (symbol-name (find-arg query :instance-of))))))))
+	   (if (and query what)
+	       (let ((ground (find-lf-in-context (find-arg query :ground) context)))
+		 (if ground
+		     (concatenate 'string "What is the value of " (symbol-name (find-arg what :instance-of))
+				  " associated with " (or (symbol-name (find-arg ground :instance-of))
+							  (symbol-name (find-arg query :instance-of))))
+		     )))
+	   ))
 	((ont::request request ont::propose propose)
 	 (let ((content1 (find-arg-in-act content :content)))
 	   (when (Consp content1)
@@ -1251,7 +1275,16 @@
 	      (format nil "Here is a graph of causal influences."))
 	     (execute-plan?
 	      "I'll execute the plan")
-	     )))
+	     (know-nothing
+	      "Sorry I don't know anything about that")
+	     (read-paper-already
+	      "OK. I already read that paper. What do you want to look at?")
+	     (this-is-what-i-know
+	      "OK. This is what I know")
+	     (remember-that
+	      "OK> I'll remember that")
+	     )
+	   ))
 	)
     ))
 
@@ -1326,6 +1359,7 @@
 
 (defun invoke-state (stateID push? user args uttnum &optional input)
   (let ((channel (user-channel-id user)))
+    (clear-implicit-confirm-state user)
     (trace-msg 1 "~S state ~S" (if (eq push? 'push) "Pushing" "Invoking") stateID)
     (record-transcript user 'invoke-state stateID)
     ;; ending a segment
@@ -1398,7 +1432,6 @@
   ;; sometimes state is not specified, and we get is from the USER record
   (if (and (null state) (user-p user))
       (setq state (current-dstate user)))
-  
   (if (or *disabled-wizard*   ;; do not invoke wizard if   (1) wizard is disabled
 	  (and state         ;; or we are in a non-critical state and haven'y exceeded the reask limit
 	       (and (not (member (state-id state) *critical-states-for-wizard*))
@@ -1408,9 +1441,10 @@
 	  )
       (progn
 	(when (not *silent-failures*) 
-	  (send-reply (pick-one '("Can you rephrase that?" "I didn't understand that. Can you rephrase?" "Sorry, I didn't catch that. Can you rephrase?")) 
+	  (send-reply (pick-one '("Can you rephrase that please?" "I didn't understand that. Can you rephrase please?" "Sorry, I didn't catch that. Can you rephrase please?")) 
 		      channel)
 	  (update-prior-failures user)
+	  (restore-implicit-confirm-state user)
 	  (reask-question user channel uttnum))
 	;(release-pending-speech-act)  ;; why is this here - we should be at the end of the utterance already?  ; this is for asma
 	(clear-pending-speech-acts uttnum channel) ; this is for cwc: clear q after the first uninterpretable fragment (i.e., no imrules match; IM sends INTERPRETATION-FAILED)
@@ -1471,7 +1505,7 @@
      (try-other-questions lfs words hyps context channel state segment-id user uttnum))
     (ignore
      (trace-msg 3 "Wizard said to ignore the utterance")
-     (if (state-triggered user)
+     (if (state-triggered state) ;(state-triggered user)
 	 (update-current-dstate nil nil user nil)))
     (wizard-took-over
      (trace-msg 3 "SHOULD NEVER GET HERE!!! Wizard taking over dialogue")

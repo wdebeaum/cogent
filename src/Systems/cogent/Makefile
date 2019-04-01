@@ -9,7 +9,7 @@ NAME = trips-cogent
 
 include ../Makefile-common
 
-CSM_DATA = events goals models goals-par
+CSM_DATA = events models goals-par
 
 # domain-specific terms for TextTagger
 DOM_TERMS = domain-terms.tsv

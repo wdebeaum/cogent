@@ -23,7 +23,7 @@
  :wordnet-sense-keys ("entity%1:03:00")
  :comment "The root type for all things that can be referred to: abstract meaning for THIS and IT"
  :parent ONT::ANY-SEM
- :sem ((? rst F::phys-obj F::abstr-obj F::situation F::proposition))
+ :sem ((? rst F::phys-obj F::abstr-obj F::situation))
 )
 
 
@@ -37,7 +37,7 @@
 (define-type ONT::situation-root
   :parent ont::referential-sem 
   :comment "root for all events, whether verbal or nominal"
-  :sem (F::Situation (F::Intentional -) (F::information F::mental-construct) (F::container -))
+  :sem (F::Situation (F::Intentional -) (F::information F::mental-construct) (F::container -) (f::tangible +))
   :arguments (;;(:optional ont::arg0)  ;; abstract role for robust processing
 	      ;;(:optional ont::arg1)   ;; abstract role for robust processing
 ;	      (:optional ont::norole)
@@ -52,8 +52,9 @@
      :comment "Events that involve change or force: should ahve an AGENT or AFFECTED role"
      :arguments ((:optional  ONT::agent ((? cau4 F::situation F::Abstr-obj f::phys-obj)))
 		 (:optional  ONT::affected ((? cau3a F::situation F::abstr-obj f::phys-obj) (F::tangible +)))
-		 (:optional  ONT::result ((? cau2 F::situation F::Abstr-obj f::phys-obj) (:default (F::type (? !t ont::position-reln)))))
-		 (:optional ONT::beneficiary ((? cau1 f::phys-obj))))
+		 (:optional  ONT::result (F::Abstr-obj (:default (F::tangible -) (F::type (? !t ont::position-reln)))))
+		 ;;(:optional ONT::beneficiary ((? cau1 f::phys-obj))))
+		 )
      :sem (F::Situation (F::aspect F::dynamic))
      )
 
@@ -169,7 +170,7 @@
 (define-type ont::domain-property
     :parent ont::abstract-object
     :comment "these are modifiers that characterize an object/event with respect to a scale/domain (in ONT::DOMAIN)"
-    :sem (F::abstr-obj )
+    :sem (F::abstr-obj (F::Scale ont::domain))
     :arguments ((:REQUIRED ONT::FIGURE)
 		(:ESSENTIAL ONT::GROUND)
 		(:ESSENTIAL ONT::SCALE)

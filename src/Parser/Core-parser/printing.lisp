@@ -3,7 +3,7 @@
 ;;;
 ;;; Author:  James Allen <james@cs.rochester.edu>
 ;;;
-;;; Time-stamp: <Thu Jun 28 17:19:29 EDT 2018 james>
+;;; Time-stamp: <Sun Nov 18 18:02:04 EST 2018 james>
 
 (in-package "PARSER")
 
@@ -510,7 +510,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
   (when term
     (if (consp term) 
       (if (eq (car term) 'term)
-	  (add-lex-if-necessary (or (add-positional-info (find-arg-in-act term :lf) term) term) term)
+	  (add-orig-lex-if-necessary (add-lex-if-necessary (or (add-positional-info (find-arg-in-act term :lf) term) term) term) term)
 	  (mapcar #'extract-lf-from-term term))
       term)))
 
@@ -521,12 +521,21 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	      (list :start (find-arg-in-act term :start) :end (find-arg-in-act term :end)))))
 
 (defvar *add-lex-to-lf* nil)
+(defvar *add-orig-lex-to-lf* nil)
 
 (defun add-lex-if-necessary (lf term)
   (if (and *add-lex-to-lf* (consp term))
       (let ((lex (find-arg-in-act term :lex)))
 	(if lex
 	    (append lf (list :lex lex))
+	    lf))
+      lf))
+
+(defun add-orig-lex-if-necessary (lf term)
+  (if (and *add-orig-lex-to-lf* (consp term))
+      (let ((orig-lex (find-arg-in-act term :orig-lex)))
+	(if orig-lex
+	    (append lf (list :orig-lex orig-lex))
 	    lf))
       lf))
 
@@ -1189,6 +1198,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 (sem (get-fvalue desc 'w::sem))
          (input (get-fvalue desc 'w::input)) 
          (lex (get-fvalue desc 'w::lex))
+	 (orig-lex (get-fvalue desc 'w::orig-lex))
 	 (var (convert-to-package (get-fvalue desc 'w::var) *ont-package*))
 	 (start (get-fvalue desc 'W::start))
 	 (end (get-fvalue desc 'w::end))
@@ -1220,7 +1230,12 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
       (if (or (null form) (member 'w::var form))(setq term (append term (list :VAR var))))
       (if (or (null form) (member 'w::sem form)) (setq term (append term (list :SEM sem))))
       (if (and *add-lex-to-lf* lex)
-	  (setq term (replace-arg-in-act term :lf (append newlf (list :LEX lex)))))
+	  (progn 
+	    (setq term (replace-arg-in-act term :lf (append newlf (list :LEX lex))))
+	    (setq newlf (append newlf (list :LEX lex)))
+	    ))
+      (if (and *add-orig-lex-to-lf* orig-lex)
+	  (setq term (replace-arg-in-act term :lf (append newlf (list :ORIG-LEX orig-lex)))))
       (if (and input (or (null form) (member 'w::input form)))
 	  (setq term (append term (list :INPUT input)))
         )
@@ -1269,19 +1284,20 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
   (cond
    ((isvar expr)
     (let* ((vnam (second expr))
-       (val (third expr))
-       (negated (fourth expr));;(eql (char (symbol-name vname) 0) #\!))
+	   (val (third expr))
+	   (negated (or (fourth expr) (and (symbolp vnam) (eql (char (symbol-name vnam) 0) #\!))))
        )
-      (if (listp val)
-      (let ((reduced-val (remove-if #'null val)))
-        (if (eql (list-length reduced-val) 0)
-        nil
-        (if (eql (list-length reduced-val) 1)
-            (car reduced-val)
-	    (if (eq (car reduced-val) '$)
-            (mapcar #'clean-out-vars reduced-val)
-            (car val)))))
-      val)))
+      (when (not negated)
+	(if (listp val)
+	  (let ((reduced-val (remove-if #'null val)))
+	    (if (eql (list-length reduced-val) 0)
+		nil
+		(if (eql (list-length reduced-val) 1)
+		    (car reduced-val)
+		    (if (eq (car reduced-val) '$)
+			(mapcar #'clean-out-vars reduced-val)
+			(car val)))))
+	  val))))
    ((consp expr)
     (if (eq (car expr) 'w::sem)
 	(if (consp (cadr expr))
@@ -1563,6 +1579,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
          (constraints (get-fvalue args 'w::constraint))
          (tma (get-fvalue args 'w::tma))
 	 (lex (get-fvalue args 'W::lex))
+	 (orig-lex (get-fvalue args 'w::orig-lex))
          (roles (build-roles-for-lf var constraints))
          (input (get-fvalue args 'w::input))
 	 (start (get-fvalue args 'W::start))
@@ -1580,7 +1597,12 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
     (if (or (null form) (member 'w::var form)) (setq term (append term (list :VAR var))))
     (if (or (null form) (member 'w::sem form)) (setq term (append term (list :SEM (get-fvalue args 'w::sem) ))))
     (if (and *add-lex-to-lf* lex)
-	(setq term (replace-arg-in-act term :lf (append new-lf (list :LEX lex)))))
+	(progn
+	  (setq term (replace-arg-in-act term :lf (append new-lf (list :LEX lex))))
+	  (setq new-lf (append new-lf (list :LEX lex)))
+	  ))
+    (if (and *add-orig-lex-to-lf* orig-lex)
+	(setq term (replace-arg-in-act term :lf (append new-lf (list :ORIG-LEX orig-lex)))))
     (if (or (null form) (and (member 'w::input form) input))
       (setq term (append term (list :INPUT input)))
         )
@@ -2029,8 +2051,11 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 ((ont::by-means-of ont::with-instrument) :method)
 	 ((ont::beneficiary) :beneficiary)
 	 ((ont::source-reln) :source)
-	 ((ont::manner ont::abstract-object-property ont::pivot) :manner)
+	 (;(ont::manner ont::abstract-object-property ont::pivot) :manner)
+	  ;(ont::manner ont::property-val) :manner)
+	  (ont::manner ont::process-val) :manner) ; e.g., quickly
 	 ((ont::likelihood ont::qualification) :qualification)
+	 ((ont::in-scale) :scale)
 	 )
 	((ont::referential-sem :mod)  ; agentnom and missing head
 	 ((ont::position-reln ) :location)

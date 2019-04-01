@@ -8,6 +8,7 @@
 ;;; declares all features as arbibtary vars to override default - features
 (define-type ONT::FACT
  :parent ONT::ABSTRACT-OBJECT-nontemporal
+ :sem (F::Abstr-obj (f::tangible +)) ; facts shouldn't be tangible, but we have it here so that we can add/remove facts (from a graph)
  :arguments ((:optional ONT::formal)
 	     )
  )
@@ -41,6 +42,12 @@
 (define-type ONT::social-practice
  :parent ONT::mental-construction
  :wordnet-sense-keys ("custom%1:09:00" "practice%1:09:00" "habit%1:09:00" "routine%1:04:00")
+)
+
+
+(define-type ont::desire
+ :parent ont::mental-construction
+ :wordnet-sense-keys ("desire%1:07:00" "appetite%1:12:00")
 )
 
 ; perceptual-construction
@@ -102,7 +109,8 @@
 
 (define-type ONT::grouping
     :comment "a  classification, category, variety of things. Not a set of objects!"
-    :parent ONT::version
+    ;:parent ONT::version
+    :parent ont::kind
     )
 
 (define-type ONT::FUNCTION-OBJECT
@@ -183,11 +191,12 @@
  )
 
 (define-type ont::group-object-abstr
- :wordnet-sense-keys ("mathematical_group%1:09:00" "group%1:09:00" "chemical_group%1:27:00" "radical%1:27:00" "group%1:27:00" "group%1:03:00" "grouping%1:03:00")
-  :parent ont::abstract-object-nontemporal
-;  :sem (F::Abstr-obj (f::group +)) ; group feature not defined for abstract objects
-  :arguments ((:OPTIONAL ONT::FIGURE)
-              )
+    :wordnet-sense-keys ("mathematical_group%1:09:00")
+    :comment "a formal concept of a group of objects, e.g., mathematical"
+    :parent ont::abstract-object-nontemporal
+					;  :sem (F::Abstr-obj (f::group +)) ; group feature not defined for abstract objects
+    :arguments ((:OPTIONAL ONT::FIGURE)
+		)
   )
 
 (define-type ONT::system-abstr
@@ -358,7 +367,7 @@
 ;;; objects: identity, distance, whatever. Will need better sorting at
 ;;; a future data
 (define-type ONT::relation
- :wordnet-sense-keys ("relation%1:03:00" "amount%2:42:03" "bear_on%2:42:00")
+ :wordnet-sense-keys ("relation%1:03:00" "amount%2:42:03")
  :parent ONT::abstract-object
  :arguments ((:REQUIRED ONT::FIGURE)
 	     (:REQUIRED ONT::GROUND)
@@ -560,7 +569,7 @@
  )
 
 (define-type ONT::LENGTH-UNIT
- :wordnet-sense-keys ("linear_measure%1:23:00" "linear_unit%1:23:00" "week%1:28:00" "hebdomad%1:28:00")
+ :wordnet-sense-keys ("linear_measure%1:23:00" "linear_unit%1:23:00")
  :parent ONT::tangible-unit
  :sem (F::Abstr-obj (F::Scale ONT::LINEAR-EXTENT-SCALE)) ;ONT::LINEAR-D)) ; Ont::length))  ; e.g., km: not just length but could also be width, height, etc
  )
@@ -688,12 +697,11 @@
 ;; three fold
 (define-type ONT::multiple
  :parent ONT::MATHEMATICAL-TERM
- :sem (F::Abstr-obj (F::Scale ?sc))  ; "by three fold" needs scale
+ :sem (F::Abstr-obj (F::Scale ont::DOMAIN))  ; "by three fold" needs scale
  )
 
 ;; percent
 (define-type ONT::percent
- :wordnet-sense-keys ("percent%1:24:00" "per_centum%1:24:00" "pct%1:24:00")
 ; :parent ONT::quantitative-relation
  :parent ONT::FORMAL-UNIT
  :sem (F::Abstr-obj (F::Scale Ont::percent-scale))
@@ -763,7 +771,8 @@
 (define-type ONT::message
      :wordnet-sense-keys ("message%1:10:01")
      :parent ont::information-function-object
-     :arguments ((:optional ONT::formal (F::prop)))
+     ;:arguments ((:optional ONT::formal (F::prop)))
+     :arguments ((:optional ONT::formal (F::situation)))
 )
 
 (define-type ONT::composition
@@ -774,9 +783,10 @@
 
 ;; information
 (define-type ONT::information
- :wordnet-sense-keys ("information%1:09:00" "information%1:10:00" "info%1:10:00" "indication%1:10:00")
+ :wordnet-sense-keys ("information%1:09:00" "information%1:10:00" "info%1:10:00" "indication%1:10:00" "vital_sign%1:26:00")
  :parent ONT::information-function-object
- :arguments ((:optional ONT::formal (F::prop))) ; copied from ONT::MESSAGE
+ ;:arguments ((:optional ONT::formal (F::prop))) ; copied from ONT::MESSAGE
+ :arguments ((:optional ONT::formal (F::situation))) ; copied from ONT::MESSAGE
  )
 
 ;; create an ont::communication-object
@@ -848,7 +858,7 @@
   )
 
 (define-type  ONT::event-defined-by-activity
- :wordnet-sense-keys ("event%1:03:00" "time_period%1:28:00" "period_of_time%1:28:00" "period%1:28:00")
+ :wordnet-sense-keys ("event%1:03:00")
  :parent ONT::EVENT-TYPE
  :sem (F::Situation (F::aspect F::dynamic))
  :arguments ((:OPTIONAL ONT::FIGURE)
@@ -859,6 +869,9 @@
 (define-type ONT::caused-event
  :parent ONT::EVENT-TYPE
  :sem (F::situation (F::cause (? cause F::agentive F::force)))
+ :arguments ((:OPTIONAL ONT::FIGURE)
+	     (:OPTIONAL ONT::FORMAL)
+             )
  )
 
 ;;; The difference between actions and events is that actions have agents
@@ -1001,7 +1014,6 @@
 
 ;; idea
 (define-type ONT::mental-object
- :wordnet-sense-keys ("cognition%1:03:00" "noesis%1:03:00" "grounds%1:10:00" "reason%1:10:00")
  :parent ONT::mental-construction
 ;; :sem (F::Abstr-obj (F::container +))
  :arguments ((:OPTIONAL ONT::FIGURE) ;(f::situation (f::information f::mental-construct) (f::cause f::mental)))
@@ -1062,7 +1074,7 @@
 
 ;; reason, motivation
 (define-type ONT::motive
-  :wordnet-sense-keys ("motivation%1:03:00")
+  :wordnet-sense-keys ("motivation%1:03:00" "reason%1:10:00")
  :parent ONT::mental-object
  :arguments (
 ;	     (:optional ONT::Associated-information)
@@ -1116,7 +1128,7 @@
  )
 
 (define-type ONT::method
-     :wordnet-sense-keys ("manner%1:07:01" "method%1:09:00")
+     :wordnet-sense-keys ("manner%1:07:01" "method%1:09:00" "way%1:04:01")
      :parent ONT::ps-object
      )
 

@@ -813,7 +813,7 @@ fake KQML message using <code>receive_request</code>. The taggers in the <a href
 <p>For lattice format only, TextTagger combines tags that are for the same span of text. These may come from different taggers, or the same tagger may output multiple different tags representing different options for interpreting the text, or representing different kinds of information. For the gory details on how this combination is done, see <a href="../Perl/TextTagger/CombineTags.pm"><code>CombineTags.pm</code></a>. But the general strategy is described here.</p>
 <p>There are a couple things to note before we get to combining tags for the same span, which involve combining tags for different spans. First, if we have a sense tag for a span with no POS information at all, it usually means it's a sense tag for a multi-word expression that was never itself POS-tagged. But the individual words might have been. So we look at POS tags for spans contained within the sense tag's span, and using some simple heuristics, we try to guess the POS for the whole span. Failing that, we guess that it's a noun of some kind and print a warning. (This part is in <a href="../Perl/TextTagger/ExtraArgs.pm"><code>ExtraArgs.pm</code></a>.)</p>
 <p>Second, we remove phrase tags that overlap with other phrase tags without nesting. For example, if the input is "A B C", and we get phrase tags covering "A B", "B C", and "A B C", the first two will be removed. We always do this; it's not affected by the <a href="#sec-3.1.15."><code>-parsers-must-agree</code></a> option.</p>
-<p>Now we come back to combining tags for the same span. We divide the set of tags into POS (with no sense), sense (with optional POS), phrase, and other tags. We discard the other tags (which are things like clause, quotation, and spaced-chunk tags that don't fit in the word/prefix/prefer messages), and if the <a href="#sec-3.1.15."><code>-parsers-must-agree true</code></a> option was given we keep a phrase tag only if all phrase taggers (parsers) that tagged the current text at all agree on it (otherwise we keep all phrase tags). We combine sense tags for the same set of senses (and parts of speech if they have them) and take the union of their <code>:domain-specific-info</code>s. Sense tags without <code>:domain-specific-info</code> are combined even if their sense sets differ, by taking the union of the sets. As a special case, if we have exactly one sense tag from any of the input taggers (Input, TermsFromFile, TermsInput, or XMLInput), we use that and discard the rest. POS tags are more complicated.</p>
+<p>Now we come back to combining tags for the same span. We divide the set of tags into POS (with no sense), sense (with optional POS), phrase, and other tags. We also collect the set of alternate spellings (strings not tags). We discard the other tags (which are things like clause, quotation, and spaced-chunk tags that don't fit in the word/prefix/prefer messages), and if the <a href="#sec-3.1.15."><code>-parsers-must-agree true</code></a> option was given we keep a phrase tag only if all phrase taggers (parsers) that tagged the current text at all agree on it (otherwise we keep all phrase tags). We combine sense tags for the same set of senses (and parts of speech if they have them) and take the union of their <code>:domain-specific-info</code>s. Sense tags without <code>:domain-specific-info</code> are combined even if their sense sets differ, by taking the union of the sets. Any alternate spellings are added only to the senses that matched them; any left over are used to form a new sense option (though at this point it has no actual sense information, just the spelling). As a special case, if we have exactly one sense tag from any of the input taggers (Input, TermsFromFile, TermsInput, or XMLInput), we use that and discard the rest. POS tags are more complicated.</p>
 <p>Each POS tag may contain a set of multiple parts of speech. We divide the set of POS tags for a span into "intersected", "unioned", and "fallback" sets, based on which tagger they came from. We take the union of the unioned tags, and try to intersect that union with all of the intersected tags. Then we try to combine those POS tags with the sense tags that already have POS tags, again by taking the intersection with each sense's POS tags (if some senses have an empty intersection but others don't, the empty ones are eliminated). In several stages I won't go into here, we weaken this whole intersection process until we actually get some information out. Any sense tags that didn't start out with POS information get the set of POS tags we had before we intersected it with any of the other sense tags. If at the end we still don't have any POS tags, we just use the union of the fallback tags. The <code>:domain-specific-info</code> from any POS tags that have it is added to each combined POS tag if the combined tag has a (non-strict) subset of the set of parts of speech from the tag with the <code>:domain-specific-info</code>.</p>
 <p>Currently, POS tags from the Specialist tagger are the only fallback tags, and POS tags from the following taggers are unioned tags (the rest are intersected): POS (stanford-pos), StanfordParser, StanfordCoreNLP, CJParser, Enju, and the input taggers listed above. POS tags for multi-word expressions that were added as described above are also unioned.</p>
 </div>
@@ -982,7 +982,7 @@ as the clauses end up long enough, and they agree with other sources of clause t
 <td>sense</td>
 <td>X</td>
 <td>X</td>
-<td>Looks up biological mechanism terms for the Deep Reader for Understanding Mechanisms (DRUM). See the section on <a href="#sec-5.6.">The Drum tagger</a>.</td>
+<td>Looks up biological mechanism terms for the Deep Reader for Understanding Mechanisms (DRUM). See the section on <a href="#sec-5.7.">The Drum tagger</a>.</td>
 </tr><tr>
 <td>Enju</td>
 <td>clause, phrase, pos</td>
@@ -1221,6 +1221,13 @@ foo BarBaz don't 123,456 12EA56
 </div>
 
 <div class="section">
+<h3>Tagger/tag type dependency graph</h3>
+<p>This automatically-generated bipartite graph shows how taggers and tag types in TextTagger depend on each other. You can think of data as flowing along the edges forwards. And, roughly speaking, you can think of specifying a <a href="#sec-3.5.2."><code>:type</code></a> as selecting a subset of the nodes in this graph. Then TextTagger completes that subgraph by tracing the connected black edges backwards all the way to "input text", and forwards to the next tag type node(s) if a selected node was a tagger node. There is no final output node in the graph, because all of the tag types can affect the output (also, there are some non-tagger output stages not pictured; see <a href="#sec-4.1.2.">Combining tags</a>).</p>
+<p>Also note that each TRIPS system only includes a subset of the taggers. If your system includes Graphviz, you can regenerate this graph for that subset by running <code>make clean &amp;&amp; make</code> in <code><var>$TRIPS_BASE</var>/src/TextTagger/docs/</code>. Please take care not to commit such a partial graph. In order to generate the full graph you must have all of the taggers checked out.</p>
+<a href="tagger-deps.svg"><img src="tagger-deps.svg" style="max-width: 100%" /></a>
+</div>
+
+<div class="section">
 <h3>Table of LF types</h3>
 <p>Some tags (especially named-entity tags) have an associated LF type, and
 different LF types are emitted by different taggers. Note that sense tags
@@ -1285,7 +1292,7 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
 
 <div class="section">
 <h4>Scoring</h4>
-<p>The result of the table lookup has both the unnormalized form of the term constructed from the lattice entries, and the unnormalized form of each matching term from one of our data sources. These two forms are not in general the same, but they do normalize to the same string. We count the ways in which they differ (which can only involve letter case and the presence or absence of dashes; we ignore the specific type of dash used, and the amount of whitespace), and that contributes to a match score, along with the status of the term in the data source it came from, and whether a depluralized lattice entry contributed to the match. Higher scores are better (i.e. they are not costs, but benefits).</p>
+<p>The result of the table lookup has both the unnormalized form of the term constructed from the lattice entries, and the unnormalized form of each matching term from one of our data sources. These two forms are not in general the same, but they do normalize to the same string. We count the ways in which they differ (which can only involve letter case and the presence or absence of dashes; we ignore the specific type of dash used, and the amount of whitespace), and that contributes to a match score, along with the status of the term in the data source it came from, and whether a depluralized or spelling-corrected lattice entry contributed to the match. Higher scores are better (i.e. they are not costs, but benefits).</p>
 
 <p>The status score is a simple hand-built ranking of the status annotations from all of the data sources, ranging from 0 to 5 (except that we add 1 for terms from the BioEntities (BE) source, so it's really 0 to 6):</p>
 <table>
@@ -1304,6 +1311,8 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
 <td><code>fake</code></td></tr>
 </table>
 <p>(The <code>fake</code> status is for the <code>UP:etc</code> IDs added to the table to replace the excessive number of IDs that certain terms in UniProt have.)</p>
+
+<p>The spelling correction score is 0 if any spelling correction was necessary to match the term, 1 otherwise.</p>
 
 <p>The depluralization score is basically 2 if no depluralization was necessary to match the term, 1 if only one word in the term was depluralized, and 0 if more than one word was depluralized. But we also add the worst (i.e. minimum) score of any depluralized word in the term, which is between 0 and 1. That comes from the Specialist tagger, and it uses only the case/dash match score, because the other two components are not available to it. In total, the depluralization score is still between 0 and 2, because when the base score is 2 there is no worst score for a depluralized word, because there is no depluralized word.</p>
 
@@ -1363,13 +1372,14 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
   ) / 539
 </pre>
 
-<p>Finally, the status score, depluralization score, and case/dash score are themselves combined in a similar way:</p>
+<p>Finally, the status score, spelling correction score, depluralization score, and case/dash score are themselves combined in a similar way:</p>
 <pre>final_score =
-  ((((0
+  (((((0
   ) * 7 + status_score
+  ) * 2 + spelling_correction_score
   ) * 3 + depluralization_score
   ) * 2 + case_dash_score
-  ) / 41
+  ) / 83
 </pre>
 </div>
 
@@ -1578,6 +1588,119 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
 
 </div>
 
+<div class="section">
+<h3>How to write and/or integrate your own tagger in TextTagger</h3>
+<p>First, consider whether you actually need to do this. Look at the <a href="#sec-5.2.">table of taggers</a> to see if one of those taggers already does the thing you want to do, or can be configured to do so. The Input, NamesFromFile, TermsFromFile, TermsInput, and XMLInput taggers are particularly configurable. Many of those make use of TextTagger's <a href="#sec-4.2.">native tag format</a> for their configuration input.</p>
+<p>You may instead wish to bypass TextTagger entirely, and provide your input directly to the Parser. In that case, you should familiarize yourself with the <a href="#sec-4.1.">lattice message format</a> that the Parser expects. It may also help to look at some examples of TextTagger's output with <a href="#sec-3.5.4."><code>:imitate-keyboard-manager t</code></a> passed to <a href="#sec-3.5.">the tag request</a>.</p>
+<p>To write a tagger as part of TextTagger, you must write a Perl module under the <code>TextTagger</code> package (i.e. in <code><var>$TRIPS_BASE</var>/src/TextTagger/Perl/TextTagger/</code>), and it must push a hashref describing itself onto the <code>@TextTagger::taggers</code> array. You must also add a <code>use</code> statement using your module in the <code>Config.pm.in</code> file, under <code># all optional taggers</code> (preferably in alphabetical order). Note the <code>.in</code> ending: the build system uses this file as input when creating the <code>Config.pm</code> Perl module. Modify the <code>.in</code> version, not the automatically generated version. Do not commit <code>Config.pm</code>.</p>
+<p>See <a href="#sec-5.1.">a word on naming</a> for guidance on how to format the name of your tagger in various contexts, in order to be consistent with the other taggers. However, you probably don't need to create your own tag <em>type</em>; you can (and probably should) get away with reusing existing types such as <code>sense</code> and <code>pos</code>. If you do add a new tag type, you should add it to <code>@TextTagger::all_tag_types</code> in <code>TextTagger.pm</code>, and you'll probably need to handle it somehow in <code>CombineTags.pm</code> and/or <code>Tags2Trips.pm</code>.</p>
+
+<div class="section">
+<h4>Tagger description fields</h4>
+<p>The hashref describing your tagger can have the following fields:</p>
+<dl>
+ <dt><code>name</code> (required)</dt>
+  <dd>The name of your tagger, lowercase with underscores, e.g. <code>"mome_rath"</code>.</dd>
+ <dt><code>tag_function</code> (required)</dt>
+  <dd>The function to be called for each tag request that selects your tagger. Its arguments will be the TextTagger object (usually called <code>$self</code>), the input text string (if <code>input_text =&gt; 1</code> is specified), and the list (not listref) of tags that have been found so far (if <code>input_types</code> is specified). It should return the listref (not list) of tags found by your tagger.</dd>
+ <dt><code>output_types</code> (required)</dt>
+  <dd>A listref of the types of tags your tagger is capable of outputting. If your tagger is capable of outputting any type of tag, use <code>[@TextTagger::all_tag_types]</code>.</dd>
+ <dt><code>init_function</code> (optional)</dt>
+  <dd>The function to be called to initialize your tagger. Normally this will happen when TextTagger starts up, and your tagger is listed in an <a href="#sec-3.1.2."><code>-init-taggers</code> option</a>. It can also be called in response to an <a href="#sec-3.3."><code>init</code> or <code>re-init</code> request</a>. Its only argument will be <code>$self</code> (the TextTagger object).</dd>
+ <dt><code>fini_function</code> (optional)</dt>
+  <dd>The function to be called to finalize your tagger. Normally this will happen when TextTagger exits, and your tagger was previously initialized. Only taggers with <code>init_function</code>s may also have <code>fini_function</code>s. Your <code>fini_function</code> can also be called in response to a <a href="#sec-3.1.2."><code>fini</code> or <code>re-init</code> request</a>. Its only argument will be <code>$self</code> (the TextTagger object).</dd>
+ <dt><code>ready_function</code> (optional)</dt>
+  <dd>The function to be called to wait for your tagger to finish initializing. You can make your <code>init_function</code> merely start the initialization process in parallel with other taggers (e.g. by spawning an external process), and this function will be called after all taggers have started initializing but before any tag requests are processed. This parallelization can decrease TextTagger's overall startup time. It is optional, though; you may define an <code>init_function</code> without defining a <code>ready_function</code>, in which case your tagger will be considered ready when your <code>init_function</code> returns. Note that the return value of the <code>ready_function</code> is not used, only the timing of when it returns. Its only argument will be <code>$self</code> (the TextTagger object).</dd>
+ <dt><code>input_text</code> (optional)</dt>
+  <dd>A boolean that indicates whether your tagger uses the raw input text string, as opposed to using tags from other taggers as input. The default is false. Using both the input text and input tags is allowed; the text will be passed first.</dd>
+ <dt><code>input_types</code> (optional)</dt>
+  <dd>A listref of the types of tags your tagger needs as input. Listing a type here will cause TextTagger to pull in other taggers that can output that type if none are already pulled in. Note that this is a list of <em>tag types</em>, not taggers; taggers cannot directly depend on each other.</dd>
+ <dt><code>optional_input_types</code> (optional)</dt>
+  <dd>A listref of the types of taggers your tagger can use as input, but doesn't strictly need. Listing type here will cause TextTagger to make an effort to run your tagger only after all taggers that can output that type have already run, but it won't cause any new taggers to be pulled in just for the purpose of getting that tag type. You may list the same type as both an input type and an optional output type; in this case your tagger is a "loopy" tagger, and will run after the non-loopy taggers outputting that type. But it might or might not run after other loopy taggers for that type. Other kinds of cycles in the <a href="#sec-5.4.">dependency graph</a> are not allowed. (See also the last paragraph of the section on <a href="#sec-3.5.2."><code>:type</code></a>.)</dd>
+</dl>
+
+<p>Note that all the functions take <code>$self</code>, the TextTagger object, as their first argument. This is a <code>TripsModule</code> object, so you can use it to make requests of other TRIPS modules by calling the <code>send_and_wait</code> method. Some taggers also use <code>$self</code> to help propagate their parameters from <a href="#sec-3.1.">the command line</a>, <a href="#sec-3.2."><code>set-parameters</code> requests</a>, or <a href="#sec-3.5."><code>tag</code> requests</a>, but currently this is kind of ugly and requires cooperation in <code>TextTagger.pm</code> itself.</p>
+</div>
+
+<div class="section">
+<h4>Tagger template</h4>
+<p>In general, if you were to write a tagger Perl module called <code>MomeRaths.pm</code>, it should look something like this. Please do not cargo-cult copy-and-paste everything from this template, as some of it surely doesn't apply to your tagger. Update the comments, at least.</p>
+<blockquote><samp>
+package TextTagger::MomeRaths;
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(init_mome_raths ready_mome_raths fini_mome_raths tag_mome_raths);
+
+sub init_mome_raths {
+  my $self = shift;
+  # initialization code goes here, e.g. loading data, starting external processes
+}
+
+sub ready_mome_raths {
+  my $self = shift;
+  # do things like waiting for an external process to finish its initialization here
+}
+
+sub fini_mome_raths {
+  my $self = shift;
+  # finalization code goes here, e.g. stopping external processes
+}
+
+sub tag_mome_raths {
+  # for taggers that only need text input:
+  # my ($self, $input_text) = @_;
+  # for taggers that only need tag input:
+  # my ($self, @input_tags) = @_;
+  # for taggers that use both:
+  my ($self, $input_text, @input_tags) = @_;
+
+  my @output_tags = ();
+
+  # MAIN TAGGING CODE GOES HERE
+
+  # adding an example POS tag:
+  push @output_tags, {
+    type =&gt; 'pos',
+    start =&gt; $start,
+    end =&gt; $end,
+    lex =&gt; substr($input_text, $start, $end - $start),
+    'penn-pos' =&gt; ['NN', 'NNP'] # noun or proper noun (singular)
+  };
+
+  # a common pattern is to run a regex over the $input_text and tag the matches;
+  # the match2tag function in Util.pm helps with this by making the
+  # start/end/lex fields for you from the most recent match:
+  while ($input_text =~ /your regex here/g) {
+    push @output_tags, +{
+      type =&gt; 'sense',
+      lftype =&gt; ['GEOGRAPHIC-REGION'], # a list of ONT types
+      match2tag()
+    };
+  }
+
+  return [@output_tags];
+}
+
+push @TextTagger::taggers, {
+  # most of these fields are optional
+  name =&gt; 'mome_raths', # required
+  init_function =&gt; \&amp;init_mome_raths,
+  ready_function =&gt; \&amp;ready_mome_raths,
+  fini_function =&gt; \&amp;fini_mome_raths,
+  tag_function =&gt; \&amp;tag_mome_raths, # required
+  output_types =&gt; [qw(pos sense)], # required
+  input_text =&gt; 1,
+  input_types =&gt; ['sentence'],
+  optional_input_types =&gt; ['clause']
+};
+
+1;
+</samp></blockquote>
+
+</div>
+
+</div>
+
 </div>
 
 <div class="section">
@@ -1587,7 +1710,7 @@ to the tag request. Sense tags emitted by the Disambiguator tagger may also have
 <li>They convert most kinds of braces ( ([&lt; and &gt;]) ) to -LRB- and -RRB-, which are the Penn tags for Left Round Brace and Right Round Brace, which is wrong because [&lt;&gt;] are not round.</li>
 <li>They convert curly braces { and } to -LCB- and -RCB-, which are correct according to Penn, but why pick these out from all the other braces they say are "round"?</li>
 <li>Stanford Parser sometimes <em>doesn't</em> convert ( and ) to -LRB- and -RRB-, making the Lispy parse trees it outputs more difficult to interpret.</li>
-<li>They convert ". . ." to "..." (removing spaces).</li>
+<li>They convert ". . ." to "..." (removing spaces), and convert "…" to "..." (Unicode to ASCII).</li>
 <li>They convert " to `` or '', if they think it's the start or end of a quotation, respectively.</li>
 <li>They convert ' to ` in similar situations.</li>
 <li>They convert Unicode quote marks (except low ones and high-reversed-9 ones) to ASCII equivalents using backticks ` and apostrophes ', including right single quotes used as apostrophes in endings like "n't"/"n’t".</li>

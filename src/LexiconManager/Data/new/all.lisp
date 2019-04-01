@@ -16,6 +16,7 @@
    )
 ))
 
+#|
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :words (
    ((W::all w::inclusive)
@@ -27,6 +28,7 @@
     )
    )
 ))
+|#
 
 (define-words :pos W::adj :templ CENTRAL-ADJ-TEMPL
  :tags (:base500)
@@ -144,10 +146,16 @@
      )
     |#
     ((LF ONT::UNIVERSAL)
-     (example "all of the trucks")
-     (non-hierarchy-lf t)(TEMPL quan-cardinality-pl-templ)
+#|
+     (example "all of the trucks. all trucks")
+     (non-hierarchy-lf t)(TEMPL quan-pl-count-templ)
      (SYNTAX (W::agr (? agr W::3p)) (w::status ont::indefinite-plural))
      )
+|#
+     (example "all of the trucks.  all trucks")
+     (non-hierarchy-lf t)(TEMPL quan-cardinality-pl-templ);(TEMPL quan-count-mass-templ)
+     (SYNTAX (W::agr (? agr W::3p)) (w::status ont::indefinite-plural));(w::status ont::QUANTIFIER))
+     ) 
     ((LF ONT::UNIVERSAL)
      (example "all of the water")
      (non-hierarchy-lf t)(TEMPL quan-mass-TEMPL)
