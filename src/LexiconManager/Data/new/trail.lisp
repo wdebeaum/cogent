@@ -14,7 +14,7 @@
 )
 ))
 
-(define-words :pos W::V :templ agent-affected-xp-templ
+(define-words :pos W::V :TEMPL AGENT-AFFECTED-XP-NP-TEMPL
  :words (
   (W::trail
    (SENSES
@@ -22,6 +22,17 @@
      (LF-PARENT ONT::pursue)
  ; like track
      )
+
+    ((LF-PARENT ont::be-behind)
+     (example "she trailed the frontrunner by 7000 votes")
+     (TEMPL NEUTRAL-NEUTRAL1-XP-TEMPL)
+     )
+
+    ((LF-PARENT ont::be-behind)
+     (example "they are trailing" "the candidate trailed in the polls") 
+     (TEMPL neutral-templ)
+    )
+
     )
    )
 ))

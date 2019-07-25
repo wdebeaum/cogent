@@ -172,7 +172,8 @@
   (rule
    :description "A couple of times"
    :pattern '((ONT::INDEF-SET ?!x  (:* ONT::TIME-POINT ?!c))
-	      (ONT::F ?!x1  (:* ONT::MODIFIER W::A-COUPLE-OF))
+	      ;(ONT::F ?!x1  (:* ONT::MODIFIER W::A-COUPLE-OF))
+	      (ONT::F ?!x1  (:* ONT::PROPERTY-VAL W::A-COUPLE-OF))
 	      (ONT::EVAL (FREQUENCY-TO-NUMBER W::A-COUPLE-OF ?n))
 	      -how-often7>
 	      (HOWOFTEN :value ?n))

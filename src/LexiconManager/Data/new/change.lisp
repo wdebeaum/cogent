@@ -2,7 +2,7 @@
 ;;;; W::change
 ;;;;
 
-(define-words :pos W::v :templ AGENT-affected-XP-TEMPL
+(define-words :pos W::v :TEMPL AGENT-AFFECTED-XP-NP-TEMPL
  :tags (:base500)
  :words (
   (W::change
@@ -23,21 +23,8 @@
       (LF-PARENT ONT::change)
       (SEM (F::Aspect F::bounded) (F::Time-span F::atomic))
       (example "it changed in color / with time" "the room changed")
-      (templ affected-theme-xp-optional-templ  (xp (% W::PP (W::ptype (? pt w::in W::with)))))
+      (TEMPL AFFECTED-FORMAL-XP-OPTIONAL-TEMPL  (xp (% W::PP (W::ptype (? pt w::in W::with)))))
       )
    ))
 ))
 
-#|
-(define-words :pos W::v :templ agent-affected-xp-templ
- :words (
-  ((W::change (w::over)) ; not sure this works with morphology -- wdebeaum
-   (SENSES
-    ((meta-data :origin "verbnet-2.0" :entry-date 20060315 :change-date nil :comments nil :vn ("convert-26.6.2-1"))
-     (LF-PARENT ONT::replacement)
- ; like switch
-     )
-    )
-   )
-))
-|#

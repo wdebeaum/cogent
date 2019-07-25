@@ -14,12 +14,12 @@
 )
 ))
 
-(define-words :pos W::v :templ AGENT-THEME-XP-TEMPL
+(define-words :pos W::v :TEMPL AGENT-FORMAL-XP-TEMPL
  :words (
 ((W::chill w::out)
    (SENSES
-    ((LF-PARENT ont::evoke-calm)
-     (example "chill out")
+    ((LF-PARENT ont::experiencer-obj)
+     (example "He chilled out on the couch")
      (SEM (F::Aspect F::unbounded) (F::Time-span F::extended))
      (TEMPL affected-TEMPL)
      (meta-data :origin plow :entry-date 20050922 :change-date nil :comments nil)
@@ -29,7 +29,7 @@
 ))
 
 (define-words :pos W::V 
-  :templ agent-affected-xp-templ
+  :TEMPL AGENT-AFFECTED-XP-NP-TEMPL
  :words (
 (w::chill
  (senses

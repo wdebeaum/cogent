@@ -16,7 +16,10 @@ DOM_TERMS = domain-terms.tsv
 
 SYS_DATA_DIR = $(etcdir)/cogent
 
-install:: install-data
+install:: install-configs install-data
+
+install-configs:: TextTagger-*.conf
+	$(INSTALL_DATA) $^ $(etcdir)
 
 install-data:: ${CSM_DATA} ${DOM_TERMS} | ${SYS_DATA_DIR}
 	$(INSTALL_DATA) $^ ${SYS_DATA_DIR}

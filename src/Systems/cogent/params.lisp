@@ -1,13 +1,9 @@
 ;;PARSER, TEXTTAGGER and WORDFINDER settings
 
-;;(parser::setmaxchartsize 5000)
 (setf parser::*include-parse-tree-in-messages* '(w::lex)) ; for WebParser
 
 (setq *use-texttagger* T)
-;;(setf (parser::number-parses-to-find parser::*chart*) 2)
-;;(setf (parser::number-parses-desired parser::*chart*) 1)
 (setq parser::*filter-and-preparse-input* nil)
-;;(parser::setmaxchartsize 3000)
 ;;(setf (parser::flexible-semantic-matching parser::*chart*) t)
 
 ;;;; Parser options
@@ -47,7 +43,7 @@
 	;; max number of constituents built before stopping
 	((parser::setmaxnumberentries 3000))
 	;;
-	((parser::setmaxchartsize 3000))
+	((parser::setmaxchartsize 4000))
 	;;
 	;;(parser::*kr-type-info-desired* '(:WNsense :DRUM :wordnet))
 	;;
@@ -64,7 +60,7 @@
 	
 	((parser::customize-cost-table 
 	  '((ont::SA_QUERY 1.2) 
-	     (ont::SA_IDENTIFY 2) 
+	     (ont::SA_IDENTIFY 1.3) 
 	     (ont::SA_pred-fragment 2) 
 	     (ont::SA_request 1) 
 	     (ont::SA_YN-QUESTION 1) 

@@ -4,10 +4,10 @@
 
 (define-words :pos W::v 
  :words (
-  ((W::hang (W::out))
+  ((W::hang W::out)
    (wordfeats (W::morph (:forms (-vb) :past W::hung :pastpart W::hung)))   
    (SENSES
-    ((LF-PARENT ONT::WAIT)
+    ((LF-PARENT ONT::hang-out)
      (SEM (F::Aspect F::unbounded) (F::Time-span F::extended))
      (TEMPL AGENT-TEMPL)
      )
@@ -27,7 +27,7 @@
      )
     ((LF-PARENT ONT::ATTACH)
      (SEM (F::Cause F::Agentive) (F::Aspect F::bounded) (F::Time-span F::atomic))
-     (TEMPL AGENT-affected2-optional-TEMPL (xp (% W::pp (W::ptype W::to))))
+     (TEMPL AGENT-AFFECTED-AFFECTED1-XP-OPTIONAL-TEMPL (xp (% W::pp (W::ptype W::to))))
      )
     )
    )

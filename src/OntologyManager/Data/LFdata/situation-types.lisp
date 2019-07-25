@@ -33,8 +33,7 @@
 |#
 
 (define-type ONT::cause-effect
-    :wordnet-sense-keys ( "do%2:36:02" "make%2:36:08"
-					  "drive%2:35:00" "get%2:30:02" "open_up%2:30:00")
+    :wordnet-sense-keys ("do%2:36:02" "drive%2:35:00" "make%2:36:08" "open_up%2:30:00")
  :parent ONT::acting
  :comment "an AGENT causes some event to occur or proposition to become true. Usually the verbs that fall under this category are very general causal verbs that take other events as their arguments and are positive causes- i.e., events are caused to happen as opposed to negative causes as in an event is prevented."
  :sem (F::Situation (F::Cause (? cz F::Force f::agentive)) (F::Trajectory -))
@@ -57,16 +56,16 @@
              )
  )
 
-(define-type ONT::have-influence
- :wordnet-sense-keys ("interact%2:41:00")
- :comment "an AGENT causes some interaction with another agent"
- :parent ONT::CAUSE-EFFECT
- :arguments (
-	     (:REQUIRED ONT::formal (F::Situation (F::type ONT::objective-influence)))
- ))
 
+(define-type ONT::have-influence
+    :comment "an AGENT causes some influence another agent"
+    :definitions ((ONT::CAUSE-EFFECT :agent ?agent :formal (ONT::OBJECTIVE-INFLUENCE :affected ?affected)))
+    :parent ONT::CAUSE-EFFECT
+    :arguments (
+		(:REQUIRED ONT::formal (F::Situation (F::type ONT::objective-influence)))
+		))
+#|
 (define-type ONT::CAUSE-Interact
- :wordnet-sense-keys ("interact%2:41:00")
  :comment "an AGENT causes some interaction with another agent"
  :parent ONT::CAUSE-EFFECT
  :sem (F::Situation (F::Trajectory -))
@@ -74,14 +73,16 @@
 	     (:REQUIRED ONT::agent ((? o1 F::Situation F::Phys-obj f::abstr-obj)))
 	     (:ESSENTIAL ONT::agent1 ((? o2 F::Situation F::Phys-obj f::abstr-obj)))
              )
- )
+ )|#
+
+
 
 (define-type ONT::agent-interaction
  :parent ONT::event-of-action
   :wordnet-sense-keys ("interaction%1:04:00")
  :comment "events that involve the interaction of two or more agents"
- :arguments ((:ESSENTIAL ONT::Agent ((? atp F::phys-obj F::abstr-obj) (F::intentional +)))
-	     (:essential ONT::agent1 ((? cau3 F::Abstr-obj f::phys-obj) (F::intentional +)))
+ :arguments ((:ESSENTIAL ONT::Agent ((? atp F::phys-obj F::abstr-obj) (F::intentional +) (F::tangible +)))
+	     (:essential ONT::agent1 ((? cau3 F::Abstr-obj f::phys-obj) (F::intentional +) (F::tangible +)))
              )
  )
 
@@ -122,7 +123,7 @@
   )
 
 (define-type ONT::misinform
-  :wordnet-sense-keys ("misinform%2:32:00")
+  :wordnet-sense-keys ("misinform%2:32:00" "deceive%2:41:00" "misrepresent%2:32:00")
     :parent ONT::representative
     )
 
@@ -177,6 +178,7 @@
 (define-type ont::motion
  :parent ONT::EVENT-OF-causation
  :sem (F::Situation (F::Cause (? c F::Force -)) (F::Aspect F::Dynamic))
+ :wordnet-sense-keys ("movement%1:04:04")
  :comment "events of motion through some space (physical or abstract). Even though many motion verbs express simply undergoing motion, all these verbs allow to possibiliity of an AGENT"
  :arguments ((:REQUIRED ONT::affected ((? th1 f::phys-obj f::abstr-obj f::situation f::time) (F::mobility F::movable)))
              (:OPTIONAL ONT::Source)
@@ -197,7 +199,7 @@
 
 
 (define-type ONT::Awareness
- :wordnet-sense-keys ("think%2:31:00" "cogitate%2:31:00" "cerebrate%2:31:00")
+ :wordnet-sense-keys ("think%2:31:00" "cogitate%2:31:00" "cerebrate%2:31:00" "attention%1:09:00")
  :parent ONT::event-of-experience
  :sem (F::Situation (F::Cause F::Mental) (F::Trajectory -))
  :comment "a state in which an EXPERIENCER holds some attitude towards a proposition"
@@ -223,7 +225,7 @@
 
 
 (define-type ONT::Objective-influence
-    :wordnet-sense-keys ("force%1:07:01" "appeal%2:37:00" "keep_up%2:29:00" "retire%2:33:00" "stampede%2:38:01" "stampede%2:41:01" "trip%2:38:01" "unbalance%2:42:00" "undo%2:36:00")
+    :wordnet-sense-keys ("force%1:07:01" "keep_up%2:29:00" "retire%2:33:00" "stampede%2:38:01" "stampede%2:41:01" "trip%2:38:01" "unbalance%2:42:00" "undo%2:36:00" "affect%2:29:00" "affect%2:30:00")
     :parent ONT::EVENT-OF-causation
     :comment "an AGENT influences the AFFECTED role in some way (typically unspecified by the verb)"
     :sem (F::Situation (F::Trajectory -))
@@ -259,7 +261,7 @@
 
 
 (define-type ONT::Categorization
- :wordnet-sense-keys ("declare%2:32:04" "adjudge%2:32:00" "hold%2:32:11")
+ :wordnet-sense-keys ("adjudge%2:32:00" "declare%2:32:04" "hold%2:32:11")
  :parent ONT::event-of-action
  :sem (F::Situation (F::Cause F::Agentive (F::trajectory -)))
  :arguments ((:ESSENTIAL ONT::Agent ((? cog f::abstr-obj F::phys-obj F::situation))) ;(F::intentional +))) ;situation: It is characterized/marked by a decrease in temperature
@@ -319,7 +321,7 @@
 
 
 (define-type ONT::expectation
- :wordnet-sense-keys ("expect%2:31:00" "anticipate%2:31:00")
+ :wordnet-sense-keys ("expect%2:31:00" "anticipate%2:31:00" "expect%2:31:01")
  :parent ONT::attitude-of-belief
  :comment "EXPERIENCER expects some proposition to hold"
  :sem (F::SITUATION (F::Aspect F::static) (F::Time-span F::extended) (F::Trajectory -))
@@ -454,7 +456,7 @@
  )
 
 (define-type ONT::Request
- :wordnet-sense-keys ("request%2:32:01" "request%1:10:00" "call%2:41:04")
+ :wordnet-sense-keys ("call%2:41:04" "insist%2:32:00" "request%1:10:00" "request%2:32:01")
  :parent ONT::directive
  :comment "the generic directive act"
  :sem (F::Situation (F::Cause F::Agentive))
@@ -500,11 +502,8 @@
              )
  )
 
-;;; swift 10/27/06 changed f::origin f::human to f::origin f::living for e.g. "every dog hates a cat"; "plants love sunshine"
-;;; I conjoined Experiencer-subj with Experiencer-obj
-;;; swift 01/12/01 -- changed aspect feature f_static to F_Stage-Level to allow progressive
 (define-type ONT::Experiencer-emotion
- :wordnet-sense-keys ("like%2:37:05" "experience%2:37:00" "feel%2:37:00")
+ :wordnet-sense-keys ( "experience%2:37:00" "feel%2:37:00")
  :parent ONT::event-of-experience
  :sem (F::Situation (:required (F::Cause F::Mental))(:default (F::Aspect F::Stage-Level)))
  :arguments (
@@ -546,9 +545,29 @@
              )
  )
 
+(define-type ONT::cause-contact
+    :parent ONT::event-of-causation
+    :definitions ((ONT::CAUSE-EFFECT :agent ?agent :formal (ONT::CONNECTED :neutral ?agent :neutral1 ?affected)))
+    :arguments ((:required ONT::affected (F::Phys-obj))
+		(:required ONT::AGENT (F::Phys-obj (F::mobility F::movable)))
+		)
+    )
+
+
+; hit, strike
+(define-type ONT::HITTING
+    :wordnet-sense-keys ("beat%2:35:01" "hit%2:35:03" "strike%2:35:01" )
+    :comment "an agent comes into contact with force with another object, typically harming the other object"
+					; :parent ONT::MOTION
+    :parent ONT::cause-contact
+    :sem (F::SITUATION (F::Trajectory -))
+    
+    )
+
+
 (define-type ONT::touch
     :wordnet-sense-keys ("touch%2:35:00" "touch%1:04:00")
-    :parent ONT::event-of-causation
+    :parent ONT::cause-contact
     )
 
 (define-type ONT::apply-force
@@ -566,12 +585,27 @@
              )
  )
 
+(define-type ONT::cause-position
+    :parent ont::event-of-causation
+    :arguments ((:ESSENTIAL ONT::affected-result)
+		(:optional ont::affected1)
+		)
+    )
+
 (define-type ONT::cause-cover
- :wordnet-sense-keys ("impregnate%2:30:00" "saturate%2:30:04" "spread%2:35:13")
- :parent ont::event-of-causation
- :arguments ((:ESSENTIAL ONT::affected-result)
-             )
- )
+    :wordnet-sense-keys ("cover%2:35:00" "cover%2:35:14"
+					  "cover%2:35:01" "impregnate%2:30:00" "saturate%2:30:04")
+    :parent ont::cause-position
+    )
+
+(define-type ONT::orient
+    :comment "cause an AFFECTED to be oriented in some direction"
+    :definitions ((ONT::CAUSE-EFFECT :agent ?agent
+				     :formal (ONT::POINTING-TO :neutral ?affected)))
+    :wordnet-sense-keys ("direct%2:33:00" "take_aim%2:33:00" "train%2:33:00" "point%2:32:00"
+					  "point%2:33:02")
+    :parent ont::cause-position
+    )
 
 ;;; Even if we do not know the path, it is implied in the verb
 (define-type ONT::Path-shape
@@ -698,7 +732,7 @@
 ;;; general class for ingesting, eat, drink, take (drugs), ...
 ;;; NB: figure out about feed.
 (define-type ONT::consume
- :wordnet-sense-keys ("consume%2:34:00" "ingest%2:34:00" "take_in%2:34:00" "take%2:34:00" "have%2:34:00")
+ :wordnet-sense-keys ("consume%2:34:00" "ingest%2:34:00" "take_in%2:34:00" "take%2:34:00" "have%2:34:00" "swallow%2:34:00")
  :parent ONT::event-of-causation
  :sem (F::Situation (:required (F::trajectory -))(:default (F::Cause F::agentive) (F::aspect F::dynamic) (F::time-span F::extended)))
  :arguments ((:REQUIRED ONT::Agent (F::Phys-obj (f::origin f::living)))
@@ -714,9 +748,11 @@
  )
 
 (define-type ONT::eat
- :wordnet-sense-keys ("eat%2:34:00" "eat%2:34:02")
+ :wordnet-sense-keys ("eat%2:34:00" "eat%2:34:02" "taste%2:34:00")
  :parent ONT::consume
-  :arguments ((:REQUIRED ONT::Affected (F::Phys-obj (F::Form (? f f::solid f::solid-object)))))
+ :arguments
+ ((:REQUIRED ONT::Affected (F::Phys-obj (F::Form (? f f::solid f::solid-object))
+					(f::type (? t ont::food F::organism)))))
  )
 
 
@@ -830,7 +866,7 @@
  :sem (F::Situation (F::Aspect F::static) (F::Time-span F::extended) (F::Trajectory -))
  :arguments ((:REQUIRED ONT::neutral )
 	     ;; this is still here until we decide what to do with the formal-pred mappings for be
-	     (:essential ONT::formal (F::Abstr-obj (f::type (? cbd ont::domain-property ont::position-reln))))
+	     (:essential ONT::formal (F::Abstr-obj (f::type (? cbd ont::domain-property ont::position-reln ont::predicate ont::relation)))) ; ont::predicate: with, without, around; ont::relation: the same
 ;             (:ESSENTIAL ONT::PROPERTY ((? oc2 F::abstr-obj))) ;; only properties (preds) -- for event nouns use ont::have-experience or ont::participating
              )
  )
@@ -921,6 +957,19 @@
  :sem (F::situation (F::Aspect F::static) (F::Time-span F::extended))
  )
 
+(define-type ONT::be-ahead
+ :wordnet-sense-keys ("lead%2:42:01")
+ :arguments ((:ESSENTIAL ONT::NEUTRAL1 ((? bb F::Phys-obj F::Abstr-obj))))
+ :parent ONT::in-relation
+ )
+
+ (define-type ONT::be-behind
+ :wordnet-sense-keys ("lag%2:38:00" "trail%2:38:02")
+ :arguments ((:ESSENTIAL ONT::NEUTRAL1 ((? bb F::Phys-obj F::Abstr-obj))))
+ :parent ONT::in-relation
+ )
+
+
 (define-type ONT::comprise
  :wordnet-sense-keys ("consist%2:42:04")
  :parent ONT::in-relation
@@ -962,7 +1011,6 @@
 
 ;; e.g., my leg hurts, he itches, They tired of the game
  (define-type ONT::experiencer-obj
- :wordnet-sense-keys ("itch%2:39:02" "ache%2:39:00")
  :parent ONT::event-of-undergoing-action
  :sem (F::Situation (F::aspect F::dynamic) (F::cause F::agentive))
  :arguments (;; (:REQUIRED ONT::cause) ;; this used to include other verbs, but now is a formal (part or an experiencer), or experiencer
@@ -984,17 +1032,20 @@
 ;; for verbs consistent with ont::affect class but select for sentient entities in the object role -- e.g.
 ;; confuse, bother, annoy
 (define-type ONT::affect-experiencer
- :wordnet-sense-keys ("come_to%2:39:00")
- :parent ONT::event-of-causation
- :sem (F::Situation (F::aspect F::dynamic) (F::cause F::agentive))
- ;; using f::origin f::living here, but this also includes plants -- no easy way to exclude those but include animals with current feature hierarchy ;-(
- :arguments ((:REQUIRED ONT::agent)
- 	     (:REQUIRED ONT::affected (F::phys-obj (F::origin f::living)))
-             )
- )
+    :wordnet-sense-keys ("come_to%2:39:00")
+    :comment "cause an experience on an cognitive agent"
+    :definitions ((ont::cause-effect :agent ?agent
+				     :formal (ont::event-of-experience :experiencer ?affected)))
+    :parent ONT::event-of-causation
+    :sem (F::Situation (F::aspect F::dynamic) (F::cause F::agentive))
+    ;; using f::origin f::living here, but this also includes plants -- no easy way to exclude those but include animals with current feature hierarchy ;-(
+    :arguments ((:REQUIRED ONT::agent)
+		(:REQUIRED ONT::affected (F::phys-obj (F::origin f::living)))
+		)
+    )
 
 (define-type ont::control-manage
- :wordnet-sense-keys ("control%2:41:00" "control%1:04:00""command%2:41:00" "discharge%2:33:01" "direct%2:41:00" )
+ :wordnet-sense-keys ("control%2:41:00" "control%1:04:00""command%2:41:00" "discharge%2:33:01")
  :comment "an agent controls another object, typically by some manipulation (physical, adding a substance,...)"
  :parent ont::event-of-causation
  :arguments ((:REQUIRED ont::affected ((? th9 f::situation F::PHYS-OBJ F::ABSTR-OBJ)))
@@ -1018,7 +1069,7 @@
 
 ;; try, attempt
 (define-type ONT::TRY
- :wordnet-sense-keys ("try%1:04:00" "endeavour%1:04:00" "endeavor%1:04:00" "effort%1:04:00" "attempt%1:04:00" "try%2:29:00" "try_on%2:29:00" "taste%2:34:00" "try_out%2:34:00" "try%2:34:00" "sample%2:34:00" "essay%2:41:01" "examine%2:41:00" "try_out%2:41:00" "try%2:41:01" "prove%2:41:03" "test%2:41:00" "try%2:41:00" "seek%2:41:00" "attempt%2:41:00" "essay%2:41:00" "assay%2:41:00" "come_near%2:41:00")
+ :wordnet-sense-keys ("try%1:04:00" "endeavour%1:04:00" "endeavor%1:04:00" "effort%1:04:00" "attempt%1:04:00" "try%2:29:00" "try_on%2:29:00" "taste%2:34:00" "try_out%2:34:00" "try%2:34:00" "essay%2:41:01" "examine%2:41:00" "try_out%2:41:00" "try%2:41:01" "prove%2:41:03" "test%2:41:00" "try%2:41:00" "seek%2:41:00" "attempt%2:41:00" "essay%2:41:00" "assay%2:41:00" "come_near%2:41:00")
  :parent ONT::cause-effect
  :arguments ((:OPTIONAL ONT::neutral ((? agt f::abstr-obj f::situation))))
 ;;((:OPTIONAL ONT::Instrument (F::Phys-obj (F::intentional -)))
@@ -1036,7 +1087,7 @@
 ;; fail
 ;; this isn't a subtype of ont::try because the intentionality is indeterminate
 (define-type ONT::fail
- :wordnet-sense-keys ("bomb%2:41:00" "fail%2:30:07" "fail%2:40:00" "fail%2:41:00" "fail%2:41:02" "fail%2:41:08" "fail%2:41:12" "fall_short_of%2:42:00" "neglect%2:41:00")
+ :wordnet-sense-keys ("bomb%2:41:00" "fail%2:30:07" "fail%2:40:00" "fail%2:41:00" "fail%2:41:02" "fail%2:41:08" "fail%2:41:12" "fall_short_of%2:42:00" "neglect%2:41:00" "failure%1:11:00")
  :parent ONT::acting
  :arguments ((:OPTIONAL ONT::neutral)
 	     (:REQUIRED ONT::formal (F::Situation))
@@ -1105,7 +1156,7 @@
  )
 
 (define-type ONT::ACQUIRE
- :wordnet-sense-keys ("take%2:33:08" "take%2:40:08" "take%2:40:04" "subscribe_to%2:40:00" "subscribe%2:40:00" "exact%2:32:01" "take%2:32:00" "claim%2:32:01" "have%2:40:05" "take%2:40:05" "accept%2:40:00" "take%2:40:00" "take%2:30:01" "take_on%2:30:00" "adopt%2:30:01" "acquire%2:30:00" "assume%2:30:00" "get%2:40:00" "acquire%2:40:00" "take_up%2:35:01" "take_in%2:35:02" "advance%2:33:00" "bring%2:40:00" "win%2:33:00")
+ :wordnet-sense-keys ("take%2:33:08" "take%2:40:08" "take%2:40:04" "subscribe_to%2:40:00" "subscribe%2:40:00" "exact%2:32:01" "take%2:32:00" "claim%2:32:01" "have%2:40:05" "take%2:40:05" "accept%2:40:00" "take%2:40:00" "take%2:30:01" "take_on%2:30:00" "adopt%2:30:01" "acquire%2:30:00" "assume%2:30:00" "get%2:40:00" "acquire%2:40:00" "take_up%2:35:01" "take_in%2:35:02" "advance%2:33:00" "bring%2:40:00")
  :parent ONT::EVENT-OF-CAUSAtion
  :sem (F::SITUATION (F::Cause F::Agentive) (F::Trajectory -) (F::Aspect F::Dynamic))
  :arguments ((:REQUIRED ONT::agent ((? ag f::abstr-obj F::phys-obj) (F::intentional +)))

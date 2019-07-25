@@ -2,7 +2,7 @@
 ;;;; W::perk
 ;;;;
 
-(define-words :pos W::v :templ AGENT-affected-XP-TEMPL
+(define-words :pos W::v :TEMPL AGENT-AFFECTED-XP-NP-TEMPL
  :words (
   ((W::perk (w::up))
    (SENSES
@@ -11,13 +11,13 @@
      (SEM (F::Aspect F::bounded) (F::Time-span F::extended))
      (example "his friends perked him up")
       )||#
-     ((LF-PARENT ONT::reviving)
+     ((LF-PARENT ONT::evoke-liveliness)
      (meta-data :origin cardiac :entry-date 20080508 :change-date nil :comments LM-vocab)
      (SEM (F::Aspect F::bounded) (F::Time-span F::extended))
      (example "the elixir perked him up")
-     (templ agent-affected-xp-templ)
+     (TEMPL AGENT-AFFECTED-XP-NP-TEMPL)
       )
-    ((LF-PARENT ONT::reviving)
+    ((LF-PARENT ONT::evoke-liveliness)
      (meta-data :origin cardiac :entry-date 20080508 :change-date nil :comments LM-vocab)
      (SEM (F::Aspect F::bounded) (F::Time-span F::extended))
      (templ affected-templ)
@@ -27,7 +27,7 @@
    )
 ))
 
-(define-words :pos W::V :templ agent-affected-xp-templ
+(define-words :pos W::V :TEMPL AGENT-AFFECTED-XP-NP-TEMPL
  :words (
   (W::perk
    (SENSES

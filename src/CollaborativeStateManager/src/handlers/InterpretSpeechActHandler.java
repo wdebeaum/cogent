@@ -1,5 +1,6 @@
 package handlers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -480,6 +481,47 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 	}
 
 	private KQMLList handleAbandon() {
+		// Check if this should be an adopt event of removing a constraint, part of a model, etc.
+		KQMLList thingToAbandon = KQMLUtilities.findTermInKQMLList(what, context);
+		
+		if (thingToAbandon != null && thingToAbandon.getKeywordArg(":INSTANCE-OF") != null)
+		{
+			
+			String instanceToAbandon = thingToAbandon.getKeywordArg(":INSTANCE-OF").stringValue();
+			System.out.println("Instance to abandon: " + instanceToAbandon);
+			if (ontologyReader.isGoalWithArgument("ABANDON", instanceToAbandon))
+			{
+				Goal currentAcceptedGoal = goalPlanner.getActiveGoal();
+				if (currentAcceptedGoal != null)
+					activeGoal = currentAcceptedGoal.getVariableName();
+				KQMLContentContext proposeAdoptContentContext;
+				KQMLList newContext = new KQMLList();
+				KQMLList removeGoalKQML = null;
+				try {
+					removeGoalKQML = KQMLList.fromString("(ONT::RELN " + IDHandler.getNewTermID() + 
+										" :INSTANCE-OF ONT::OMIT " + ":AFFECTED " + what + ")");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Goal removeGoal = new Goal(removeGoalKQML,context);
+				newContext.addAll(context);
+				newContext.add(removeGoalKQML);
+				proposeAdoptContentContext = goalAdder.getGoalAdditionType(innerContent, 
+																	newContext, id, removeGoal.getVariableName());
+
+				newContext.addAll((KQMLList) proposeAdoptContentContext.getContext());
+				
+				if (currentAcceptedGoal != null)
+					newContext.addAll(currentAcceptedGoal.getAdditionalContext());
+
+				newContext = KQMLUtilities.removedDuplicates(newContext);
+				return Messages.reportContent(proposeAdoptContentContext.getContent(),
+												newContext);
+			}
+		}
+		
+		// See if there is a goal that should be abandoned or rejected
 		
 		Goal goalToAbandon = goalSelector.findGoalToAbandon(what, context);
 		Goal proposalToReject = goalSelector.findProposalOrQuestionToReject(what, context);

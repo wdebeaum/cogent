@@ -14,16 +14,18 @@
  )
 
 (define-type ONT::KIND
- :parent ONT::ABSTRACT-OBJECT-nontemporal
- :sem (F::abstr-obj (F::SCALE -))
- :arguments ((:REQUIRED ONT::FIGURE)
-             )
+    :parent ONT::ABSTRACT-OBJECT-nontemporal
+    :wordnet-sense-keys ("kind%1:09:00")
+    :sem (F::abstr-obj (F::SCALE -))
+    :arguments ((:REQUIRED ONT::FIGURE)
+		)
  )
 
 ;; some kind of replication of the same thing
 ;; version, edition, variant
 (define-type ONT::Version
- :parent ONT::KIND
+    :wordnet-sense-keys ("version%1:09:01" "edition%1:14:00")
+    :parent ONT::KIND
  )
 
 ;; example, illustration, instance
@@ -122,7 +124,7 @@
 ;; purpose, function
 (define-type ont::utility
  :parent ont::function-object
- :wordnet-sense-keys ("utility%1:07:00")
+ :wordnet-sense-keys ("role%1:07:00")
   :arguments ((:REQUIRED ONT::FIGURE)
              )
  )
@@ -148,13 +150,16 @@
   :sem (F::ABSTR-OBJ (:required (F::CONTAINER -) (F::INFORMATION -) (F::INTENTIONAL -))
 		      (:default (F::GRADABILITY +) (F::scale ?!sc)))
   :arguments ((:REQUIRED ONT::FIGURE)
-	      (:REQUIRED ONT::GROUND)))
+	      (:REQUIRED ONT::GROUND))
+ :wordnet-sense-keys ("ultimate%3:00:00" "maximum%3:00:00")
+)
 
 ;; worst, least
 (define-type ONT::MIN-val
   :parent ONT::domain-property
   :sem (F::ABSTR-OBJ (:required (F::CONTAINER -) (F::INFORMATION -) (F::INTENTIONAL -))
 		      (:default (F::GRADABILITY +) (F::scale ?!sc)))
+ :wordnet-sense-keys ("minimum%3:00:00")
   )
 
 ;; as hot as it can be
@@ -295,7 +300,8 @@
 
 ;; government, gsa, darpa
 (define-type ONT::federal-organization-abstr
- :wordnet-sense-keys ("government%1:14:00" "authorities%1:14:00" "regime%1:14:00")
+; following in ont::federal-organization
+; :wordnet-sense-keys ("government%1:14:00" "authorities%1:14:00" "regime%1:14:00")
  :parent ONT::organization-abstr
  )
 
@@ -339,7 +345,8 @@
  )
 
 (define-type ONT::military-group-abstr
- :wordnet-sense-keys ("military_unit%1:14:00" "military_force%1:14:00" "military_group%1:14:00" "force%1:14:01")
+; following int ont::military-group
+; :wordnet-sense-keys ("military_unit%1:14:00" "military_force%1:14:00" "military_group%1:14:00" "force%1:14:01")
  :parent ONT::social-group-abstr
  )
 
@@ -386,25 +393,7 @@
   :parent ONT::relation
   )
 
-(define-type ONT::SIMILARITY-val
- :parent ONT::RELATION
- :arguments ((:ESSENTIAL ONT::neutral)
-	     (:ESSENTIAL ONT::neutral1)
-	     (:ESSENTIAL ONT::FIGURE)
-	     (:optional ont::formal)
-	     (:optional ont::GROUND) ;; for backwards compat
-	                  )
- )
-
-;; such as, as in. These should have the same representation as produced by the grammar rule such-X-as-Y>
-;; using roles :of and :val b.c. the :formal :formal1 roles are going to be replaced real soon now
-(define-type ont::exemplifies
-  :parent ont::similarity-val
-    )
-
-(define-type ONT::IDENTITY-val
- :parent ONT::similarity-val
-  )
+;;; NOTE: SIMILARITY-val moved to property-val (june 2019)
 
 #||;;; ownership, property, etc.
 (define-type ONT::possession
@@ -414,7 +403,7 @@
              (:ESSENTIAL ONT::neutral1 ((? cth f::phys-obj f::abstr-obj)))
              )
  )||#
-
+#|
 ;; how does this relate to ont::truth-val??
 ;;; e.g., wrong, problematic, right,
 ;; the wrong day, the right time, the right number
@@ -424,7 +413,7 @@
 	     (:OPTIONAL  ONT::neutral1 ((? tp1 f::time f::abstr-obj F::phys-obj F::situation)))
              )
  )
-
+|#
 #|
 ;;; Function terms have one or more arguments and have a value
 (define-type ONT::abstract-function
@@ -454,7 +443,6 @@
        (F::CONTAINER -) (F::INFORMATION f::information-content) (F::INTENTIONAL -)
        )
   )
-
 
 (define-type ont::number-result
  :parent ont::number
@@ -618,7 +606,6 @@
     )
 
 (define-type ONT::rate-unit
- :wordnet-sense-keys ("rate%1:28:00")
  :parent ONT::formal-unit
  :sem (F::Abstr-obj (F::Scale Ont::Rate-scale))
  :arguments ((:ESSENTIAL ONT::FIGURE ((? type F::phys-obj F::situation)))
@@ -786,7 +773,8 @@
  :wordnet-sense-keys ("information%1:09:00" "information%1:10:00" "info%1:10:00" "indication%1:10:00" "vital_sign%1:26:00")
  :parent ONT::information-function-object
  ;:arguments ((:optional ONT::formal (F::prop))) ; copied from ONT::MESSAGE
- :arguments ((:optional ONT::formal (F::situation))) ; copied from ONT::MESSAGE
+ :arguments ((:optional ONT::FIGURE)
+	     (:optional ONT::formal (F::situation))) ; copied from ONT::MESSAGE
  )
 
 ;; create an ont::communication-object
@@ -798,22 +786,19 @@
 
 ;; success, failure
 (define-type ONT::outcome
- :parent ONT::information-function-object
- :arguments ((:essential ONT::FIGURE)
-	     )
- )
+    :wordnet-sense-keys ("result%1:11:00")
+    :parent ONT::information-function-object
+    :arguments ((:essential ONT::FIGURE)
+		)
+    )
 
-(define-type ONT::result
+#|
+(define-type ONT::clinical-finding
  :parent ONT::outcome
  :arguments ((:essential ONT::FIGURE)
 	     )
  )
-
-(define-type ONT::clinical-finding
- :parent ONT::result
- :arguments ((:essential ONT::FIGURE)
-	     )
- )
+|#
 
 ;; identification
 (define-type ONT::identification
@@ -986,7 +971,8 @@
 
 ;; meeting, party, conference
 (define-type ont::gathering-event
-  :parent ont::located-event
+    :wordnet-sense-keys("ceremony%1:04:00" "gathering%1:14:00")
+    :parent ont::located-event
   )
 
 ;; 20111005 fire type added for obtw demo
@@ -1009,7 +995,14 @@
 
 ;; talk, lecture, demo, presentation
 (define-type ont::presentation
+    :wordnet-sense-keys("presentation%1:10:00" "presentation%1:10:02" "show%1:04:00")
   :parent ont::gathering-event
+  )
+
+; talk, lecture, demo, presentation
+(define-type ont::exhibition
+    :wordnet-sense-keys("exhibition%1:14:00")
+    :parent ont::gathering-event
   )
 
 ;; idea
@@ -1028,7 +1021,7 @@
 )
 
 (define-type ONT::knowledge-belief
-    :wordnet-sense-keys ("knowledge%1:03:00" "wisdom%1:07:00")
+    :wordnet-sense-keys ("knowledge%1:03:00")
     :parent ONT::mental-construction
     :arguments ((:OPTIONAL ONT::FIGURE) ;(f::situation (f::information f::mental-construct) (f::cause f::mental)))
 		(:optional ont::FORMAL (f::situation)))
@@ -1065,7 +1058,7 @@
 )
 
 (define-type ONT::FEELING
-    :wordnet-sense-keys ("feeling%1:03:00" "bother%1:09:00" "worry%1:09:00" "sorrow%1:09:00" "distress%1:12:02" "restlessness%1:12:00")
+    :wordnet-sense-keys ("feeling%1:03:00" "mercy%1:07:00")
     :parent ONT::mental-construction
     :arguments ((:OPTIONAL ONT::FIGURE) ;(f::situation (f::information f::mental-construct) (f::cause f::mental)))
 		)
@@ -1238,7 +1231,7 @@
 
 ;; favorite
 (define-type ONT::favorite
- :wordnet-sense-keys ("favorite%1:09:00" "favourite%3:00:00:popular:00" "favourite%3:00:00:loved:00")
+ :wordnet-sense-keys ("favorite%1:09:00")
  :parent ONT::relation
   )
 
@@ -1329,7 +1322,14 @@
     :wordnet-sense-keys ("letter%1:10:01")
     :parent ONT::linguistic-object
 ; :sem (F::Abstr-obj (F::information F::data))
- )
+    )
+
+;; letters of the alphabet
+(define-type ONT::grammatical-category
+    :wordnet-sense-keys ("grammatical_category%1:10:00" "declension%1:14:00" "conjugation%1:14:01"
+							"linguistic_relation%1:24:00")
+    :parent ONT::linguistic-object
+    )
 
 ;; alpha, beta, ...
 (define-type ONT::greek-letter-symbol
@@ -1575,37 +1575,5 @@
  )
 |#
 
-(define-type ONT::SIMILAR
- :wordnet-sense-keys ("like%5:00:00:same:00" "comparable%5:00:00:same:00" "like%3:00:04" "similar%3:00:04" "alike%3:00:00" "same%3:00:04" "like%3:00:02" "like%3:00:00" "similar%3:00:02" "corresponding%5:00:00")
- :wordnet-sense-keys ("like%5:00:00:same:00" "comparable%5:00:00:same:00" "like%3:00:04" "similar%3:00:04" "alike%3:00:00" "same%3:00:04" "like%3:00:02" "like%3:00:00" "similar%3:00:02" "corresponding%5:00:00")
- :parent ONT::SIMILARITY-VAL
- ; Words: (W::SIMILAR W::LIKE W::ANALOGOUS W::KINDRED)
- :wordnet-sense-keys ("like%3:00:00" "like%3:00:00" "analogous%5:00:00:similar:00" "similar%3:00:00" "akin%5:00:00")
- ; Antonym: ONT::DIFFERENT (W::DIFFERENT W::SEPARATE W::DISTINCT)
- )
 
-(define-type ONT::DIFFERENT
- :parent ONT::SIMILARITY-VAL
- ; Words: (W::DIFFERENT W::SEPARATE W::DISTINCT)
- :wordnet-sense-keys ("unlike%3:00:00" "unlike%3:00:00" "discrete%5:00:00:separate:00" "different%3:00:00" "separate%3:00:00" "distinct%5:00:00")
- ; Antonym: ONT::SIMILAR (W::SIMILAR W::LIKE W::ANALOGOUS W::KINDRED)
- )
-
-(define-type ONT::EQUAL
- :parent ONT::SIMILARITY-VAL
- ; Words: (W::EQUAL W::EQUIVALENT)
- :wordnet-sense-keys ("equal%3:00:00" "equivalent%5:00:00:equal:00" "equal%3:00:00")
- ; Antonym: NIL (W::UNEQUAL)
- )
-
-(define-type ONT::SAME
- :parent ONT::IDENTITY-VAL
- :wordnet-sense-keys ("same%3:00:02" "same%3:00:02" "identical%5:00:00:same:02")
- ; Antonym: NIL (W::OTHER)
- )
-
-(define-type ONT::other
- :parent ONT::IDENTITY-VAL
- :wordnet-sense-keys ("other%3:00:00" "another%3:00:00")
- )
 

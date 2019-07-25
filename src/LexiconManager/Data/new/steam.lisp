@@ -6,7 +6,7 @@
  :words (
   (W::steam
    (SENSES
-    ((LF-PARENT ONT::cloud-object)
+    ((LF-PARENT ONT::cloud-like-object)
      (templ mass-pred-templ)
      (meta-data :origin mobius :entry-date 20060712 :change-date nil :comments engine-texts)
      )
@@ -15,7 +15,7 @@
 ))
 
 (define-words :pos W::V 
-  :templ agent-affected-xp-templ
+  :TEMPL AGENT-AFFECTED-XP-NP-TEMPL
  :words (
 (w::steam
  (senses

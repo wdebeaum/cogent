@@ -3,7 +3,10 @@ package extractors;
 import java.io.*;
 import java.util.*;
 import java.util.Map.*;
+import java.util.regex.Pattern;
 
+import TRIPS.KQML.KQMLList;
+import TRIPS.KQML.KQMLObject;
 import states.ActType;
 
 public class OntologyReader {
@@ -13,6 +16,7 @@ public class OntologyReader {
 	private ArrayList<String> goalOrdering;
 	private HashMap<String,ArrayList<String>> actGoalSuggestionMapping;
 	private HashMap<String,ArrayList<String>> implicitActGoalMapping;
+	private HashMap<String,ArrayList<String>> goalArguments;
 	private HashSet<String> models;
 	
 	public OntologyReader()
@@ -22,6 +26,7 @@ public class OntologyReader {
 		actGoalSuggestionMapping = new HashMap<String, ArrayList<String>>();
 		implicitActGoalMapping = new HashMap<String, ArrayList<String>>();
 		goalOrdering = new ArrayList<String>();
+		goalArguments = new HashMap<String,ArrayList<String>>();
 		models = new HashSet<String>();
 	}
 	
@@ -47,7 +52,30 @@ public class OntologyReader {
 			    	if (line.trim().length() < 2)
 			    		continue;
 			    	String[] isaSplit = line.split("=>");
-			    	String goal = isaSplit[0].trim();
+			    	
+			    	
+			    	String goal;
+			    	if (isaSplit[0].contains("|"))
+			    	{
+			    		String[] goalArgSplit = isaSplit[0].split(Pattern.quote("|"));
+			    		System.out.println("goalArgSplit[0]=" + goalArgSplit[0]);
+			    		System.out.println("goalArgSplit[1]=" + goalArgSplit[1]);
+			    		goal = goalArgSplit[0].trim();
+			    		System.out.println("goal=" + goal);
+			    		String[] arguments = goalArgSplit[1].trim().split(",");
+			    		if (arguments.length > 0)
+					    	goalArguments.put(goal.toUpperCase(), new ArrayList<String>());
+				    	for (String argument : arguments)
+				    	{
+				    		String trimmedArg = argument.trim().toUpperCase();
+				    		System.out.println("trimmedArg=" + trimmedArg );
+				    		goalArguments.get(goal).add(trimmedArg);
+				    	}
+			    	}
+			    	else
+			    		goal = isaSplit[0].trim();
+
+			    	
 			    	if (isaSplit.length > 1)
 			    	{
 				    	String parents = isaSplit[1].trim();
@@ -242,13 +270,43 @@ public class OntologyReader {
 		return events.containsKey(term.toUpperCase());
 	}
 	
+	public boolean isGoalWithArgument(String goalType, String argument)
+	{
+
+		return goalArguments.containsKey(goalType.toUpperCase()) &&
+				goalArguments.get(goalType.toUpperCase()).contains(argument.toUpperCase());
+	}
+	
 	public boolean isKnownModel(String term)
 	{
 		return models.contains(term);
 	}
 	
-	public boolean isRootGoal(String goalType)
+	public boolean isGoal(String goalType)
 	{
-		return getRootGoals().contains(goalType);
+		return goals.containsKey(goalType.toUpperCase());
+	}
+	
+	public boolean isRootGoal(String goalType, KQMLList context)
+	{
+		if (getRootGoals().contains(goalType))
+		{
+			if (!goalArguments.containsKey(goalType))
+				return true;
+			else
+			{
+				for (String argument : goalArguments.get(goalType))
+				{
+					for (KQMLObject term : context)
+					{
+						KQMLList termAsList = (KQMLList)term;
+						if (termAsList.getKeywordArg(":INSTANCE-OF").stringValue().equalsIgnoreCase(argument))
+							return true;
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 }

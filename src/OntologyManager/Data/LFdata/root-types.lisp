@@ -37,7 +37,8 @@
 (define-type ONT::situation-root
   :parent ont::referential-sem 
   :comment "root for all events, whether verbal or nominal"
-  :sem (F::Situation (F::Intentional -) (F::information F::mental-construct) (F::container -) (f::tangible +))
+  :sem (F::Situation (F::Intentional -) ;;(F::information F::mental-construct)
+		     (F::container -) (f::tangible +))
   :arguments (;;(:optional ont::arg0)  ;; abstract role for robust processing
 	      ;;(:optional ont::arg1)   ;; abstract role for robust processing
 ;	      (:optional ont::norole)
@@ -49,7 +50,7 @@
 
 (define-type ont::event-of-change 
      :parent ONT::SITUATION-ROOT
-     :comment "Events that involve change or force: should ahve an AGENT or AFFECTED role"
+     :comment "Events that involve change or force: should have an AGENT or AFFECTED role"
      :arguments ((:optional  ONT::agent ((? cau4 F::situation F::Abstr-obj f::phys-obj)))
 		 (:optional  ONT::affected ((? cau3a F::situation F::abstr-obj f::phys-obj) (F::tangible +)))
 		 (:optional  ONT::result (F::Abstr-obj (:default (F::tangible -) (F::type (? !t ont::position-reln)))))
@@ -60,7 +61,7 @@
 
 
 (define-type ont::occurring
-  :wordnet-sense-keys ("happen%2:30:00" "come%2:30:01" "take_place%2:30:00" "come_about%2:30:00" "fall_out%2:30:00" "pass%2:30:00" "occur%2:30:00" "pass_off%2:30:00" "go_on%2:30:00" "hap%2:30:00" "happen%2:30:00" "happening%1:11:00" "occurrence%1:11:00" "occurrent%1:11:00" "natural_event%1:11:00" "come%2:42:13" "set_in%2:30:00")
+     :wordnet-sense-keys ("come%2:30:01" "come%2:42:13" "come_about%2:30:00" "fall_out%2:30:00" "go%2:42:03" "go%2:42:12" "go_on%2:30:00" "hap%2:30:00" "happen%2:30:00" "happening%1:11:00" "natural_event%1:11:00" "occur%2:30:00" "occurrence%1:11:00" "occurrent%1:11:00" "pass%2:30:00" "pass_off%2:30:00" "play%2:42:00" "set_in%2:30:00" "take_place%2:30:00")
      :parent ONT::SITUATION-ROOT
      :comment "event occurrence - e.g., an explosion happened"
      :arguments ((:essential ONT::neutral (f::situation (F::aspect F::dynamic)))
@@ -70,6 +71,8 @@
 (define-type ont::event-of-action 
      :parent ONT::event-of-change
      :comment "events that involve :agent (whether intentional or not)"
+     :definitions ((ont::cause-effect :agent ?agent
+				     :formal (ont::event-of-change)))
      :sem (F::Situation (F::cause F::force))
      :arguments ((:essential ONT::agent ((? cau2a F::situation F::Abstr-obj f::phys-obj)))))
 
@@ -97,6 +100,8 @@
 (define-type ont::event-of-causation 
      :parent ONT::event-of-action
      :comment "events involving an AGENT acting on an AFFECTED"
+     :definitions ((ont::cause-effect :agent ?agent
+				 :formal (ont::event-of-change :affected ?affected)))
      :sem (F::Situation)
      :arguments ((:essential ONT::affected ((? cau5 F::abstr-obj f::phys-obj f::situation) (F::tangible +)))
 		 (:essential ONT::agent ((? cau6 F::abstr-obj f::phys-obj f::situation) (F::tangible +)))
@@ -104,7 +109,10 @@
      )
 
 (define-type ont::event-of-creation
-     :parent ONT::event-of-action
+    :parent ONT::event-of-action
+    :definitions ((cause-effect :agent ?agent
+				:formal (ont::become :affected ?affected
+						     :formal (ONT::EXISTS :neutral ?affected))))
      :comment "Events that involve creating some new object (typically the AFFECTED-RESULT)"
      :sem (F::Situation)
      :arguments ((:optional ONT::result ((? neu F::situation F::Abstr-obj f::phys-obj)))
@@ -116,12 +124,15 @@
      :parent ONT::SITUATION-ROOT
      :sem (F::Situation (F::aspect f::static))
      :comment "Events describing a state of affairs holding"
+     :definitions ((ont::imply (ont::DURING :figure ?ANY1 :ground ?time)
+			       (ont::event-of-state :event-id ?event-id :time ?ANY1)))
      :arguments ((:essential ONT::neutral)
 		 (:essential ONT::formal ((? neu F::situation F::Abstr-obj)))
 		 (:optional ont::norole)
 		 ))
 
 (define-type ONT::event-of-experience
+    :wordnet-sense-keys ("basic_cognitive_process%1:09:00")
    :parent ONT::event-of-state
    :comment "A stative event involving a sentient being in a mental state"
    :arguments ((:ESSENTIAL ONT::experiencer (F::Phys-obj (F::intentional +))))
@@ -173,15 +184,15 @@
     :sem (F::abstr-obj (F::Scale ont::domain))
     :arguments ((:REQUIRED ONT::FIGURE)
 		(:ESSENTIAL ONT::GROUND)
-		(:ESSENTIAL ONT::SCALE)
+		(:ESSENTIAL ONT::SCALE ((? scale F::abstr-obj) (F::type ONT::DOMAIN)))
 		(:OPTIONAL ONT::NOROLE)
-		(:OPTIONAL ONT::COMPAR)
+		(:OPTIONAL ONT::COMPAR ((? ty f::abstr-obj f::phys-obj) (f::type (? !xx ONT::NUMBER))))
 		(:OPTIONAL ONT::REFSET)
 		)
    )
 
 (define-type ONT::Part
-    :wordnet-sense-keys ("part%1:24:00" "part%1:09:00" "portion%1:24:00" "component_part%1:24:00" "component%1:24:00" "constituent%1:24:00" "part%1:17:00" "piece%1:17:00")
+    :wordnet-sense-keys ("part%1:24:00" "part%1:09:00" "part%1:17:00" "part%1:21:00")
     :comment "Part is actually a conceptualization of things that fill the part-of role"
     :parent ont::referential-sem
     :arguments ((:OPTIONAL ONT::FIGURE )

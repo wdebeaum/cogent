@@ -12,7 +12,7 @@
 
 (parser::augment-grammar
  '((headfeatures
-    (vp vform var neg sem iobj dobj comp3 part cont aux tense-pro gap subj subjvar modal auxname lex orig-lex headcat transform subj-map template complex)
+    (vp vform var neg sem iobj dobj comp3 part cont aux tense-pro gap subj subjvar modal auxname lex orig-lex headcat transform subj-map template complex passive)
     )
 
  ;; untensed vp
@@ -35,13 +35,14 @@
     (vp- vform var agr neg sem iobj dobj comp3 part cont   tense-pro aux modal auxname lex orig-lex headcat transform subj-map advbl-needed
 	 passive passive-map template result) 
     (s vform var neg sem subjvar dobjvar cont  lex orig-lex headcat transform ellipsis)
-    (cp vform var neg sem subjvar dobjvar cont  transform subj-map subj lex orig-lex)
-    (v lex orig-lex sem lf neg var agr cont aux modal auxname ellipsis tma transform headcat)
+    (cp vform var neg sem subjvar dobjvar cont  transform subj-map subj lex orig-lex comp3) ;comp3 for -DEFN-PASSIVE-GAP>
+    (v lex orig-lex sem lf neg var agr cont aux modal auxname ellipsis tma transform headcat result)
     (aux vform var agr neg sem subj iobj dobj comp3 part cont  tense-pro lex orig-lex headcat transform subj-map advbl-needed
 	 passive passive-map ellipsis contraction auxname) 
     ;; (pp var)
     ;; (pps var)
-    (utt neg qtype sem subjvar dobjvar cont lex orig-lex headcat transform)
+    (utt neg qtype ;; sem
+     subjvar dobjvar cont lex orig-lex headcat transform)
     (pred qtype focus gap filled transform headcat lex orig-lex)
     )
    
@@ -125,16 +126,116 @@
    
    ((utt  (var ?v) (focus ?foc)  ;; i changed the var from the punc to the utt so that the lf is printed properly (why was it the other way?
      (punc +) (punctype ?p) (uttword ?uw)
-     (lf (% speechact (var ?sv) (class ?cl) (constraint ?constraint)))
+     (lf (% ?s (var ?sv) (class ?cl) (constraint ?constraint)))
      )
    -utt-punctuation>
-   (head (utt (focus ?foc) (ended -) (var ?v) (punc -) (uttword ?uw)
-	  (lf (% speechact (var ?sv) (class ?cl) (constraint ?con)))
+   (head (utt (focus ?foc) (ended -) (var ?v) ;(punc -) ; sa-seq has punc, but now this rule would allow consecutive puncs, e.g., I ate the pizza!!
+	      (uttword ?uw)
+	  (lf (% (? s speechact sa-seq) (var ?sv) (class ?cl) (constraint ?con)))
 	  ))
     (punc (punctype ?p) (lex (? lex w::punc-exclamation-mark w::punc-period w::punc-question-mark w::punc-colon w::ellipses w::punc-comma w::punc-minus w::punc-semicolon)))
     (add-to-conjunct (val (punctype ?p)) (old ?con) (new ?constraint))
-   )
+    )
 
+   ;;  two utterances seoparated by punctuation - common in text-based dialogue
+
+   ((utt  ;(var ?v)
+	  (focus ?foc)  ;; i changed the var from the punc to the utt so that the lf is printed properly (why was it the other way?
+     (punc +) (punctype ?p) (uttword ?uw) (sa-seq +) (acts (?v1 ?v2))
+     (lf (% sa-seq (var *) (class ont::sa-seq)
+	    (constraint (& (acts (?v1 ?v2))))
+	    ))
+     (var *))
+   -utt-punctuation-utt>
+   (head (utt (focus ?foc) (ended -) (var ?v1) (punc -) (uttword ?uw)
+	      (lf (% speechact (var ?v1)
+		     (class (? cl ONT::SA_TELL ONT::SA_REQUEST ONT::SA_YN-QUESTION ONT::SA_WH-QUESTION)) ;(class ?cl) ; exclude simple NP conjunctions for example
+		     (constraint ?con)))
+	  ))
+   (punc (punctype ?p) (lex (? lex w::punc-exclamation-mark w::punc-period w::punc-question-mark w::punc-colon w::ellipses w::punc-comma w::punc-minus w::punc-semicolon)))
+   (utt (focus ?foc2) (ended -) (var ?v2) (punc -) (uttword ?uw1)
+	(lf (% speechact (var ?v2)
+	       (class (? cl1 ONT::SA_TELL ONT::SA_REQUEST ONT::SA_YN-QUESTION ONT::SA_WH-QUESTION)) ;(class ?cl1)
+	       (constraint ?con1)))
+	)
+    ;; (add-to-conjunct (val (punctype ?p)) (old ?con) (new ?constraint))
+    )
+
+   ; extend an sa-seq
+   ((utt  ;(var ?v)
+	  (focus ?foc)  ;; i changed the var from the punc to the utt so that the lf is printed properly (why was it the other way?
+     (punc +) (punctype ?p) (uttword ?uw) (sa-seq +) (acts ?newacts)
+     (lf (% sa-seq (var *) (class ont::sa-seq)
+	    (constraint (& (acts ?newacts)))
+	    ))
+     (var *))
+   -utt-punctuation-utt-add-one>
+   (head (utt (focus ?foc) (ended -) (var ?v1) ;(punc -)
+	      (uttword ?uw)
+	      (lf (% sa-seq (var ?v1) (class ?cl) (constraint ?con)))
+	      (acts ?acts)
+	  ))
+   (punc (punctype ?p) (lex (? lex w::punc-exclamation-mark w::punc-period w::punc-question-mark w::punc-colon w::ellipses w::punc-comma w::punc-minus w::punc-semicolon)))
+   (utt (focus ?foc2) (ended -) (var ?v2) (punc -) (uttword ?uw1)
+	(lf (% speechact (var ?v2)
+	       (class (? cl1 ONT::SA_TELL ONT::SA_REQUEST ONT::SA_YN-QUESTION ONT::SA_WH-QUESTION)) ;(class ?cl1)
+	       (constraint ?con1)))
+	)
+    ;; (add-to-conjunct (val (punctype ?p)) (old ?con) (new ?constraint))
+    (add-to-end-of-list (list ?acts) (val ?v2) (newlist ?newacts))
+    )
+
+   ; replacing s-conj2
+   ; two utts, possibly with different stypes, e.g., 
+   ;; stype can also be whq: "... and what did the dog chase?" (cf. "what chased the cat" can be decl)
+   ;;               and ynq: "... and is the cat red?"
+   ((utt  ;(var ?v)
+	  (focus ?foc)  ;; i changed the var from the punc to the utt so that the lf is printed properly (why was it the other way?
+     (punc +) (punctype ?p) (uttword ?uw) (sa-seq +) (acts (?v1 ?v2))
+     (lf (% sa-seq (var *) (class ont::sa-seq)
+	    (constraint (& (acts (?v1 ?v2))))))
+     (var *))
+   -utt-conj-utt>
+   (head (utt (focus ?foc) (ended -) (var ?v1) (punc -) (uttword ?uw)
+	      (lf (% speechact (var ?v1)
+		     (class (? cl ONT::SA_TELL ONT::SA_REQUEST ONT::SA_YN-QUESTION ONT::SA_WH-QUESTION)) ;(class ?cl)
+		     (constraint ?con)))
+	  ))
+   (conj (lf (? lx ont::or ont::and ont::but ont::however ont::plus ont::otherwise ont::so))
+	 (lex ?lex))
+    (utt (focus ?foc2) (ended -) (var ?v2) (punc -) (uttword ?uw1)
+	 (lf (% speechact (var ?v2)
+		(class (? cl1 ONT::SA_TELL ONT::SA_REQUEST ONT::SA_YN-QUESTION ONT::SA_WH-QUESTION)) ;(class ?cl1)
+		(constraint ?con1)))
+     )
+    ;; (add-to-conjunct (val (punctype ?p)) (old ?con) (new ?constraint))
+    )
+
+   ; extend an sa-seq
+   ((utt  ;(var ?v)
+	  (focus ?foc)  ;; i changed the var from the punc to the utt so that the lf is printed properly (why was it the other way?
+     (punc +) (punctype ?p) (uttword ?uw) (sa-seq +) (acts ?newacts)
+     (lf (% sa-seq (var *) (class ont::sa-seq)
+	    (constraint (& (acts ?newacts)))))
+     (var *))
+   -utt-conj-utt-add-one>
+   (head (utt (focus ?foc) (ended -) (var ?v1) ;(punc -)
+	      (uttword ?uw)
+	  (lf (% sa-seq (var ?v1) (class ?cl) (constraint ?con)))
+	  (acts ?acts)
+	  ))
+   (conj (lf (? lx ont::or ont::and ont::but ont::however ont::plus ont::otherwise ont::so))
+	 (lex ?lex))
+    (utt (focus ?foc2) (ended -) (var ?v2) (punc -) (uttword ?uw1)
+	 (lf (% speechact (var ?v2)
+		(class (? cl1 ONT::SA_TELL ONT::SA_REQUEST ONT::SA_YN-QUESTION ONT::SA_WH-QUESTION)) ;(class ?cl1)
+		(constraint ?con1)))
+     )
+    ;; (add-to-conjunct (val (punctype ?p)) (old ?con) (new ?constraint))
+    (add-to-end-of-list (list ?acts) (val ?v2) (newlist ?newacts))
+    )
+
+   
     #||((utt (var *) (punctype ?stype) (lf (% speechact (var *) (class ont::sa_tell) (constraint (& (content ?v)))))) 
     -utt-seq1>
     (head (sseq (stype ?stype) (gap -) (var ?v) (wh -) 
@@ -366,7 +467,8 @@
     (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) (sort pred) ;; lex needed for expletives? 
       (pp-word -) (changeagr -) (gap -) (expletive ?exp))
     (head (vp (lf ?lf) (gap ?g)
-              (template (? !x  lxm::propositional-equal-templ))
+              ;(template (? !x  lxm::propositional-equal-templ))
+              (template (? !x  lxm::NEUTRAL-NEUTRAL1-CP-STHAT-EQUAL-TEMPL))
 	      (subjvar ?npvar)
 	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex)
 		       (pp-word -) (changeagr -) (gap -) (expletive ?exp)))
@@ -391,7 +493,9 @@
     -s1-be-prop1>
     (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) ;; lex needed for expletives?
      (pp-word -) (changeagr -) (subcat-map ont::formal))
-    (head (vp (lf ?lf) (gap ?g) (template lxm::propositional-equal-templ)
+    (head (vp (lf ?lf) (gap ?g)
+	      ;(template lxm::propositional-equal-templ)
+	      (template lxm::NEUTRAL-NEUTRAL1-CP-STHAT-EQUAL-TEMPL)
 	      (subjvar ?npvar)
 	      (subj (% np (sem ?npsem) (agr ?a) (var ?npvar) (lex ?lex)))
 	      (var ?v) (vform fin) (agr ?a)
@@ -414,7 +518,9 @@
     -s1-be-prop2>
     (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) ;; lex needed for expletives?
      (pp-word -) (changeagr -) (comp3-map ont::formal))
-    (head (vp (lf ?lf) (gap ?g) (template lxm::propositional-equal-templ)
+    (head (vp (lf ?lf) (gap ?g)
+	      ;(template lxm::propositional-equal-templ)
+	      (template lxm::NEUTRAL-NEUTRAL1-CP-STHAT-EQUAL-TEMPL)
 	      (subjvar ?npvar)
 	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (lex ?lex)))
 	      (var ?v) (vform fin) (agr ?a)
@@ -458,7 +564,7 @@
    ;; test: what will the dog chase?
    ((utt (lf (% speechact (var *) (class ont::sa_wh-question) (constraint (& (content ?v) (focus ?foc)))))
          (var *) (qtype ?type) (punctype ?p))
-    -wh-question1>
+    -wh-question1> 1.0
     (head (s (stype whq) (wh-var ?foc) (var ?v) (qtype (? type when where q how-x -))(advbl-needed -))))
 
    
@@ -706,12 +812,13 @@
    
    ;; test: the city in which i live
    ;; fixme:: the argsem isn't being propagated for (wh r) adverbials. so 
-   ((cp (ctype relc) (arg ?srole) (argsem ?srolesem) (gap -)
+   ((cp (ctype relc) (arg ?srole) (argsem ?argsem) (gap -)
+     ;;(argsem ?srolesem) (gap -)
      (lf ?newlf) (agr ?newagr)
      ;; (lex ?l) (headcat ?vcomp) ;; non-aug-trips settings
      (lex ?hlex) (headcat ?hcat) ;; aug-trips
      )
-    -rel4> .92
+    -rel4> .98 ;;.92
     ;; fixme -- this is really hacked to transfer the role from the wh pronoun to the np it will eventually modify
     ;; wh r should only come out of advbl-binary-relative
     (advbl-r (atype pre) (argument (% s (sem ?argsem))) 
@@ -720,7 +827,8 @@
      (subcatsem ?srolesem)
      (arg2 ?srole)
      )
-    (head (s (var ?v) (lf ?lf) (lf (% prop (constraint ?con))) (sem ?argsem) (aux -)
+    (head (s (var ?v) (lf ?lf) (lf (% prop (constraint ?con))) (sem ?subcatsem) (aux -)
+	     ;;(sem ?argsem) (aux -)
 	      (adj-s-prepost -)
 	    (tma ?tma) (stype (? stp decl imp how-about))
 	   (wh -) (stype decl) (vform fin) (preadvbl -) (lex ?hlex) (headcat ?hcat)
@@ -954,6 +1062,7 @@
 	   (dobj ?dobj) 
 	   (lex ?hlex) (headcat ?hcat)
 	   (be-there -)
+	   (passive -)
 	   )))
    
    ;; we need a special rule for cases like "to be taken", because it is aux be, but for passives it's fine
@@ -962,6 +1071,7 @@
      (lf ?lf)
 ;;     (lex to) (headcat ?vinf) ;; non-aug-trips settings
      (lex ?hlex) (headcat ?hcat) ;; aug-trips
+     (passive +)
      )
      -to1-passiv>
      (infinitival-to (lex to) (headcat ?vinf))
@@ -1113,7 +1223,7 @@
      ((vp (lf (% prop (class ?c) (var ?v) (constraint ?constraint) (tma ?newtma) 
 	         (transform ?transf) (sem ?sem)))
           (class ?c) (var ?v) (constraint ?constraint) (tma ?newtma)  (sem ?sem) (transform ?transf)
-           (vform (? vf past pres fut)) (dobjvar ?dobjvar)
+           (vform (? vf past pres fut)) (subjvar ?sv) (dobjvar ?dobjvar)
           )
       -vp-tns+> 1.0 ;; 1 because we are simply adding tense info, not really using more rules
      (head
@@ -1223,13 +1333,14 @@
 	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (agr ?subjagr) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
 	    ;;(iobj ?iobj) (iobj (% ?s2  (case (? icase obj -)) (var ?iobjvar) (sem ?iobjsem) (gap -)))
 	    (part (% -)) 
-	    (dobj ?dobj) (dobj (% np (agr ?dobjagr) (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap ?gap)))	    
-	            ;; we allow a possible gap in the dobj np e.g., "what did he thwart the passage of"
+	    (dobj ?dobj) (dobj (% np (agr ?dobjagr) (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem)
+				  (sort pred) (gap ?gap)))	    
 	    (comp3 (% -))
 	    (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
 	    
 	   ))
-     (np (case (? icase obj -)) (var ?iobjvar) (gerund -) (generated -) (sem ($ (? rcp f::phys-obj f::abstr-obj) (f::intentional +))) (gap -))
+     (np (case (? icase obj -)) (var ?iobjvar) (gerund -) (generated -)
+      (sort pred) (sem ($ (? rcp f::phys-obj f::abstr-obj) (f::intentional +))) (gap -))
      ?dobj
      )
 
@@ -1257,14 +1368,15 @@
 	    ;; (subj (? subj (% ?s1 (var ?subjvar))))
 	    (subj ?subj) (subj (% ?s1 (lex ?subjlex) (agr ?subjagr) (var ?subjvar) (sem ?subjsem) (gap -))) ;; note double matching required
 	    ;;(iobj ?iobj) (iobj (% ?s2  (case (? icase obj -)) (var ?iobjvar) (sem ?iobjsem) (gap -)))
-	    (part (% -)) 
-	    (dobj ?dobj) (dobj (% np (agr ?dobjagr) (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap ?gap) (gerund -)))	    
+	    (part (% -))
+	    (dobj ?dobj) (dobj (% np (agr ?dobjagr) (case (? dcase obj -)) (var ?dobjvar) (sem ?dobjsem) (gap ?gap) (sort pred)
+				  (gerund -)))	    
 	            ;; we allow a possible gap in the dobj np e.g., "what did he thwart the passage of"
 	    (comp3 (% -))
 	    (subj-map ?lsubj-map) (dobj-map ?dobj-map) (iobj-map ?iobj-map) (comp3-map ?comp3-map)
 	    
 	   ))
-     (np (case (? icase obj -)) (var ?iobjvar) (sem ($ f::phys-obj (f::origin f::living) (f::intentional +) (f::type ont::person))) 
+     (np (case (? icase obj -)) (var ?iobjvar) (sort pred) (sem ($ f::phys-obj (f::origin f::living) (f::intentional +) (f::type ont::person))) 
       (generated -) (gap -))
      ?dobj
      )
@@ -2402,7 +2514,7 @@
      (subjvar ?subjvar) 
      (dobjvar ?dobjvar)
      
-     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar)))
+     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
      (sort pred) 
      (lf (% prop (var ?v) (class ?belf)
 	    (constraint (& (lsubj ?subjvar)
@@ -2503,13 +2615,16 @@
     (add-to-conjunct (val (tense (? vf past pres fut))) (old ?tma) (new ?newtma))
     ?subj
     (advbl (atype pre-vp) (gap -)  ; pre-vp: Is the block eventually red?
+     (sem ($ f::abstr-obj (F::type (? ttt ont::property-val ont::position-reln ont::predicate)))) ; "regular" adverbs
      (argument (% s (sem ?sem)))
      (arg ?v) (var ?mod) (role ?advrole) (subcat -))           
     ?dobj
     ?comp)
 
-      ; Is the pizza cold quickly?
-   ((s (stype ynq) (main +) (aux -) (gap -)
+   ; Is the pizza cold quickly/eventually?
+   ; Is the pizza in the oven?  
+   ; Is the pizza cold if I put it in the fridge?
+   ((s (stype ynq) (main +) (aux -) (gap ?gap) ;(gap -)
      (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
      (sort pred) 
      
@@ -2528,7 +2643,7 @@
      (advbl-needed ?avn)
      )
     -s-ynq-be-adv2>
-    (head (s (stype ynq) (main +) (aux -) (gap -)
+    (head (s (stype ynq) (main +) (aux -) (gap ?gap) ;(gap -)
 	     (subj (% np (lex ?subjlex) (sem ?subjsem) (var ?subjvar) (agr ?subjagr)))
 	     (sort pred) 
 	     
@@ -2547,7 +2662,12 @@
 	     (advbl-needed ?avn)
 	     ))
     (advbl (atype post) (gap -)  ; post: Is the block red eventually?
+	   (sem ($ f::abstr-obj (F::type (? ttt ont::property-val
+					    ont::pos-wrt-containment-reln ont::position-as-point-reln ; in/on/at
+					    ;ont::position-reln ; commenting this out, but it is needed for, e.g., "Move it forward/in"
+					    ont::predicate)))) ; property-val: "regular" adverbs; position-reln: in; predicate: if, eventually
      (argument (% s (sem ?sem)))
+     (result-only -)
      (arg ?v) (var ?mod) (role ?advrole) (subcat -))
     (add-to-conjunct (val (mod ?mod)) (old ?con) (new ?newcon))
     )
@@ -2705,6 +2825,14 @@
     (punc (punctype ?p) (lex w::punc-question-mark))
     )
 
+   ; The dog and the cat?
+   ((utt (lf (% speechact (var *) (class ont::SA_YN-QUESTION) (constraint (& (content ?v) (punctype ?p))) )) (var *)
+	 (punc +) (punctype ?p)) 
+    -np-utt-complex-q> .985 ; slightly lower than np-utt-simple-q
+    (head (np (wh -) (sort (? x pred unit-measure)) (complex +) (var ?v) (sem ($ ?!type))))
+    (punc (punctype ?p) (lex w::punc-question-mark))
+    )
+   
     ; which dog?
    ((utt (lf (% speechact (var *) (class ont::SA_WH-QUESTION) (constraint (& (content ?v) (focus ?whv) (punctype ?p))) )) (var *)
 	 (punc +) (punctype ?p)) 
@@ -2983,6 +3111,7 @@
     -utt4a>
     (head (uttword (lf ?lf) (lex ?lex) (var ?v) (sa ?sa))))
 
+    ;; what bis this rule for? Add an example here!
     ((utt (var *) ;(sem ($ f::proposition))
 	  (uttword +)
       (lf (% speechact (var *) (class  ont::sa_apologize) (constraint (& (content ?reason)))))
@@ -2991,6 +3120,7 @@
      (head (uttword (lf ?lf) (lex ?lex) (var ?v) (sa ont::sa_apologize)))
      (cp (var ?reason)))
 
+    ;;  thanks for the gift
     ((utt (var *) ;(sem ($ f::proposition))
 	  (uttword +)
       (lf (% speechact (var *) (class (? sa ont::sa_apologize ont::sa_thank)) (constraint (& (reason ?reason)))))
@@ -3006,7 +3136,7 @@
  '((headfeatures
     (vp vform agr comp3 cont postadvbl  aux modal lex orig-lex headcat tma transform subj-map advbl-needed template)
     (s vform var neg sem subjvar dobjvar comp3 cont  lex orig-lex headcat transform subj advbl-needed)
-    (utt sem subjvar dobjvar cont lex orig-lex headcat transform))
+    (utt subjvar dobjvar cont lex orig-lex headcat transform)) ; took out sem
    
      ;;   basic commands
     
@@ -3477,6 +3607,8 @@
      (vform ?vform) (transform ?transform)
      (aux +) (auxname ?auxname) 
      (subj-map ?lsubj-map) 
+     (passive ?passive) ; from vp-
+     (comp3 ?v-comp3); from vp-
      )
     -vp-changesem-aux> 1.0
     ;; propagate class, semantics, constraint up from main verb
@@ -3516,6 +3648,8 @@
 		     (advbl-needed -) (subj-map ?lsubj-map)
 		     (auxname ?compauxname)
 		     (vform ?vform2)
+		     (passive ?passive)
+		     (comp3 ?v-comp3)
      )
     (add-to-conjunct (old ?tma1) (val ?tma-contrib) (new ?newtma)) ;; add aux feature to tma
     ;; change the temporal values in sem to be consistent with the aux
@@ -3627,10 +3761,11 @@
     (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
     )
 
-   
+   #|
    ;; sentential conjunction
    ;; both ss must be of the same type, decl or imperative <-- not anymore: I ate a pizza but what did Peter eat?
    ;; stype can also be whq: "... and what did the dog chase?" (cf. "what chased the cat" can be decl)
+   ;;               and ynq: "... and is the cat red?"
    ;; he did this and/or/but he did that; do this and/or/but do that
    ;; test: bark and chase the cat.
    ((s (sseq +) (stype ?st) (var *)  (sem ?sem) (wh-var (?wh-var1 ?wh-var2))
@@ -3642,13 +3777,13 @@
 		 ))))
      )
     -s-conj2>
-    (head (s (stype (? st decl imp whq)) (subj ?subj1) (var ?v1) (sem ?s1)
+    (head (s (stype (? st decl imp whq ynq)) (subj ?subj1) (var ?v1) (sem ?s1)
 	   (lf (% prop (class ?c1) (tma ?tma1)))
 	   (advbl-needed -) (wh-var ?wh-var1)
 	   ))
     (conj (lf (? lx ont::or ont::and ont::but ont::however ont::plus ont::otherwise ont::so))
      (lex ?lex))
-    (s (stype (? st2 decl imp whq)) (subj ?subj2) (var ?v2)
+    (s (stype (? st2 decl imp whq ynq)) (subj ?subj2) (var ?v2)
      (advbl-needed -) (sem ?s2)
      (lf (% prop (class ?c2) (tma ?tma2))) (wh-var ?wh-var2))
     (sem-least-upper-bound (in1 ?s1) (in2 ?s2) (out ?sem))
@@ -3718,6 +3853,7 @@
     (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
     (add-to-end-of-list (list ?lf) (val ?v2) (newlist ?newlf))
     )
+   |#
     
 
    ;; either S1 or S2
@@ -3771,7 +3907,7 @@
    ;; both VP must be of the same vform
    ;; he had eaten and slept, to puncture or penetrate or pierce, to fight but accept, 
    ; This uses this rule: The mouse is caught by the dog and caught by the cat.
-   ((vp- (seq +) (vform ?vf) (var *)  (subjvar ?subj)  (subj ?subject) (agr ?agr) (gap ?gap)(subj-map ?subjmap)
+   ((vp- (seq +) (vform ?vf) (var *)  (subjvar ?subj)  (subj ?subject) (agr ?agr) (gap ?gap)(subj-map ?subjmap) (dobj ?dobj)
      (class ?class) (sem ?sem) (lex ?lex)
      (constraint (&  (OPERATOR ?lx) 
 		     (SEQUENCE 
@@ -3784,7 +3920,7 @@
 	   ))
     (CONJ (lf ?lx) (lex ?lex) (but-not -)) ;;(? lx or but however plus otherwise so and)))
 
-    (vp- (vform ?vf) (var ?v2) (subjvar ?subj) (subj ?subject) (agr ?agr) (gap ?gap)
+    (vp- (vform ?vf) (var ?v2) (subjvar ?subj) (subj ?subject) (agr ?agr) (gap ?gap) (dobj ?dobj)
      (lex ?lex2) (Advbl-needed -) (class ?c2) (constraint ?con2)  (tma ?tma2) (sem ?sem2))
 
     (sem-least-upper-bound (in1 ?sem1) (in2 ?sem2) (out ?sem))
@@ -3810,6 +3946,48 @@
     (sem-least-upper-bound (in1 ?sem1) (in2 ?sem2) (out ?sem))
     (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
     )
+
+   
+   ;; that chased, caught and ate the cat
+   ((VP- (vform ?vf) (var *) (seq +) (subjvar ?subj) (subj ?subject)  (gap ?gap)  (agr ?agr) (sem ?sem)
+     (class ?class)  (lex ?lex)
+     (constraint (&  (OPERATOR ?lx) 
+		     (SEQUENCE ?newlf)))
+     )
+    -vbar-conj-seq-dobj> 1.0
+    (head (vbarseq (var ?v1) (subjvar ?subj) (subj ?subject) (gap ?!dobj) (sem ?s1) (class ?c1)
+		   (constraint (& (sequence ?lf))) (agr ?agr)
+		   (vform ?vf)
+		   ))
+    (CONJ  (lex ?lex) (lf  (? lx ont::and ont::or)))
+    (vp- (vform ?vf) (subjvar ?subj) (subj ?subject)(var ?v2) (seq -)  (gap -) (dobj ?!dobj) (sem ?s2) (lex ?lex2)
+     (advbl-needed -)  (agr ?agr) (class ?c2) (constraint ?con2) (tma ?tma2))
+    (sem-least-upper-bound (in1 ?s1) (in2 ?s2) (out ?sem))
+    (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
+    (add-to-end-of-list (list ?lf) 
+     (val (% *PRO* (var ?v2) (status ont::f) (class ?c2) (lex ?lex2) (constraint ?con2) (tma ?tma2))) (newlist ?newlf))
+    )
+
+   ;; chased, caught and ate ; (no cat!)
+   ((VP- (vform ?vf) (var *) (seq +) (subjvar ?subj) (subj ?subject)  (gap ?!gap)  (agr ?agr) (sem ?sem) (dobj ?dobj)
+     (class ?class)  (lex ?lex)
+     (constraint (&  (OPERATOR ?lx) 
+		     (SEQUENCE ?newlf)))
+     )
+    -vbar-conj-seq-gap-all-the-way> 1.0
+    (head (vbarseq (var ?v1) (subjvar ?subj) (subj ?subject) (gap ?!gap) (sem ?s1) (class ?c1)
+		   (constraint (& (sequence ?lf))) (agr ?agr)
+		   (vform ?vf)
+		   ))
+    (CONJ  (lex ?lex) (lf  (? lx ont::and ont::or)))
+    (vp- (vform ?vf) (subjvar ?subj) (subj ?subject)(var ?v2) (seq -)  (gap ?!gap) (sem ?s2) (lex ?lex2) (dobj ?dobj)
+     (advbl-needed -)  (agr ?agr) (class ?c2) (constraint ?con2) (tma ?tma2))
+    (sem-least-upper-bound (in1 ?s1) (in2 ?s2) (out ?sem))
+    (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
+    (add-to-end-of-list (list ?lf) 
+     (val (% *PRO* (var ?v2) (status ont::f) (class ?c2) (lex ?lex2) (constraint ?con2) (tma ?tma2))) (newlist ?newlf))
+    )
+
    
    ;; they had come, seen and conquered
   ;;  starting the VBARSEQ 
@@ -4090,7 +4268,8 @@
     (head (vp (lf ?lf)
 	      (gap ?g)
 	      (SEM ($ F::situation (f::type (? vtype ONT::ARRIVE ont::come ont::appear ont::grow ont::show))))
-              (template (? !x  lxm::propositional-equal-templ))
+              ;(template (? !x  lxm::propositional-equal-templ))
+              (template (? !x  lxm::NEUTRAL-NEUTRAL1-CP-STHAT-EQUAL-TEMPL))
 	      (subjvar ?npvar)
 	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex)
 		       (pp-word -) (changeagr -) (gap -) (expletive ?exp)))

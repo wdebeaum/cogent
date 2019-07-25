@@ -2,7 +2,7 @@
 ;;;; W::conjecture
 ;;;;
 
-(define-words :pos W::V :templ agent-theme-xp-templ
+(define-words :pos W::V :TEMPL AGENT-FORMAL-XP-TEMPL
  :words (
   (W::conjecture
    (wordfeats (W::morph (:forms (-vb) :nom W::conjecture)))
@@ -15,7 +15,7 @@
     (
      (LF-PARENT ONT::HYPOTHESIZE)
      (SEM (F::Aspect F::stage-level))
-     (TEMPL neutral-neutral-xp-templ)
+     (TEMPL experiencer-neutral-xp-templ)
      )
 
     )

@@ -24,17 +24,18 @@
      (LF-PARENT ONT::consume)
      (example "he fed on bread")
      (SEM (F::ASPECT F::DYNAMIC))
-     (templ agent-affected-xp-templ  (xp (% W::pp (W::ptype W::on))))
+     (TEMPL AGENT-AFFECTED-XP-optional-a-TEMPL  (xp (% W::pp (W::ptype W::on))))
      )
     ((LF-PARENT ONT::feeding)
      (example "feed some bread to the dog")
-;     (TEMPL agent-affected-goal-templ) ; like grant,offer
-     (TEMPL AGENT-AFFECTED-AR-TO-TEMPL)
+     ;(TEMPL agent-affected-goal-templ) ; like grant,offer
+     (TEMPL AGENT-AFFECTED-AFFECTEDR-XP-TEMPL)
      )
     ((lf-parent ont::feeding)
-;     (templ agent-affected-recipient-alternation-templ)
-     (templ AGENT-RECIPIENT-affected-TEMPL)
-     (example "feed the dog some bread")
+     ;(templ agent-affected-recipient-alternation-templ)
+     ;(templ AGENT-RECIPIENT-affected-TEMPL)
+     (TEMPL AGENT-AFFECTEDR-AFFECTED-XP-PP-WITH-1-OPTIONAL-TEMPL (xp (% W::NP)))
+     (example "feed the dog (some bread)")
      )
     
     

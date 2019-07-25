@@ -19,6 +19,15 @@ public class GoalAdder {
 		this.or = or;
 	}
 
+	/**
+	 * Takes the description of a goal and determines how this goal should be added to the hierarchy 
+	 * (i.e. elaboration, modification, goal, subgoal, answer)
+	 * @param innerContent
+	 * @param context
+	 * @param id
+	 * @param what
+	 * @return
+	 */
 	public KQMLContentContext getGoalAdditionType(KQMLList innerContent, KQMLList context, String id, String what) {
 		Goal currentAcceptedGoal = gp.getActiveGoal();
 
@@ -92,7 +101,7 @@ public class GoalAdder {
 		// It has no :AS parameter, it's a top level goal
 		else if (currentAcceptedGoal == null) {
 			String goalType = term.getKeywordArg(":INSTANCE-OF").stringValue();
-			if (!gp.hasAcceptedGoal && !or.isRootGoal(goalType))
+			if (!gp.hasAcceptedGoal && !or.isRootGoal(goalType,context))
 				return Messages.missingActiveGoalContentContext(goalType, what, 
 									ActType.PROPOSE, context, gp, or);
 			Goal newGoal = new Goal(what, (KQMLList) context);

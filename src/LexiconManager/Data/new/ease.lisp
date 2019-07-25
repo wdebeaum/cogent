@@ -2,25 +2,20 @@
 ;;;; W::ease
 ;;;;
 
-(define-words :pos W::V :templ agent-theme-xp-templ
+(define-words :pos W::V :TEMPL AGENT-FORMAL-XP-TEMPL
  :tags (:base500)
  :words (
   (W::ease
    (SENSES
     ((meta-data :origin "wordnet-3.0" :entry-date 20090512 :change-date nil :comments nil)
-     (LF-PARENT ONT::evoke-calm)
-     (example "The news eased my conscience")
-     (TEMPL agent-affected-xp-templ)
-     )
-    ((meta-data :origin "wordnet-3.0" :entry-date 20090515 :change-date nil :comments nil)
-     (LF-PARENT ONT::evoke-comfort)
-     (example "Ease the pain in your legs")
-     (TEMPL agent-affected-xp-templ)
+     (LF-PARENT ONT::evoke-relief)
+     (example "The news eased my conscience" "Ease the pain in your legs")
+     (TEMPL AGENT-AFFECTED-XP-NP-TEMPL)
      )
     ((meta-data :origin motion-reorganization :entry-date 20190117 :change-date nil :comments nil)
      (LF-PARENT ONT::facilitate)
      (example "You can ease the process by sharing your knowledge.")
-     (TEMPL agent-affected-xp-templ)
+     (TEMPL AGENT-AFFECTED-XP-NP-TEMPL)
      )
     )
    )

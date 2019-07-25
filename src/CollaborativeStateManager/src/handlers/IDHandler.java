@@ -10,6 +10,13 @@ public class IDHandler {
 
 	}
 	
+	public static synchronized String getNewTermID()
+	{
+		currentID++;
+		return "ONT::T" + String.format("%05d", currentID);
+		
+	}
+	
 	public static void resetIDs()
 	{
 		currentID = 0;

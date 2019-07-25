@@ -3,7 +3,7 @@
 # File: trips-cogent.sh
 # Creator: Lucian Galescu, based on template by George Ferguson
 # Created: Wed Jun 20 10:38:13 2012
-# Time-stamp: <Wed Nov 30 12:55:24 CST 2016 lgalescu>
+# Time-stamp: <Wed Jul 24 22:36:19 CDT 2019 lgalescu>
 #
 # trips-cogent: Run TRIPS/COGENT
 #
@@ -30,11 +30,16 @@ TRIPS_PORT_DEFAULT=6200
 TRIPS_SYSNAME=cogent
 TRIPS_SYSNAME_ALLCAPS=`echo $TRIPS_SYSNAME | tr "[:lower:]" "[:upper:]"`
 
+# test mode?
+if  test ! -z "$TRIPS_TEST_MODE"; then
+    echo "Running in test mode."
+fi
+
 #############################################################################
 #
 # Command-line
 
-usage="trips-$TRIPS_SYSNAME [-debug] [-port 6200] [-display tty] [-nouser] [-nochat] [-nolisp] [-nocsm] [-graphviz-display true]"
+usage="trips-$TRIPS_SYSNAME [-debug] [-port 6200] [-display tty] [-nouser] [-nochat] [-nolisp] [-nocsm] [-tt-conf FILE] [-graphviz-display true]"
 
 logdir=''
 debug=false
@@ -49,6 +54,8 @@ graphviz_display=false
 nochat=''
 nobeep=''
 showgen=false
+tt_conf=''
+
 
 while test ! -z "$1"; do
     case "$1" in
@@ -65,6 +72,7 @@ while test ! -z "$1"; do
 	-nochat)	nochat=t;;
 	-nobeep)	nobeep=t;;
 	-quiet)		nobeep=t;;
+        -tt-conf)       tt_conf="$2";   shift;;
         -graphviz-display)      graphviz_display="$2";  shift;;
 	-showgen)	showgen=t;;
 	-help|-h|-\?)
@@ -94,6 +102,9 @@ port_opt="-connect $TRIPS_SOCKET"
 # set default character encoding to UTF-8
 export LC_ALL=en_US.UTF-8
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8
+
+# set TT configuration file
+tt_conf=${tt_conf:-$TRIPS_BASE/etc/TextTagger-$TRIPS_SYSNAME.conf}
 
 # Make sure log directory exists
 if test -z "$logdir"; then
@@ -209,18 +220,18 @@ fi
 
 # Start TextTagger
 (sleep 5; \
- $TRIPS_BASE/bin/TextTagger \
-     $port_opt \
-     -process-input-utterances yes \
-     -terms-file $TRIPS_BASE/etc/$TRIPS_SYSNAME/domain-terms.tsv \
-     -init-taggers terms-from-file,misspellings,word-net \
-     -default-type '(or affixes words punctuation terms-from-file misspellings word-net)' \
+ $TRIPS_BASE/bin/TextTagger $port_opt -config-file $tt_conf \
  2>&1 | tee $logdir/TextTagger.err) &
 
 # Start Graphviz
 (sleep 5; \
  $TRIPS_BASE/bin/Graphviz $port_opt -display-enabled $graphviz_display \
  2>&1 | tee Graphviz.err) &
+
+# GraphMatcher
+if test -n "$TRIPS_TEST_MODE" ; then
+    (sleep 5; $TRIPS_BASE/bin/GraphMatcher >GraphMatcher.err 2>&1) &
+fi
 
 # set display option for facilitator           
 if test -n "$nouser"; then

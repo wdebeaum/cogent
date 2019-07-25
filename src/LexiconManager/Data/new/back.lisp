@@ -54,7 +54,8 @@
   (W::BACK
    (SENSES
     ((LF-PARENT ONT::DIRECTION-backward)
-     (TEMPL PRED-S-POST-TEMPL)
+     ;(TEMPL PRED-S-POST-TEMPL)
+     (TEMPL PRED-S-VP-templ)
      (example "move back")
      )
     )
@@ -66,9 +67,20 @@
   ((W::BACK W::AND W::FORTH)
    (SENSES
     ((LF-PARENT ONT::DIRECTION-wrt-entity)
-     (TEMPL PRED-S-POST-TEMPL)
+     ;(TEMPL PRED-S-POST-TEMPL)
+     (TEMPL PRED-S-VP-templ)
      )
     )
    )
 ))
 
+(define-words :pos W::V
+ :words (
+  ((W::BACK W::AWAY)
+   (SENSES
+    ((LF-PARENT ONT::RENEGE)
+     (TEMPL AGENT-neutral-XP-TEMPL (xp (% w::pp (w::ptype w::from))))
+     )
+    )
+   )
+))
