@@ -40,7 +40,7 @@ RUN cpan DBD::SQLite
 RUN apt-get install -y aspell aspell-en
 RUN apt-get install -y xsltproc
 
-RUN ./configure --with-lisp=sbcl
+RUN ./configure --with-lisp="sbcl --dynamic-space-size 2048"
 RUN make
 RUN make install
 
