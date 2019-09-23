@@ -540,6 +540,21 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 			}
 			
 		}
+		else if (acceptContent.get(0).stringValue().toUpperCase().contains("ANSWER"))
+		{
+
+			KQMLObject toObject = acceptContent.getKeywordArg(":TO");
+			String answerId = id;
+			if (toObject != null)
+				answerId = toObject.stringValue();
+			Query foundQuery = goalPlanner.getQueryMapping().get(answerId);
+			if (foundQuery != null)
+			{
+				
+				foundQuery.setAnswered(true);;
+			}
+			
+		}
 		else // Do we want to add this if we don't know of the goal?
 		{
 			System.out.println("Goal with ID " + id + "accepted without being known");

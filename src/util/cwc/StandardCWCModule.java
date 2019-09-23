@@ -87,7 +87,16 @@ public class StandardCWCModule extends StandardTripsModule {
    */
   public void reportFailure(Exception e, KQMLPerformative msg) {
     KQMLPerformative failure = exceptionToFailure(e);
-    report(msg, failure);
+    try {
+      report(msg, failure);
+    } catch (RuntimeException e2) {
+      System.err.println("There was a problem reporting this exception as a failure:");
+      e.printStackTrace();
+      System.err.println("The problem was:");
+      e2.printStackTrace();
+      System.err.println("Reporting that failure instead.");
+      reportFailure(e2, msg);
+    }
   }
 
   // just in case I mix up the args...
@@ -196,7 +205,7 @@ public class StandardCWCModule extends StandardTripsModule {
 	throw new UnknownAction(verb);
       }
     } catch (Exception e) {
-      reportFailure(e, msg);
+      reportFailure(e); // NOTE: no msg, we don't want to reply to tells
     }
   }
 

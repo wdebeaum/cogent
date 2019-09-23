@@ -675,7 +675,7 @@
 
 (define-type ont::affection-scale
  :parent ont::behavioral-scale
- :wordnet-sense-keys ("affection%1:12:00")
+ :wordnet-sense-keys ("affection%1:12:00" "friendliness%1:07:00" )
 )
 
 (define-type ont::sociability-scale
@@ -885,7 +885,7 @@
 
 (define-type ont::able-scale
  :parent ont::ability-scale 
- :wordnet-sense-keys ("ability%1:07:00" "ability%1:09:00" "capability%1:07:00" "capacity%1:07:00" "competence%1:07:00")
+ :wordnet-sense-keys ("ability%1:07:00" "ability%1:09:00" "capability%1:07:00" "capacity%1:07:00" "competence%1:07:00" "capability%1:26:00")
  ;; WORDS: capability, capacity, 
 )
 
@@ -958,7 +958,8 @@
 
 (define-type ont::important-scale
  :parent ont::importance-scale
- :wordnet-sense-keys ("significance%1:07:00" "importance%1:07:00" "importance%1:26:00")
+ :wordnet-sense-keys ("significance%1:07:00" "importance%1:07:00" "importance%1:26:00"
+					     "urgency%1:26:00")
 )
 
 (define-type ont::not-important-scale
@@ -1022,7 +1023,7 @@
 ;; basis, foundation
 (define-type ont::basic-scale
  :parent ont::evaluation-scale
- :wordnet-sense-keys ("foundation%1:09:00")
+ ;;:wordnet-sense-keys ("foundation%1:09:00")
 )
 
 ;; plainness
@@ -1083,7 +1084,7 @@
 ;; partiality, bias, prejudice
 (define-type ont::partiality-scale
  :parent ont::evaluation-scale
- :wordnet-sense-keys ("partiality%1:09:00")
+ :wordnet-sense-keys ("partiality%1:09:00" "impartiality%1:09:00")
 )
 
 ;; morality
@@ -1422,9 +1423,10 @@
  :parent ont::size-scale 
  :sem (F::Abstr-obj (F::Scale Ont::Linear-extent-scale))
  :wordnet-sense-keys ("dimension%1:07:00")
- :arguments (;;(:ESSENTIAL ONT::val (F::Abstr-obj (F::Scale Ont::Linear-scale) (F::measure-function F::value)))     
+ :arguments (;;(:ESSENTIAL ONT::val (F::Abstr-obj (F::Scale Ont::Linear-scale) (F::measure-function F::value)))
+	     (:essential ont::figure (F::phys-obj))
              (:ESSENTIAL ONT::EXTENT (F::abstr-obj (F::scale ont::linear-extent-scale) (F::measure-function F::value))))
-)
+ )
 
 (define-type ont::length-scale
  :parent ont::linear-extent-scale 
@@ -1647,7 +1649,7 @@
 
 (define-type ont::steady-scale
  :parent ont::steadiness-scale
- :wordnet-sense-keys ("steadiness%1:07:01" "stability%1:07:00")
+ :wordnet-sense-keys ("steadiness%1:07:01" "stability%1:07:00" "stability%1:07:01" )
 )
 
 (define-type ont::not-steady-scale
@@ -1893,7 +1895,7 @@
 
 (define-type ont::awareness-scale
  :parent ont::psychological-condition-scale 
- :wordnet-sense-keys ("consciousness%1:09:01")
+ :wordnet-sense-keys ("consciousness%1:09:01" "light%1:09:02")
  ;; WORDS: awareness, consciousness
 )
 
@@ -1909,7 +1911,7 @@
 
 (define-type ont::not-certain-scale
  :parent ont::certainty-scale
- :wordnet-sense-keys ("doubt%1:09:00")
+ :wordnet-sense-keys ("doubt%1:09:00" "uncertainty%1:07:00")
 )
 
 ;; rationality

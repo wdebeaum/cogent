@@ -5,9 +5,9 @@
 
 MAIN    = CollaborativeStateManager
 PACKAGE = TRIPS.CollaborativeStateManager
-USES    = TRIPS.TripsModule TRIPS.KQML TRIPS.util TRIPS.JavaWrapper
+USES    = TRIPS.TripsModule TRIPS.KQML TRIPS.util TRIPS.JavaWrapper json-simple-1.1.1
 
-JFLAGS	= -cp .:src
+JFLAGS	= -cp .:src:json-simple-1.1.1.jar
 
 SRCS = 	CollaborativeStateManager.java \
 	src/extractors/EventExtractor.java \
@@ -41,4 +41,6 @@ include $(CONFIGDIR)/defs.mk
 EXTRA_CLASSPATH = $(prefix)/src/CollaborativeStateManager/src:$(etcdir)/java/TRIPS.JavaWrapper.jar
 include $(CONFIGDIR)/java/prog.mk
 
+install::
+	$(INSTALL_DATA) json-simple-1.1.1.jar $(etcdir)/java
 

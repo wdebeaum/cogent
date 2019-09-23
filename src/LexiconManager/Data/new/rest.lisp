@@ -25,8 +25,14 @@
    (SENSES
     ((meta-data :origin "verbnet-2.0" :entry-date 20060315 :change-date nil :comments nil :vn ("put_spatial-9.2-1"))
      (LF-PARENT ONT::be-at-loc)
-     (TEMPL NEUTRAL-LOCATION-XP-TEMPL) ; like hang,stand,sit
+     (TEMPL NEUTRAL-TEMPL) ; like hang,stand,sit
      )
+
+    ((meta-data :wn ("rest%2:41:00"))
+     (LF-PARENT ONT::be-inactive)
+     (TEMPL NEUTRAL-TEMPL)
+     )
+
     )
    )
 ))

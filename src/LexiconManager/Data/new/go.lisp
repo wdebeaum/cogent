@@ -24,17 +24,18 @@
     ((lf-parent ont::undergo-action)
      (example "I kept going")
      (TEMPL affected-TEMPL)
-     (preference .97)  ;; this really should be a last resort
+     (preference .98)  ;; this really should be a last resort
      (meta-data :origin bee :entry-date 20040805 :change-date nil :comments portability-followup))
     ((lf-parent ont::occurring)
      (example "The interview went well")
      (TEMPL neutral-TEMPL) (SYNTAX (ADVBL-NECESSARY +))
-     (preference 0.98)
+     (preference 0.985)
      (meta-data :origin bee :entry-date 20040805 :change-date nil :comments portability-followup))
 
     ((lf-parent ont::occurring)
      (example "How is it going?")
      (TEMPL neutral-TEMPL)
+      (preference 0.985)
      (meta-data :wn ("go%2:42:03"))
     )
 
@@ -54,7 +55,7 @@
      (TEMPL AGENT-FORMAL-XP-NP-TEMPL (xp (% W::pp (W::ptype (? pt w::for)))))
      (meta-data :origin chf :entry-date 20070904 :change-date nil :comments nil))     
     
-    ((LF-PARENT ONT::MOVE)
+    ((LF-PARENT ONT::self-locomote)
      (SEM (F::aspect F::unbounded) (F::time-span F::extended))
      (example "go to amazon dot com" "go by the store")
      (meta-data :origin plow :entry-date 20050315 :change-date nil :comments nil)

@@ -1,9 +1,17 @@
 (in-package :om)
 
-(define-type ONT::defined-by-sequence-relationship
+
+
+(define-type ONT::object-defined-by-relationship
     :parent ONT::PHYS-OBJECT
+    :wordnet-sense-keys ("possession%1:03:00")
     :arguments ((:required ONT::FIGURE (F::Phys-obj)))
-)
+    )
+
+(define-type ONT::defined-by-sequence-relationship
+    :parent ONT::object-defined-by-relationship
+    :arguments ((:required ONT::FIGURE (F::Phys-obj)))
+    )
 
 (define-type ONT::predecessor
     :parent ONT::defined-by-sequence-relationship
@@ -50,7 +58,7 @@
     )
 
 (define-type ONT::MOLECULAR-PART
-    ::wordnet-sense-keys ("chemical_group%1:27:00" )
+    :wordnet-sense-keys ("chemical_group%1:27:00" )
     :parent ONT::natural-object
     )
 
@@ -203,7 +211,7 @@
 ;; Can be natural or artifact, like buildings, cities
 ;; used for navigation in the transportation domains
 (define-type ONT::GEO-OBJECT
-    :wordnet-sense-keys ("location%1:03:00")
+    :wordnet-sense-keys ("location%1:03:00" "space%1:03:00")
     :parent ONT::phys-OBJECT
     :sem (F::Phys-obj (F::form F::geographical-object) (F::container +))
 		      ;;(:default (F::object-function F::spatial-object)))
@@ -329,7 +337,7 @@
 
 ;; force, pressure, compression
 (define-type ont::physical-phenomenon
-    :wordnet-sense-keys ("force%1:19:00" "causal_agency%1:03:00" "cause%1:03:00" "causal_agent%1:03:00"  "cause%1:11:00")
+    :wordnet-sense-keys ("force%1:19:00" "causal_agency%1:03:00" "cause%1:03:00" "causal_agent%1:03:00"  "cause%1:11:00" "momentum%1:07:00")
     :parent ont::natural-phenomenon
     :sem (F::Phys-obj (F::origin F::non-living))
     )
@@ -349,7 +357,7 @@
 |#
 
 (define-type ont::weather
-    :wordnet-sense-keys ("weather%1:19:00" "weather_condition%1:19:00" "conditions%1:19:00" "atmospheric_condition%1:19:00")
+    :wordnet-sense-keys ("atmospheric_condition%1:19:00" "conditions%1:19:00" "freeze%1:19:00" "weather%1:19:00" "weather_condition%1:19:00")
     :parent ont::atmospheric-phenomenon
     :sem (F::Phys-obj (F::origin F::non-living))
     )
@@ -452,7 +460,7 @@
 ;how to deal with this?
 ;State and country are too similar. Perhaps country should be a child of state?
 (define-type ONT::STATE
-    :wordnet-sense-keys ("land%1:15:02" "state%1:15:00" "country%1:15:00" "body_politic%1:14:00" "res_publica%1:14:00" "commonwealth%1:14:00" "land%1:14:00" "country%1:14:00" "nation%1:14:00" "state%1:14:00" "state%1:15:01" "province%1:15:00")
+    :wordnet-sense-keys ("body_politic%1:14:00" "res_publica%1:14:00" "commonwealth%1:14:00" "state%1:15:01" "province%1:15:00")
     :parent ONT::political-region
     )
 
@@ -461,6 +469,7 @@
     )
 
 (define-type ONT::COUNTRY
+    :wordnet-sense-keys ("country%1:15:00" "country%1:14:00")
     :parent ONT::POLITICAL-REGION
     )
 
@@ -796,7 +805,7 @@
 
 
 (define-type ONT::person
-    :wordnet-sense-keys ("person%1:03:00" "imaginary_being%1:18:00")
+    :wordnet-sense-keys ("person%1:03:00")
     :parent ONT::mammal ;; umls
     :sem (F::Phys-obj (F::form F::solid-object)
 		      (F::spatial-abstraction F::spatial-point)
@@ -814,11 +823,23 @@
 
 ;; angel, devil
 (define-type ONT::supernatural-being
+    :wordnet-sense-keys ("supernatural_being%1:18:00")
     :parent ONT::organism ;; for parsing purposes, they are like people ;) ;; umls
     :sem (F::Phys-obj (F::form F::solid-object)
 		      (F::spatial-abstraction F::spatial-point)
 		      (F::origin F::Human)
 		      (F::Object-Function F::Occupation)
+		      (f::mobility f::self-moving)
+		      (F::Container -) (F::intentional +) (F::information -))
+    )
+
+(define-type ONT::imaginary-being
+    :wordnet-sense-keys ("imaginary_being%1:18:00")
+    :parent ONT::organism ; not all of them are people, e.g., unicorn
+    :sem (F::Phys-obj (F::form F::solid-object)
+		      (F::spatial-abstraction F::spatial-point)
+		      ;(F::origin F::Human)
+		      ;(F::Object-Function F::Occupation)
 		      (f::mobility f::self-moving)
 		      (F::Container -) (F::intentional +) (F::information -))
     )
@@ -1113,6 +1134,13 @@
     :parent ONT::PERSON
     )
 
+(define-type ONT::OFFICIAL
+    :comment "Person that serves in some administrative role"
+     :wordnet-sense-keys ("leader%1:18:00")
+    :parent ONT::PERSON
+    )
+
+
 (define-type ONT::RECIPIENT
     :parent ONT::PERSON
     )
@@ -1130,7 +1158,7 @@
 
 (define-type ONT::PRODUCE
     :parent ONT::FOOD
-    :wordnet-sense-keys ("produce%1:13:00")
+    :wordnet-sense-keys ("produce%1:13:00" )
     :sem (F::Phys-obj (F::origin F::natural) (F::form F::Solid))
     )
 
@@ -1170,7 +1198,7 @@
 ;; store, shop
 (define-type ONT::commercial-facility
     :parent ONT::facility
-    :wordnet-sense-keys ("shop%1:06:00")
+    :wordnet-sense-keys ("shop%1:06:00" "outlet%1:06:01")
     ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
@@ -1202,7 +1230,7 @@
 ;; bar, lounge
 (define-type ONT::drinking-establishment
     :parent ONT::entertainment-establishment
-    :wordnet-sense-keys ("barroom%1:06:00" "bar%1:06:00" "saloon%1:06:00" "ginmill%1:06:00" "taproom%1:06:00")
+    :wordnet-sense-keys ("barroom%1:06:00" "saloon%1:06:00" "ginmill%1:06:00" "taproom%1:06:00")
     ;;:sem (F::Phys-obj (F::object-function F::Building))
     )
 
@@ -1308,7 +1336,8 @@
 ;; wall, ceiling, floor
 (define-type ont::structure-internal-component
     :parent ONT::structural-component
-    :wordnet-sense-keys ("wall%1:06:00" "wall%1:06:03" "ceiling%1:06:00" "floor%1:06:00")
+    :wordnet-sense-keys ("wall%1:06:00" "wall%1:06:03" "ceiling%1:06:00" "floor%1:06:00"
+					"passageway%1:06:00")
     :arguments ((:OPTIONAL ONT::FIGURE (F::Phys-obj))
 		)
     )
@@ -1475,10 +1504,9 @@
 
 (define-type ONT::setting
     :parent ONT::location
-    :wordnet-sense-keys ("setting%1:26:00" "background%1:26:00" "scope%1:26:00")
+    :wordnet-sense-keys ("setting%1:26:00" "background%1:26:00" "scope%1:26:00" "situation%1:26:00")
     )
 
-;;; this is reserved for "abstract" locations that take LF_OFs - e.g. intersection, corner etc
 (define-type ONT::ROUTE
     :parent ONT::functional-region
     ;;check this
@@ -1869,6 +1897,7 @@
 
 ;; ligature, accent mark, diacritic, etc.
 (define-type ONT::graphic-symbol
+     :wordnet-sense-keys ("mark%1:10:03")
     :parent ONT::symbolic-REPRESENTATION
     )
 
@@ -2032,7 +2061,7 @@
 
 (define-type ONT::DEVICE
     :parent ONT::MANUFACTURED-OBJECT
-    :wordnet-sense-keys ("device%1:06:00")
+    :wordnet-sense-keys ("device%1:06:00" "buoy%1:10:00")
     :sem (F::Phys-obj (F::Origin F::Artifact))
     )
 
@@ -2286,7 +2315,7 @@
 
 (define-type ONT::member
     :parent ONT::part
-    :wordnet-sense-keys ("member%1:18:00" "member%1:24:00")
+    :wordnet-sense-keys ("member%1:18:00" "member%1:24:00" "member%1:14:00")
     :arguments ((:OPTIONAL ONT::FIGURE (f::Phys-obj (f::origin f::living)))
 		)
     )
@@ -2301,7 +2330,7 @@
 
 ;; power
 (define-type ONT::POWER
-    :wordnet-sense-keys ("electricity%1:19:01" "electrical_energy%1:19:00" "electricity%1:19:00" "energy%1:19:00")
+    :wordnet-sense-keys ("electricity%1:19:01" "electrical_energy%1:19:00" "electricity%1:19:00" "energy%1:19:00" "energy%1:19:01")
     :parent ONT::substance
     )
 
@@ -2365,9 +2394,10 @@
     :arguments ((:OPTIONAL ONT::FIGURE))
     )
 
-;; square, triangle, etc.  -- shapes that can be moved around on the screen
+;; square, triangle, etc.  -- objects defined by their shape
 (define-type ONT::shape-object
     :parent  ONT::shape
+    :wordnet-sense-keys ("shape%1:03:00")
     :sem (f::Phys-obj (:required  (F::origin f::artifact) (f::form f::object) (f::intentional -) (f::information -)
 				  (f::object-function f::representation))
 		      (:default (f::mobility f::non-self-moving))
@@ -2671,7 +2701,8 @@
 
 (define-type ONT::BEVERAGES
     :parent ONT::FOOD
-    :wordnet-sense-keys ("beverage%1:13:00" "drink%1:13:00" "drinkable%1:13:00" "potable%1:13:00")
+    :wordnet-sense-keys ("beverage%1:13:00" "drink%1:13:00" "drinkable%1:13:00" "potable%1:13:00"
+					    "milkshake%1:13:00")
     :sem (f::phys-obj (F::form F::liquid) (f::origin f::natural))
     )
 
@@ -3039,7 +3070,7 @@
     )
 
 (define-type ONT::system
-  :wordnet-sense-keys ("system%1:14:00" "system%1:14:00")
+  :wordnet-sense-keys ("system%1:14:00" "system%1:14:00" "system%1:06:00")
   :comment "An interconnected group of objects, abstract or physical"
  :parent ONT::collection
  )
@@ -3082,7 +3113,7 @@
 
 ;; crowd, audience
 (define-type ont::social-group
- :wordnet-sense-keys ("social_group%1:14:00"  "congregation%1:14:01")
+ :wordnet-sense-keys ("social_group%1:14:00"  "congregation%1:14:01" "defense%1:14:00")
   :parent ont::implicit-group
   ;:sem (F::Abstr-obj (F::information F::information-content) (f::intentional +) (F::Object-Function F::Occupation) (F::Container -))
   :sem (F::phys-obj (f::intentional +) (F::Object-Function F::Occupation)) ; (F::Container -)) GROUP-OBJECT has container +
@@ -3153,7 +3184,7 @@
 
 ;; government, gsa, darpa
 (define-type ONT::federal-organization
- :wordnet-sense-keys ("government%1:14:00" "authorities%1:14:00" "regime%1:14:00")
+ :wordnet-sense-keys ("government%1:14:00" "authorities%1:14:00" "regime%1:14:00"  "federal_department%1:14:00" "legislature%1:14:00")
  :parent ONT::organization
  )
 
@@ -3226,7 +3257,7 @@
 
 ;; a number/amount/quantity of X
 (define-type ONT::QUANTITY
- :wordnet-sense-keys ("measure%1:03:00" "quantity%1:03:00" "amount%1:03:00")
+ ;;:wordnet-sense-keys ("measure%1:03:00" "quantity%1:03:00" "amount%1:03:00" "quantity%1:09:01" "couple%1:23:01")
  ;:parent ONT::ORDERED-DOMAIN
  :parent ONT::GROUP-OBJECT
  :arguments ((:ESSENTIAL ONT::FIGURE ((? val f::phys-obj f::abstr-obj f::situation )))

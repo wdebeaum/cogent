@@ -133,6 +133,7 @@
     )
 
 (define-type ONT::loaded-claim
+    :wordnet-sense-keys ("case%1:04:00" "complain%2:32:01")
     :parent ONT::representative
     :comment "speech act that expresses the speakers belief with a particular purpose (e.g., accuse, complain)"
     )
@@ -188,6 +189,14 @@
 	     )
 	     ))
 
+
+(define-type ont::reaction-to-stimulus
+    :wordnet-sense-keys ("reaction%1:04:00" "reaction%1:09:01" "reaction%1:19:00"
+					  "reaction%1:09:00"  )
+    :parent ont::event-of-action
+    )
+
+
 #||;; must be a movable, physical object
 (define-type ont::physical-motion
  :parent ONT::motion
@@ -239,6 +248,8 @@
  :wordnet-sense-keys ("change_posture%2:38:00")
  :parent ONT::EVENT-OF-causation
  :sem (F::Situation (f::trajectory +))
+ :arguments ((:ESSENTIAL ONT::Agent (F::phys-obj (F::intentional +)))
+	     )
  )
 
 (define-type ONT::Body-manipulation
@@ -258,7 +269,6 @@
               (:OPTIONAL ONT::Source)
              )
  )
-
 
 (define-type ONT::Categorization
  :wordnet-sense-keys ("adjudge%2:32:00" "declare%2:32:04" "hold%2:32:11")
@@ -309,7 +319,7 @@
 ;; cognizer reasoning results in a conclusion
 ;; compare related type ont::becoming-aware which relies more on straight perception
 (define-type ONT::DETERMINE ;ONT::Coming-to-Believe
- :wordnet-sense-keys ("reason%2:31:01" "reason_out%2:31:00" "conclude%2:31:00" "ascertain%2:32:00" "ascertain%2:32:01" "discover%2:31:01")
+ :wordnet-sense-keys ("reason%2:31:01" "reason_out%2:31:00" "conclude%2:31:00" "ascertain%2:32:00" "ascertain%2:32:01" "discover%2:31:01" "discovery%1:04:00")
  :parent ONT::cogitation
  :arguments ((:ESSENTIAL ONT::Agent  ((? agt F::Phys-obj f::abstr-obj) (F::intentional +)))
              ;;; Evidence
@@ -406,6 +416,12 @@
     :arguments ((:REQUIRED ONT::neutral1 ((? th7 f::phys-obj f::abstr-obj f::situation))))
     )
 
+(define-type ont::evaluate
+    :parent ont::scrutiny
+    :wordnet-sense-keys ("evaluate%2:31:01" "contrast%2:31:00")
+    :arguments ((:REQUIRED ONT::neutral1 ((? th7 f::phys-obj f::abstr-obj f::situation))))
+    )
+
 ;; cognizer reasoning results in a value
 ;; approximate, assess, estimate, fix, guage
 (define-type ONT::Becoming-Aware-of-value
@@ -497,8 +513,10 @@
 |#
 
 (define-type ONT::offer
+ :wordnet-sense-keys ("volunteer%2:41:00" "volunteer%2:41:01")
  :parent ONT::commissive
- :arguments ((:REQUIRED ont::result)
+ :arguments (;(:REQUIRED ont::result)
+             (:ESSENTIAL ont::formal)
              )
  )
 
@@ -537,7 +555,7 @@
 
 
 (define-type ONT::Cause-to-Move
- :wordnet-sense-keys ("drive%2:35:01" "drive%2:41:02")
+ :wordnet-sense-keys ("drive%2:35:01" "drive%2:41:02" "move%2:38:01")
  :parent ont::motion
  :sem (F::Situation (F::Cause F::Force) (f::trajectory +))
  :arguments ((:ESSENTIAL ONT::agent)
@@ -578,10 +596,11 @@
              )
  )
 
-(define-type ONT::Co-motion
- :parent ont::motion
- :arguments ((:essential ont::neutral)   ;; the object with which the motion is relative to
-	     (:essential ONT::AFFECTED ((? ttype f::phys-obj f::abstr-obj)))  ; exclude situation, e.g., "the dog chase the cat barking": "cat barking" should not be a nominalization that is chased 
+(define-type ONT::motion-wrt-another-object
+    :parent ont::motion
+    :comment "motion defined wrt another object, either moving or static"
+    :arguments ((:essential ont::neutral)   ;; the object with which the motion is relative to
+		(:essential ONT::AFFECTED ((? ttype f::phys-obj f::abstr-obj)))  ; exclude situation, e.g., "the dog chase the cat barking": "cat barking" should not be a nominalization that is chased 
              )
  )
 
@@ -593,9 +612,9 @@
     )
 
 (define-type ONT::cause-cover
-    :wordnet-sense-keys ("cover%2:35:00" "cover%2:35:14"
-					  "cover%2:35:01" "impregnate%2:30:00" "saturate%2:30:04")
+    :wordnet-sense-keys ("cover%2:35:00" "cover%2:35:01" "cover%2:35:14" "impregnate%2:30:00" "saturate%2:30:04")
     :parent ont::cause-position
+   ;:arguments ((:OPTIONAL ONT::instrument))
     )
 
 (define-type ONT::orient
@@ -618,7 +637,7 @@
 ;; for verbs that commonly allow non-physical and/or non-moveable formals, e.g.
 ;; put the title in the text box, put the city here, insert the text here
 (define-type ONT::put
- :wordnet-sense-keys ("put%2:35:00" "set%2:35:00" "place%2:35:00" "pose%2:35:02" "position%2:35:00" "lay%2:35:01" "interpose%2:38:01")
+ :wordnet-sense-keys ("base%2:42:04" "interpose%2:38:01" "lay%2:35:01" "locate%2:40:01" "place%2:35:00" "pose%2:35:02" "position%2:35:00" "put%2:35:00" "set%2:35:00")
  :parent ont::event-of-causation
  :sem (F::Situation (F::trajectory +))
  :arguments ((:ESSENTIAL ONT::agent)
@@ -742,7 +761,7 @@
  )
 
 (define-type ONT::drink
- :wordnet-sense-keys ("drink%2:34:00" "drink%2:34:12")
+ :wordnet-sense-keys ("drink%2:34:00" "drink%2:34:12" "drinking%1:04:01" "drink%2:34:02")
  :parent ONT::consume
   :arguments ((:REQUIRED ONT::Affected (F::Phys-obj (F::Form f::liquid))))
  )
@@ -871,8 +890,14 @@
              )
  )
 
+(define-type ONT::BE-INACTIVE
+ :wordnet-sense-keys ("rest%2:41:00")
+ :parent ONT::HAVE-PROPERTY
+)
+
+
 (define-type ONT::possibly-true
- :wordnet-sense-keys ("seem%2:39:01")
+ ;:wordnet-sense-keys ("seem%2:39:01")
  :parent ONT::event-of-state
  :arguments ((:REQUIRED ONT::formal (F::situation))))
 
@@ -906,7 +931,7 @@
 
 ;; possess -- specific for ownership
 (define-type ont::possess
- :wordnet-sense-keys ("own%2:40:00" "have%2:40:04" "possess%2:40:00" "belong%2:40:00" "possession%1:03:00")
+ :wordnet-sense-keys ("own%2:40:00" "have%2:40:04" "possess%2:40:00" "belong%2:40:00" "possession%1:03:00" "possession%1:04:00" "ownership%1:21:00" "ownership%1:26:00")
   :parent ont::have
   :sem (F::SITUATION (F::Aspect F::stage-level) (F::Time-span F::Extended))
   :arguments ((:required ont::neutral (F::phys-obj (f::intentional +))) ;; owner is typically a person or organization
@@ -931,19 +956,20 @@
  )
 
 (define-type ONT::APPEARS-TO-HAVE-PROPERTY
- :wordnet-sense-keys ("sound%2:39:06" "taste%2:39:02")
+ :wordnet-sense-keys ("look%2:39:01" "seem%2:39:01" "seem%2:39:02" "seem%2:42:00" "sound%2:39:06" "taste%2:39:02")
  :parent ONT::HAVE-PROPERTY
  :sem (F::situation (F::Aspect F::stage-level) (F::Time-span F::extended))
  )
 
 ;;; predicates of comparison, e.g. equals, resembles
 (define-type ONT::OBJECT-COMPARE
-  :wordnet-sense-keys ("match%2:42:00" "coordinate%2:30:01")
+ :wordnet-sense-keys ("coordinate%2:30:01")
  :parent ONT::event-of-state
  :sem (F::Situation (F::Trajectory -))
  :arguments ((:REQUIRED ONT::NEUTRAL ((? oc F::Phys-obj F::Abstr-obj F::Situation F::time)))
              (:REQUIRED ONT::neutral1 ((? oc1 F::Phys-obj F::Abstr-obj F::Situation F::time)))
              )
+ :comment "one object is defined in terms of a static relationship with another object"
  )
 
 (define-type ont::cohere
@@ -972,17 +998,19 @@
 
 (define-type ONT::comprise
  :wordnet-sense-keys ("consist%2:42:04")
- :parent ONT::in-relation
+ :parent ONT::object-compare
  :sem (F::situation (F::Aspect F::static) (F::Time-span F::extended))
+ :comment "one object is defined as a configuration of other objects"
  )
 
 (define-type ONT::RESEMBLE
- :wordnet-sense-keys ("resemble%2:42:00")
+ :wordnet-sense-keys ("conform%2:42:06" "look_like%2:42:00" "match%2:42:00" "resemble%2:42:00")
  :parent ONT::OBJECT-COMPARE
  :sem (F::Situation (F::Trajectory -))
  :arguments ((:REQUIRED ONT::FORMAL ((? oc1 F::Phys-obj F::Abstr-obj F::Situation)))
              (:REQUIRED ONT::FORMAL1)
              )
+ :comment "one object is similar to another, related to ONT::SIMILAR"
  )
 
 (define-type ont::intentionally-act
@@ -1045,7 +1073,8 @@
     )
 
 (define-type ont::control-manage
- :wordnet-sense-keys ("control%2:41:00" "control%1:04:00""command%2:41:00" "discharge%2:33:01")
+    :wordnet-sense-keys ("control%2:41:00" "control%1:04:00""command%2:41:00" "discharge%2:33:01"
+					   "social_control%1:04:00")
  :comment "an agent controls another object, typically by some manipulation (physical, adding a substance,...)"
  :parent ont::event-of-causation
  :arguments ((:REQUIRED ont::affected ((? th9 f::situation F::PHYS-OBJ F::ABSTR-OBJ)))
@@ -1057,8 +1086,9 @@
 
 ;; release
 (define-type ONT::releasing
- :wordnet-sense-keys ("free%2:41:00" "liberate%2:41:02" "release%2:41:00" "unloose%2:41:00" "unloosen%2:41:00" "loose%2:41:00" "discharge%2:41:01" "exempt%2:41:00" "let_go%2:35:00")
+ :wordnet-sense-keys ("release%1:22:00" "free%2:41:00" "liberate%2:41:02" "release%2:41:00" "unloose%2:41:00" "unloosen%2:41:00" "loose%2:41:00" "discharge%2:41:01" "exempt%2:41:00" "let_go%2:35:00")
  :parent ONT::control-manage
+ :comment "An agent removes the affected from some sort of control (confinement, obligation, etc)"
  :arguments (
 ;	     (:OPTIONAL ONT::Instrument (F::Phys-obj (F::intentional -)))
 	     (:REQUIRED ONT::affected ((? obj F::PHYS-OBJ F::ABSTR-OBJ)))
@@ -1069,7 +1099,7 @@
 
 ;; try, attempt
 (define-type ONT::TRY
- :wordnet-sense-keys ("try%1:04:00" "endeavour%1:04:00" "endeavor%1:04:00" "effort%1:04:00" "attempt%1:04:00" "try%2:29:00" "try_on%2:29:00" "taste%2:34:00" "try_out%2:34:00" "try%2:34:00" "essay%2:41:01" "examine%2:41:00" "try_out%2:41:00" "try%2:41:01" "prove%2:41:03" "test%2:41:00" "try%2:41:00" "seek%2:41:00" "attempt%2:41:00" "essay%2:41:00" "assay%2:41:00" "come_near%2:41:00")
+ :wordnet-sense-keys ("try%1:04:00" "endeavour%1:04:00" "endeavor%1:04:00" "effort%1:04:00" "attempt%1:04:00" "try%2:29:00" "try_on%2:29:00" "taste%2:34:00" "try_out%2:34:00" "try%2:34:00" "essay%2:41:01" "examine%2:41:00" "try_out%2:41:00" "try%2:41:01" "prove%2:41:03" "test%2:41:00" "try%2:41:00" "seek%2:41:00" "attempt%2:41:00" "essay%2:41:00" "assay%2:41:00" "come_near%2:41:00" "push%1:04:01")
  :parent ONT::cause-effect
  :arguments ((:OPTIONAL ONT::neutral ((? agt f::abstr-obj f::situation))))
 ;;((:OPTIONAL ONT::Instrument (F::Phys-obj (F::intentional -)))
@@ -1105,6 +1135,12 @@
 ; 		)
 ;     )
 
+(define-type ont::err
+    :parent ONT::fail
+    :arguments ((:REQUIRED ONT::affected))
+    :wordnet-sense-keys ("err%2:31:00")
+ )
+
 (define-type ont::miss
     :parent ONT::fail
     :arguments (
@@ -1131,7 +1167,7 @@
 (define-type ONT::be-inclined
     ;; 20120529 GUM change new parent
     :wordnet-sense-keys ("tend%2:42:01")
-    :parent ont::event-of-state
+    :parent ont::have-property
     :arguments (
 		(:REQUIRED ONT::Formal ((? obj F::SITUATION F::ABSTR-OBJ) (f::intentional -)))
 		)

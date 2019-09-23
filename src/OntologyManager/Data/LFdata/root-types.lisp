@@ -64,8 +64,16 @@
      :wordnet-sense-keys ("come%2:30:01" "come%2:42:13" "come_about%2:30:00" "fall_out%2:30:00" "go%2:42:03" "go%2:42:12" "go_on%2:30:00" "hap%2:30:00" "happen%2:30:00" "happening%1:11:00" "natural_event%1:11:00" "occur%2:30:00" "occurrence%1:11:00" "occurrent%1:11:00" "pass%2:30:00" "pass_off%2:30:00" "play%2:42:00" "set_in%2:30:00" "take_place%2:30:00")
      :parent ONT::SITUATION-ROOT
      :comment "event occurrence - e.g., an explosion happened"
-     :arguments ((:essential ONT::neutral (f::situation (F::aspect F::dynamic)))
-		 (:optional ONT::affected ((? t F::situation F::Abstr-obj f::phys-obj) (F::tangible +))))
+     :arguments ((:essential ONT::neutral ((? xx f::situation F::time)))
+		 (:optional ONT::affected (f::phys-obj)))
+     :sem (F::Situation (F::aspect F::dynamic)))
+
+
+(define-type ont::time-elapse
+     :wordnet-sense-keys ("pass%2:38:03")
+     :parent ONT::occurring
+     :comment "time occurrence - e.g., time passed by, the winter went on, ..."
+     :arguments ((:essential ONT::neutral (F::time)))
      :sem (F::Situation (F::aspect F::dynamic)))
 
 (define-type ont::event-of-action 
@@ -178,8 +186,25 @@
     :sem (F::abstr-obj (f::information f::mental-construct))
    )
 
+;;; This is a catch-all for things that are relations between multiple
+;;; objects: identity, distance, whatever. Will need better sorting at
+;;; a future data
+(define-type ONT::relation
+    :comment "All types that denote relations. This is the root of terms under abstract objects that take the ONT::F specifier"
+    :wordnet-sense-keys ("relation%1:03:00" "amount%2:42:03")
+    :parent ONT::abstract-object
+    :arguments ((:REQUIRED ONT::FIGURE)
+		(:REQUIRED ONT::GROUND)
+		(:optional ont::neutral)
+		(:optional ont::neutral1)  ;; some relations based on verbs use this
+		(:optional ont::norole)
+		(:OPTIONAL ONT::COMPAR))
+    )
+ 
+ 
+	     
 (define-type ont::domain-property
-    :parent ont::abstract-object
+    :parent ont::RELATION
     :comment "these are modifiers that characterize an object/event with respect to a scale/domain (in ONT::DOMAIN)"
     :sem (F::abstr-obj (F::Scale ont::domain))
     :arguments ((:REQUIRED ONT::FIGURE)

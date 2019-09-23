@@ -67,6 +67,12 @@
 	    (meta-data :origin medadvisor :entry-date 20011126 :change-date nil :comments nil)
 	    (TEMPL BINARY-CONSTRAINT-S-VPbase-TEMPL)
 	    )
+
+           ((LF-PARENT ONT::ATTRIBUTED-TO)
+            (TEMPL binary-constraint-S-templ)
+            (EXAMPLE "he seems honest to me")
+           ) 
+
 	   ))
   ))
 
@@ -88,6 +94,7 @@
      )
 
     ((LF-PARENT ONT::RESULTING-STATE)
+     (preference .985)
      (example "change to a waking state")
      (TEMPL BINARY-CONSTRAINT-NP-TEMPL)
      )

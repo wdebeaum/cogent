@@ -12,7 +12,7 @@
 ; high-level type for spatial locations
 ; a relation between an object (figure) to another object (ground) by a spatial relation, possible abstract
 (define-type ont::position-reln
- :parent ont::abstract-object
+ :parent ont::relation
  :comment "Spatial relations that locate one object (the figure) in terms of another object (the ground), which often is implicit"
  ;; situations can be spatially located, e.g. meetings, riots, parties
  ;; so can abstr-obj: the idea in the document; the name on the envelope; the man at the party
@@ -45,14 +45,15 @@
     :comment "prototypical locating of a FIGURE wrt a point-like GROUND"
     :parent ont::position-as-point-reln
     :arguments ((:ESSENTIAL ONT::GROUND ((? val f::phys-obj f::abstr-obj f::situation) (f::tangible +)
+					 (f::type (? typ ont::phys-object ont::tangible-abstract-object ont::event-type))
 					 (f::scale (? !t ONT::TIME-MEASURE-SCALE ONT::RATE-SCALE ONT::MONEY-SCALE ONT::NUMBER-SCALE)) ; excludes "at four"
 				       )))
     )
 
 (define-type ont::loc-where-rel
-    :comment "A subclass of AT-LOC for relative clause relations, e.g., a place where it never rains"
+    :comment "relative clause relations that could be at-loc or in-loc, e.g., a place where it never rains; the city where I live"
     :parent ont::position-as-point-reln
-    ::arguments ((:ESSENTIAL ONT::FIGURE ((? xx f::phys-obj f::abstr-obj)  (f::tangible +)
+    :arguments ((:ESSENTIAL ONT::FIGURE ((? xx f::phys-obj f::abstr-obj)  (f::tangible +)
 						      (f::type (? tt ont::location ont::mental-construction)))))
     )
  
@@ -71,12 +72,14 @@
 				       )))
   )
 
+#|
 (define-type ont::in-loc-rel
     :parent ont::in-loc
     :comment "FIGURE is part of the GROUND"
   :arguments ((:ESSENTIAL ONT::FIGURE (f::abstr-obj (f::tangible +)
 						      (f::type ont::mental-construction))))
   )
+|#
 
 (define-type ont::contain-reln
     :comment "a kind of Inverse of IN-LOC, but can't be used as a result location"
@@ -146,7 +149,7 @@
 ; figure is adjacent to ground
 ; adjacent (to), next (to), alongside (of), beside
 (define-type ont::adjacent
-  :wordnet-sense-keys ("adjacent%5:00:00:close:01")
+  :wordnet-sense-keys ("subjacent%3:00:00::" "adjacent%5:00:00:close:01")
   :parent ont::near-reln
   :arguments ((:essential ONT::FIGURE ) ;((? of1  f::phys-obj f::abstr-obj)))
 	      (:ESSENTIAL ONT::GROUND ((? grd F::Phys-obj)))
@@ -267,7 +270,7 @@
 
 ; figure is behind the ground
 ; in back (of), behind
-(define-type ont::back
+(define-type ont::back-of
   :parent ont::oriented-loc-reln
   )
 
@@ -439,11 +442,13 @@
 ; upstairs
 (define-type ont::floor-above
  :parent ont::floor-rel
+  :wordnet-sense-keys ("upstairs%3:00:00::" "upstair%3:00:00::")
  )
 
 ; downstairs
 (define-type ont::floor-below
  :parent ont::floor-rel
+  :wordnet-sense-keys ("downstairs%3:00:00::" "downstair%3:00:00::")
  )
 
 ; figure relates to proximity to city center
@@ -740,11 +745,13 @@
 
 (define-type ont::clockwise
     :parent ont::direction-rotation
+  :wordnet-sense-keys ("clockwise%3:00:00::")
     )
 
 ; counterclockwise
 (define-type ont::counterclockwise
     :parent ont::direction-rotation
+  :wordnet-sense-keys ("counterclockwise%3:00:00::" "anticlockwise%3:00:00::" "contraclockwise%3:00:00::")
     )
 
 (define-type ont::direction-wrt-verticality
@@ -1015,7 +1022,7 @@
 
 (define-type ont::immediate
     :parent ont::event-time-rel
-    :wordnet-sense-keys ("immediately%4:02:00" "immediately%4:02:05")
+    :wordnet-sense-keys ("immediate%3:00:00::" "immediately%4:02:00" "immediately%4:02:05")
     )
 
 (define-type ont::when-while
@@ -1055,7 +1062,7 @@
  )
 
 (define-type ONT::now
-     :wordnet-sense-keys ("now%4:02:05" "presently%4:02:00" "present%3:00:01")
+     :wordnet-sense-keys ("present%3:00:02::" "now%4:02:05" "presently%4:02:00" "present%3:00:01")
      :parent ONT::event-time-wrt-now
      )
 
@@ -1070,7 +1077,7 @@
      )
 
 (define-type ONT::in-past
-     :wordnet-sense-keys ("past%3:00:00")
+     :wordnet-sense-keys ("noncurrent%3:00:00::" "past%3:00:00")
      :parent ONT::event-time-wrt-now
      )
 
@@ -1383,10 +1390,9 @@
     :wordnet-sense-keys ("morning%1:28:00")
     )
 
-(define-type ont::dat-stage-PM
+(define-type ont::day-stage-PM
     :parent ONT::DAY-STAGE
-    :wordnet-sense-keys ("morning%1:28:00")
-    )
+     )
 
 (define-type ont::afternoon
     :parent ONT::DAY-STAGE

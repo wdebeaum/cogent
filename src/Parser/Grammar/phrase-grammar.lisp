@@ -298,7 +298,7 @@
 
 	((ADJP (ARG ?arg) (ARGUMENT (% NP))
 	  (AGR ?a)
-	  (sort pred) (VAR ?v) (sem ?sem) (atype w::central) (comparative -) (set-modifier +) 
+	  (sort pred) (VAR ?v) (sem ?sem) (atype w::central) (comparative -) (set-modifier +)
 	  (LF (% DESCRIPTION (STATUS ont::indefinite) (var ?v) (CLASS ONT::NUMBER) (constraint ?newc)))
 	  (post-subcat -)
 	  )
@@ -702,7 +702,7 @@
      (head (n (sort reln) (lf ?lf) (RESTR ?r)
 	      (subcat ?!subcat)
 	      (subcat (% ?scat (var ?v1) (sem ?ssem) (lf ?lf2) (gap ?gap) )) ;;(sort (? srt pred individual set comparative reln))))
-	      (SEM ($ F::ABSTR-OBJ (f::scale ?sc)))
+	      (SEM ($ F::ABSTR-OBJ (f::scale ?!sc)))
 	      (subcat-map ?smap)))
      ?!subcat
      (add-to-conjunct (val (?smap ?v1)) (old ?r) (new ?con1))
@@ -2062,11 +2062,11 @@
     ;; e.g., the train that went to Avon, the train I moved, the train that is in Avon
   
     ((N1 (RESTR ?con)
-      (CLASS ?c) (SORT ?sort) (QUAL ?qual) (COMPLEX +) (var ?v)
+      (CLASS ?c) (SORT ?sort) (QUAL ?qual) (COMPLEX +) (var ?v) (n1-rel +)
       (relc +)  (subcat (% -)) (post-subcat -)
       )
      -n1-rel>
-     (head (N1 (VAR ?v) (RESTR ?r)
+     (head (N1 (VAR ?v) (RESTR ?r) (n1-rel -)
 	       (CLASS ?c) (SORT ?sort) (QUAL ?qual)
 	    (SEM ?sem) ;;(subcat -) 
 	    (post-subcat -) (gap -) ;;(derived-from-name -) 
@@ -2078,6 +2078,25 @@
       (LF ?lf))
      (add-to-conjunct (val (MODS ?relv)) (old ?r) (new ?con)))
 
+    ; we allow multiple relative clauses only when the ones after the first one are not reduced clauses.
+    ((N1 (RESTR ?con)
+      (CLASS ?c) (SORT ?sort) (QUAL ?qual) (COMPLEX +) (var ?v) (n1-rel +)
+      (relc +)  (subcat (% -)) (post-subcat -)
+      )
+     -n1-rel-subsequent>
+     (head (N1 (VAR ?v) (RESTR ?r) (n1-rel +)
+	       (CLASS ?c) (SORT ?sort) (QUAL ?qual)
+	    (SEM ?sem) ;;(subcat -) 
+	    (post-subcat -) (gap -) ;;(derived-from-name -) 
+	    (no-postmodifiers -) ;; exclude "the same path as the battery I saw" and cp attaching to "path"
+	    (agr ?agr) (rate-activity-nom -) (agent-nom -)
+	    ))
+;     (cp (ctype relc) (VAR ?relv) (ARG ?v) (ARGSEM ?argsem) (agr ?agr)
+     (cp (ctype relc) (VAR ?relv) (ARG ?v) (ARGSEM ?sem) (agr ?agr) (reduced -)
+      (LF ?lf))
+     (add-to-conjunct (val (MODS ?relv)) (old ?r) (new ?con)))
+
+    
     ;;  Great construction!:   All he saw (was mountains)
 
   #|| ((NP (LF (% description (status ont::definite) (VAR *)
@@ -2269,7 +2288,7 @@
     -N1-appos-rev>
     (np (name +) (generated -) (sem ?sem) (class ?lf) (VAR ?v2) (time-converted -))
     (head (N1 (VAR ?v1) (RESTR ?r) (CLASS ?c) (sort (? !sort unit-measure)) ;(SORT ?sort) 
-	      (QUAL ?qual) (relc -) (sem ?sem) (class (? !c ONT::SITUATION-ROOT))
+	      (QUAL ?qual) (relc -) (sem ?sem) (class (? !c ONT::SITUATION-ROOT)) ; exclude AGENTNOM (REFERENTIAL-SEM)
 	      (subcat (% - (W::VAR -))) ;(subcat -)
 	      (post-subcat -) (complex -) (derived-from-name -) (time-converted -)
 	      )      
@@ -2529,8 +2548,9 @@
 		    (CLASS ?c) (CONSTRAINT ?con1)
 		    (sem ?sem)  (transform ?transform) 
 		    ))
-             (SORT PRED) (VAR ?v) (CASE (? case SUB OBJ)) (complex ?complex)
-	    (wh ?w) (wh-var ?whv)
+	  (status ?newspec)
+	  (SORT PRED) (VAR ?v) (CASE (? case SUB OBJ)) (complex ?complex)
+	  (wh ?w) (wh-var ?whv)
 	  )
          -np-indv> 1.0    ;; because determiners are such a closed class, they provide strong evidence for an NP - hence the 1.0 to help with large search spaces
          (SPEC (LF ?spec) (ARG ?v) (mass ?m) ;;(POSS -)
@@ -2752,8 +2772,7 @@
 	 ;(append-conjuncts (conj1 ?r1) (conj2 ?r) (new ?newr))
 	 )
 
-        ;;  BARE PLURALS  ---> KINDS
-
+        
 	;;  bare plural count; the set-restr can be a cardinality
 	;; TEST: dogs, five dogs
         ((NP (var ?v) (LF (% Description (STATUS ONT::INDEFINITE-PLURAL)
@@ -2765,7 +2784,7 @@
              (SORT PRED))
          -bare-plural-count> 
          ;; Myrosia 10/13/03 added a possibility of (mass bare) -- e.g. for "lunches" undergoing this rule
-         (head (N1 (SORT PRED) (mass (? mass count bare)) (mass ?m)
+         (head (N1 (SORT PRED) (mass (? mass count bare)) (mass ?m) ;;  (complex -)      I can't see the justification for this -- e.g., "cows eating in the field" is a prefectly good NP
 		   (AGR 3p) (VAR ?v) (CLASS ?c) (RESTR ?r) (rate-activity-nom -) (agent-nom -)
 		   (sem ?sem) (transform ?transform)
 		   (subcat-map ?subcat-map)
@@ -2814,7 +2833,7 @@
              (SORT PRED) (VAR ?v)
              )
          -bare-plural-mass> .988   ;; just a hair less than the COUNT for cases where ther 
-         (head (N1 (SORT PRED) (mass mass) (MASS ?m) 
+         (head (N1 (SORT PRED) (mass mass) (MASS ?m) (complex -)
 		(AGR 3p) (VAR ?v) (CLASS ?c) (RESTR ?r) (rate-activity-nom -) (agent-nom -)
 		(sem ?sem) (transform ?transform)
 		(post-subcat -)
@@ -2998,9 +3017,9 @@
 	  (Mass count)
 	  (SPEC ont::INDEFINITE) (AGR 3s) (unit-spec +) (VAR ?v) (SORT unit-measure))
          -unit-np-number-indef-special-case>
-	 (ART (VAR ?nv) (LEX w::a) )
+	 (ART (VAR ?nv) (LEX (? lex w::a w::an)) )
  	 (head (N1 (VAR ?v) (SORT unit-measure) (INDEF-ONLY -) (CLASS ?c) (MASS ?m)
-		   (KIND -) (sem ?sem) (sem ($ f::abstr-obj  (f::scale ?sc)))
+		   (KIND -) (sem ?sem) (sem ($ f::abstr-obj  (f::scale ?sc) (f::type (? !t ONT::QUANTITY-ABSTR))))
 		   (argument ?argument) (RESTR ?restr)
 		   (post-subcat -)
 		))
@@ -3613,13 +3632,16 @@
     ; TEST: the quickly loaded truck ; the quickly computer generated truck
     ;; Myrosia 11/26/01 we only allow those phrases before the verbs. After the verbs, they should be treated as reduced relative clauses
     
-     ((ADJP (ARG ?arg) (VAR ?v) (sem ?sem) (class ?lf)
+     ((ADJP (ARG ?arg) (VAR *) (sem ?nsem) (class ?lf)
 	    (subcatmap ?subjmap) ;(SUBCATMAP (? x ont::affected ont::affected-result ont::neutral))
 	    (ARGUMENT ?subj)
 	    (atype attributive-only) ;(atype central) 
-	    (LF (% PROP (class ?lf) (VAR ?v) (constraint ?newc)))
-      )
-     -vp-pastprt-adjp>
+       (LF (% PROP (var *) (class ONT::state-resulting-from) (sem ?nsem)
+	      (constraint (& (figure ?arg) 
+			     (ground (% *PRO* (status ont::f) (class ?lf) (VAR ?v) (sem ?sem) (constraint ?newc)))
+			     ))))
+       )
+     -vp-pastprt-adjp-attributive>
      (head
       (vp- (class ?lf) (constraint ?cons) (var ?v) (sem ?sem)
 	   (subj-map ?subjmap) ;(SUBJ-MAP (? x ont::affected ont::affected-result))
@@ -3628,17 +3650,52 @@
 	                ;; also neutral/formal: the expected result
 	   (subjvar ?arg)
 	   (gap -) ;;  no gap in the VP
-	   (vform (? pp passive pastpart))
+	   (vform passive) ;; (? pp passive pastpart))  What's an example of a PASTPRT 
 	   (complex -)
            (advbl-needed -)
 	   (dobj (% -))  ;; we can't say "the cooked the steak meat" but "the cooked meat" is fine.
 	   ;(comp3 (% -))  ;; sacrificing "the broken by the hammer window"
 	   (comp3 (% ?comp3 (var ?compvar)))  
            ))
-     (not-bound (arg1 ?compvar)) ; optional but unbound
+      (not-bound (arg1 ?compvar)) ; optional but unbound
      ;(append-conjuncts (conj1 ?cons) (conj2 (& (ont::affected ?arg))) (new ?newc))
-     (append-conjuncts (conj1 ?cons) (conj2 (& (?subjmap ?arg))) (new ?newc))
-     )
+      (append-conjuncts (conj1 ?cons) (conj2 (& (?subjmap ?arg))) (new ?newc))
+      (compute-sem-features (lf ont::STATE-resultING-FROM) (sem ?nsem)
+       ))
+
+    ((ADJP (ARG ?arg) (VAR *) (sem ?nsem) (class ?lf)
+	    (subcatmap ?subjmap) ;(SUBCATMAP (? x ont::affected ont::affected-result ont::neutral))
+	    (ARGUMENT ?subj)
+	    (atype predicative-only)
+       (LF (% PROP (var *) (class ONT::state-resulting-from) (sem ?nsem)
+	      (constraint (& (figure ?arg) 
+			     (ground (% *PRO* (status ont::f) (class ?lf) (VAR ?v) (sem ?sem) (constraint ?newc)))
+			     ))))
+       )
+     -vp-pastprt-adjp->
+     (head
+      (vp- (class ?lf) (constraint ?cons) (var ?v) (sem ?sem)
+	   (subj-map ?subjmap) ;(SUBJ-MAP (? x ont::affected ont::affected-result))
+	   (SUBJ ?subj) ;; more general to ask for SUBJ to be AFFECTED role, includes
+ 	                                         ;; the passive as well as unaccusative cases
+	                ;; also neutral/formal: the expected result
+	   (subjvar ?arg)
+	   (gap -) ;;  no gap in the VP
+	   (vform passive) ;; (? pp passive pastpart))  What's an example of a PASTPRT 
+	   (complex +)
+           (advbl-needed -)
+	   (dobj (% -))  ;; we can't say "the cooked the steak meat" but "the cooked meat" is fine.
+	   ;(comp3 (% -))  ;; sacrificing "the broken by the hammer window"
+	   (comp3 (% ?comp3 (var ?compvar)))  
+           ))
+      (not-bound (arg1 ?compvar)) ; optional but unbound
+     ;(append-conjuncts (conj1 ?cons) (conj2 (& (ont::affected ?arg))) (new ?newc))
+      (append-conjuncts (conj1 ?cons) (conj2 (& (?subjmap ?arg))) (new ?newc))
+      (compute-sem-features (lf ont::STATE-resultING-FROM) (sem ?nsem)
+       ))
+
+
+    
 
      ; may have been subsumed by -VP-PASTPRT-ADJP>
      ; If using this rule, need to make part "-" or check for matching part
@@ -4737,7 +4794,7 @@
 (parser::augment-grammar	 
   '((headfeatures
      (NP ;;NAME   -- putting it in the NP-NAME rule 
-      PRO Changeagr lex orig-lex headcat transform refl)
+      PRO Changeagr lex orig-lex headcat transform refl status) 
      (NPSEQ CASE MASS NAME PRO lex orig-lex headcat transform)
      (NSEQ CASE MASS NAME lex orig-lex headcat transform)
      (N1 sem lf lex orig-lex headcat transform set-restr refl abbrev rate-activity-nom); agent-nom)
@@ -5422,7 +5479,7 @@
       )
      np-conj1> 
      (NPSEQ (var ?v1) (SEM ?s1) (lf ?lf1) (class ?c1) (CASE ?case) (mass ?m1)
-      (generated ?generated1) (separator W::punc-comma)
+      (generated ?generated1) (separator (? xxx - W::punc-comma))
       (time-converted ?tc1) ;; MD 2008/03/06 Introduced restriction that only items with the same time-converted status can combine - i.e. don't mix number notation for times or non-times. 
       )
      (conj (SEQ +) (LF ?op) (SUBCAT NP) (var ?v)) ;; (status ?status))
@@ -5583,6 +5640,30 @@
      (logical-and (in1 ?gen1) (in2 ?gen2) (out ?gen))
      )
 
+    ((NPSEQ  (SEM ?sem) (LF (?v1 ?v2)) (AGR ?agr) (mass ?m) (class ?class) (case ?c) 
+      (generated ?gen)  (time-converted ?tc1) (seperator -) (operator ?op)
+      )
+     -npseq-initial-sequence-explicit-conjunct> 1.01
+     (head (NP (SEM ?s1) (VAR ?v1) ;;(agr ?agr)   ;; AGR is not reliably determined for proper names
+	       (complex -) (headless -) 
+	       (expletive -) ;;(bare-np ?bnp)
+	    (generated ?gen1)  (time-converted ?tc1)
+	    ;; (bare-sequence -)
+	    (LF (% ?sort (class ?c1))) (CASE ?c) (constraint ?con) (mass ?m)
+	    (sort (? !sort unit-measure)) ;; no unit measure here since they form sub-NPs [500 mb] & we want the top-level [500 mb of ram] 	    
+	    ))
+     (conj (SEQ +) (LF ?op) (var ?v))
+     (NP (SEM ?s2) (VAR ?v2) ;;(agr ?agr)  
+      (complex -) (expletive -) 
+      (headless -)
+	    (generated ?gen2)  (time-converted ?tc1)
+	    ;; (bare-sequence -)
+	    (LF (% ?sort (class ?c2))) (CASE ?c) (constraint ?con2) (mass ?m)
+	    (sort (? !sort unit-measure)))
+     (sem-least-upper-bound (in1 ?s1) (in2 ?s2) (out ?sem))
+     (class-least-upper-bound (in1 ?c1) (in2 ?c2) (out ?class))
+     (logical-and (in1 ?gen1) (in2 ?gen2) (out ?gen))
+     )
      ; 20181213: changed head from the first NP to conj in the next four rules so that we can pass on its lex
      ;;  simple conjuncts/disjunct of NPS, e.g., the dog and the cat, the horse or the cow
      ((NP (ATTACH ?a) (var ?v) (agr ?agr-out) ;(agr 3p) ; the ice and the fire could be 3s or 3p
@@ -5773,14 +5854,15 @@
     ; TEST: both dogs and cats
     ; TEST: neither dogs nor cats
     ; TEST: either dogs or cats
-    ((NP (ATTACH ?a) (var ?v) (agr ?cagr) (SEM ?sem)  
+    ((NP (ATTACH ?a) (var ?v) (agr ?cagr) (SEM ?sem)  (case ?case)
          (LF (% Description (Status ?cstat) (var ?v) 
                 (class ?class)
                 (constraint (& (operator ?cop) (sequence (?v1 ?v2))))
-                (sem ?sem) (CASE ?case1)
+                (sem ?sem) (CASE ?case)
                 (mass ?m1) 
                 )) 
-         (COMPLEX +) (SORT PRED))
+         ;(COMPLEX +) ; I ate the cake and either the pizza or the bagel
+	 (SORT PRED))
      -np-double-conj1> 
      (conj (SEQ +) (SUBCAT1 NP) (SUBCAT2 ?wlex) (SUBCAT3 NP) 
       (var ?v) 
@@ -6206,10 +6288,11 @@
 		    (nomobjpreps ?nop)
 		    (nomsubjpreps ?nsp)
 		    ))
-	 (n (lf ?ratelf) (sem ($ (? t F::ABSTR-OBJ F::SITUATION F::TIME)  ; (planting) date
-				 ;(f::type (? x ONT::DOMAIN ONT::ACTING))))) ; ACTING: activity
-				 (f::type (? x ONT::DOMAIN ONT::ACTIVITY-EVENT ONT::ABILITY-EVENT ONT::LEVEL ONT::QUANTITY
-					     ONT::time-object))))) ; rate, height, activity, level, amount, (planting) date
+	 (n (lf ?ratelf)
+	  ;; we match the LF here instead of in the SEM in order to get a hard failure 
+	  (lf (? x ONT::DOMAIN ONT::ACTIVITY-EVENT ONT::ABILITY-EVENT ONT::LEVEL ONT::QUANTITY
+		   ONT::time-object))  ; rate, height, activity, level, amount, (planting) date
+	  (sem ($ (? t F::ABSTR-OBJ F::SITUATION F::TIME))))  ; (planting) date
 	 )
 
     ;; this rule then inserts the rate/activity predicate once the arguments have been attached

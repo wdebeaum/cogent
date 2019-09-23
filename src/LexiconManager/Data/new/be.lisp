@@ -28,7 +28,7 @@
      )
 
     ;;;; .. be happy
-    ((LF-PARENT ONT::HAVE-PROPERTY)
+    ((LF-PARENT ONT::HAVE-PROPERTY);used for connecting a predicate to an object
      (LF-FORM W::be)
      (TEMPL NEUTRAL-FORMAL-PRED-SUBJCONTROL-TEMPL)
      (preference .98) ;; slighly disprefered to favor passive constructions over adjectives
@@ -41,9 +41,10 @@
      )
 
     (  ;; the fact is he's happy
-     (LF-PARENT ont::proposition-equal)
+     (LF-PARENT ont::proposition-equal);used for generalized equality - the fact is that ...
      (LF-FORM w::BE)
      (TEMPL NEUTRAL-NEUTRAL1-CP-STHAT-EQUAL-TEMPL)
+     (EXAMPLE "the fact is that we went to the store")
      )
 
        ;;;; .. there is a box

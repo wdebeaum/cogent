@@ -8,12 +8,14 @@ import java.util.regex.Pattern;
 import TRIPS.KQML.KQMLList;
 import TRIPS.KQML.KQMLObject;
 import states.ActType;
+import org.json.simple.parser.*;
+import org.json.simple.*;
+
 
 public class OntologyReader {
 
 	private HashMap<String,String> events; // Event type -> parent
 	private HashMap<String,ArrayList<String>> goals;
-	private ArrayList<String> goalOrdering;
 	private HashMap<String,ArrayList<String>> actGoalSuggestionMapping;
 	private HashMap<String,ArrayList<String>> implicitActGoalMapping;
 	private HashMap<String,ArrayList<String>> goalArguments;
@@ -25,10 +27,11 @@ public class OntologyReader {
 		goals = new HashMap<String, ArrayList<String>>();
 		actGoalSuggestionMapping = new HashMap<String, ArrayList<String>>();
 		implicitActGoalMapping = new HashMap<String, ArrayList<String>>();
-		goalOrdering = new ArrayList<String>();
 		goalArguments = new HashMap<String,ArrayList<String>>();
 		models = new HashSet<String>();
 	}
+	
+
 	
 	public void readGoalOntologyFromFile(String filename)
 	{

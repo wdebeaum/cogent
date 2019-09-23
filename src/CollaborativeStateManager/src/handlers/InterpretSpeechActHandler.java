@@ -130,8 +130,9 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 		}
 
 		Query queryToAnswer = null;
+		// If we start having a problem with answering other things check here
 		for (Query q : goalPlanner.getQueries()) {
-			if (q.getParent() != null && q.getParent().equals(currentAcceptedGoal) &&
+			if (q.getParent() != null && //q.getParent().equals(currentAcceptedGoal) &&
 					!q.isAnswered() && !q.isFailed()) {
 				queryToAnswer = q;
 				break;
@@ -375,6 +376,8 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 				goalPlanner.setActiveGoal(testSelect);
 			}
 		}
+		
+		// Get the right goal type
 		KQMLContentContext proposeAdoptContentContext;
 		if (proposeAdoptContent == null) {
 			proposeAdoptContentContext = goalAdder.getGoalAdditionType(innerContent, 
@@ -384,6 +387,7 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 			proposeAdoptContentContext = new KQMLContentContext(proposeAdoptContent,
 																context);
 
+		// Fill in additional context if needed
 		newContext.addAll((KQMLList) proposeAdoptContentContext.getContext());
 		if (currentAcceptedGoal != null)
 			newContext.addAll(currentAcceptedGoal.getAdditionalContext());

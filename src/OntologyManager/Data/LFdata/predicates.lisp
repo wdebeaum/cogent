@@ -2,7 +2,7 @@
 
 ;;; All these are predicates with arguments
 (define-type ONT::predicate
-  :parent ONT::abstract-object
+  :parent ONT::relation
   :comment "predications that require a subcat to form a modifier, typically adverbials (e.g., on, as well as)"
   :sem (F::ABSTR-OBJ (:default (F::GRADABILITY +) (F::scale -) (f::intensity -) (f::orientation -)  (F::CONTAINER -) (f::intentional -)))
   :arguments (;(:ESSENTIAL ONT::OF)
@@ -12,6 +12,7 @@
 	      
 	      )
   )
+
 
 (define-type ONT::modifier
  :parent ONT::PREDICATE
@@ -157,7 +158,7 @@
  )
 
 (define-type ONT::QUALIFICATION
- :parent ONT::PREDICATE
+    :parent ONT::PREDICATE
  )
 
 (define-type ONT::RESTRICTION
@@ -233,13 +234,11 @@
              )
  )
 
-; against
-(define-type ONT::CONTRA
+					; against
+(define-type ONT::CONTRA-FORCE
  :parent ONT::SITUATION-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation))
-;;             (:REQUIRED ONT::VAL (F::Situation (F::aspect F::dynamic)))
-	     ;; purposes don't have to be dynamic -- e.g. to store something, to remember, etc.
-	     (:REQUIRED ONT::GROUND (F::Situation))
+ :arguments ((:ESSENTIAL ONT::FIGURE (F::Situation)  (F::aspect F::dynamic) (F::type ont::event-of-action))
+	     (:REQUIRED ONT::GROUND ((? xx F::Situation F::phys-obj F::abstr-obj)))
              )
  )
 
@@ -352,17 +351,18 @@
              )
  )
 
-(define-type ONT::attributed-information
+(define-type ONT::attributed-to
  :parent ONT::PREDICATE
- :arguments ((:ESSENTIAL ONT::FIGURE (F::situation))
-             (:REQUIRED ONT::GROUND ((? s F::Phys-obj F::abstr-obj)))
-             )
+ :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (F::type (? t ont::HAVE-PROPERTY ont::CORRELATION))))
+             ;(:REQUIRED ONT::GROUND ((? s F::Phys-obj F::abstr-obj)))
+             (:ESSENTIAL ONT::GROUND (F::Phys-obj (f::intentional +)))
+	     )
  )
 
 (define-type ONT::manner
  :parent ONT::SITUATION-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (f::type ont::event-of-action)))
-             (:REQUIRED ONT::GROUND ((? at F::abstr-obj F::situation f::phys-obj) (f::intentional -))) ;; don't want times to work here
+ :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (f::type (? ev ont::event-of-action ont::event-of-state))))
+             (:REQUIRED ONT::GROUND ((? at F::abstr-obj F::situation F::phys-obj) (f::intentional -))) ;; don't want times to work here
              )
  )
 
@@ -470,6 +470,7 @@
 (define-type ONT::sequence-position
     :comment "Position related to discourse. e.g., First, we laugh"
     :parent ONT::PREDICATE
+    :wordnet-sense-keys ("rank%1:26:00")
     :arguments ((:REQUIRED ONT::FIGURE (F::Situation))
 		)
     )
@@ -496,6 +497,13 @@
  :parent ONT::PREDICATE
  :arguments ((:OPTIONAL ONT::GROUND)
              )
+ )
+
+(define-type ONT::contrastive
+ :parent ONT::PREDICATE
+ :arguments ((:OPTIONAL ONT::GROUND)
+             )
+ :wordnet-sense-keys ("on_the_other_hand%4:02:00")
  )
 
 (define-type ont::parenthetical
