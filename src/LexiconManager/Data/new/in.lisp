@@ -267,6 +267,7 @@
    )
 ))
 
+#|
 (define-words 
     :pos W::adv :templ DISC-PRE-TEMPL
  :words (
@@ -277,6 +278,28 @@
      )
     ((LF-PARENT ONT::ADDITIVE)
      (TEMPL binary-constraint-s-ing-templ)
+     )
+    )
+   )
+))
+|#
+
+(define-words
+    :pos W::adv :templ DISC-PRE-TEMPL
+ :words ( 
+  ((W::in W::addition)
+   (SENSES
+   ; ((LF-PARENT ONT::ADDITIVE)
+   ;  (TEMPL pred-vp-templ)
+   ;  )
+    ((LF-PARENT ONT::ADDITIVE)
+     (TEMPL disc-templ)
+     )
+
+    ((LF-PARENT ONT::ADDITIVE)
+     (TEMPL binary-constraint-S-templ (xp (% W::PP (W::ptype W::to))))
+     (SYNTAX (W::ALLOW-DELETED-COMP +)
+    )
      )
     )
    )
@@ -467,7 +490,15 @@
      )||#	      
     ((LF-PARENT ONT::direction-in)
      ;(TEMPL PRED-S-POST-TEMPL)
-     (TEMPL PRED-NP-TEMPL)
+     (TEMPL PREDICATIVE-ONLY-ADJ-TEMPL)
+     ;;(TEMPL PRED-NP-TEMPL)
+     (preference 0.98)
+     )
+
+    ((LF-PARENT ONT::direction-in)
+     ;(TEMPL PRED-S-POST-TEMPL)
+     (TEMPL PARTICLE-TEMPL)
+     ;;(TEMPL PRED-NP-TEMPL)
      (preference 0.98)
      )
     
@@ -487,7 +518,6 @@
      )
     
     ;; in the air (excluded by ont::spatial-loc)
-
     ;; It increased in temperature
     ((LF-PARENT ONT::in-scale)
      (TEMPL BINARY-CONSTRAINT-S-OR-NP-TEMPL)

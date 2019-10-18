@@ -107,7 +107,7 @@
  )
 
 (define-type ONT::DEGREE-MODIFIER-HIGH
-    :wordnet-sense-keys ("very%4:02:00")
+    :wordnet-sense-keys ("profusely%4:02:00" "very%4:02:00")
     :parent ONT::DEGREE-MODIFIER
     :arguments ((:REQUIRED ONT::FIGURE (F::abstr-obj (F::type ont::property-val))))
     )
@@ -368,7 +368,7 @@
 
 (define-type ONT::by-means-of
  :parent ONT::SITUATION-MODIFIER
- :arguments ((:ESSENTIAL ONT::FIGURE (F::situation (F::type ont::event-of-change))) ;(f::aspect (? asp f::dynamic f::stage-level))))
+ :arguments ((:ESSENTIAL ONT::FIGURE (F::situation)) ;(F::type ont::event-of-change))) ;(f::aspect (? asp f::dynamic f::stage-level)))) ; event-of-state: "How is this related to/involved in that?"
              (:REQUIRED ONT::GROUND (F::situation)) ; how about: "by phone"?
              )
  )

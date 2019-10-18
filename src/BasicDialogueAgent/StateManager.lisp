@@ -40,6 +40,8 @@
 
 (defvar *utterance-processing-in-progress* nil) ;;  this is T if the user starting speaking and no interpretation has yet been received
 
+(defvar saved-inputQ nil)
+
 (defun cache-response-for-processing (x)
   (push x *last-internal-response*))
 
@@ -1054,6 +1056,8 @@
 		)
 	       (true (clear-pending-speech-acts  uttnum channel))
 	       (next (release-pending-speech-act))
+	       (save-inputq (setq saved-inputQ im::*inputQ*))
+	       (restore-inputq (setq im::*inputQ* saved-inputQ))
 	       (otherwise
 		(or (check-domain-specific-actions act)
 		    (format t "~% WARNING: action not known: ~S:" act)))
@@ -1359,6 +1363,15 @@
 
 (defun invoke-state (stateID push? user args uttnum &optional input)
   (let ((channel (user-channel-id user)))
+#|
+    (if (and (eq stateID 'segmentend) (user-implicit-confirm-state user))
+	(progn
+	  (restore-implicit-confirm-state user)
+	  (reask-question user channel uttnum)
+	  (invoke-state (state-id (current-dstate user)) nil user (user-dstate-args user) uttnum)
+	)
+      (progn   
+|#
     (clear-implicit-confirm-state user)
     (trace-msg 1 "~S state ~S" (if (eq push? 'push) "Pushing" "Invoking") stateID)
     (record-transcript user 'invoke-state stateID)
@@ -1393,7 +1406,10 @@
 	      (process-lf-in-state input nil nil channel nil user uttnum))
 	     
 	  (trace-msg 1 "~% Transferring to unknown state: ~S" stateID)))
-    )))
+#|
+    ))
+|#
+  )))
 
 ;;  Here's the code for pushing a subnetwork -- the result is returned in
 ;;  the :RESULT slot, which can be set by the special function SET-RESULT

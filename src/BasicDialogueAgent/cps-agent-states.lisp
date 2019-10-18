@@ -669,7 +669,9 @@ ONT::INTERACT
 		     (RECORD POSSIBLE-GOAL-ID ?goal-id)
 		     (RECORD POSSIBLE-GOAL-CONTEXT ?goal-description)
 		     (RECORD NEXT-CPS-HYPOTHESIS ?orig-cps-hyp)
-		     (clear-pending-speech-acts)) ; in preparation of saying something in clarify-goal		     )
+		     (save-inputQ)
+		     (clear-pending-speech-acts) ; in preparation of saying something in clarify-goal		     )
+	            )
 	  :destination 'clarify-goal
 	  )
 		      
@@ -1264,6 +1266,7 @@ ONT::INTERACT
 		     (RECORD ACTIVE-GOAL ?goal-id)
 		     (RECORD ACTIVE-CONTEXT ?!context)
 		     (RECORD CPS-HYPOTHESIS ?new-cps-hyp)
+		     (restore-inputq)
 		     (NOTIFY-BA :msg-type REQUEST
 				:msg (COMMIT
 				      :content ?!psgoal)) ;; :context ?!context))  SIFT doesn't want the context
