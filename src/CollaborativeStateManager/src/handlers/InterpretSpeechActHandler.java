@@ -35,7 +35,6 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 
 	KQMLObject whatLF = null;
 	String activeGoal = null;
-	OntologyReader ontologyReader;
 	GoalPlanner goalPlanner;
 	GoalAdder goalAdder;
 	GoalSelector goalSelector;
@@ -43,9 +42,8 @@ public class InterpretSpeechActHandler extends MessageHandler implements Runnabl
 
 	public InterpretSpeechActHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
 			GoalPlanner goalPlanner, OntologyReader ontologyReader, CollaborativeStateManager csm) {
-		super(msg, content, referenceHandler, csm);
+		super(msg, content, referenceHandler, csm, ontologyReader);
 
-		this.ontologyReader = ontologyReader;
 		this.goalPlanner = goalPlanner;
 		this.goalAdder = new GoalAdder(goalPlanner, ontologyReader);
 		this.goalSelector = new GoalSelector(goalPlanner);

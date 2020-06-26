@@ -56,6 +56,7 @@ our %penn2trips_word_re = (
   'gray' => qr/gray|grey/i,
   'hemophilia' => qr/hemophilia|haemophilia/i,
   'hemophiliac' => qr/hemophiliac|haemophiliac/i,
+  'ischemia' => qr/ischemia|ischaemia/i, # but not ischaemic
   'leaned' => qr/leaned|leant/i,
   'learned' => qr/learned|learnt/i,
   'leukemia' => qr/leukemia|leukaemia/i,
@@ -476,7 +477,7 @@ sub domainSpecificInfo2trips {
            sprintf("%.5f", $info->{score})
 	if (exists($info->{score}));
       # the only few that are strings instead of numbers
-      for my $key (qw(matched status source)) {
+      for my $key (qw(input matched status source)) {
 	push @$trips, ':' . $key,
 	     '"' . escape_for_quotes($info->{$key}) . '"'
 	  if (exists($info->{$key}));
@@ -490,7 +491,7 @@ sub domainSpecificInfo2trips {
       }
       # do the rest of the numbers
       for my $key (sort keys %$info) {
-	next if (grep { $_ eq $key } qw(type matched status source score maybe-depluralized surely-depluralized depluralization-score corrected dash-no-dash no-dash-dash exact));
+	next if (grep { $_ eq $key } qw(type input matched status source score maybe-depluralized surely-depluralized depluralization-score corrected dash-no-dash no-dash-dash exact));
 	push @$trips, ':' . $key, $info->{$key}
 	  if (exists($info->{$key}));
       }
@@ -540,6 +541,9 @@ sub domainSpecificInfo2trips {
       push @$trips, ':matches',
 	   domainSpecificInfo2trips($info->{matches})
 	if (exists($info->{matches}));
+    } elsif ($info->{type} eq 'units') {
+      push @$trips, ':units', '"' . escape_for_quotes($info->{units}) . '"';
+      push @$trips, ':dimensions', '"' . escape_for_quotes($info->{dimensions}) . '"';
     } else {
       die "Unknown type of domain-specific-info: $info->{type}\n" . Data::Dumper->Dump([$info],['*info']);
     }

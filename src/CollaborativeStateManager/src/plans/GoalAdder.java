@@ -43,9 +43,11 @@ public class GoalAdder {
 			boolean strictModify = false;
 			switch (asType) {
 
+			// CSM received these as a modification, so they are modification (or subgoal if failed)
 			case "MODIFICATION":
 			case "MODIFY":
 				strictModify = true;
+				// Note: Falls through for further processing
 			case "ELABORATION":
 				if (currentAcceptedGoal == null && gp.getGoalUnderDiscussion() == null) {
 					return Messages.missingActiveGoalContentContext(what, ActType.PROPOSE,
@@ -53,6 +55,7 @@ public class GoalAdder {
 				}
 
 				String ofSymbol = null;
+				// Modification of a previous choice
 				if (term.getKeywordArg(":MOD") != null) {
 					String modSymbol = term.getKeywordArg(":MOD").stringValue();
 					KQMLList modTerm = TermExtractor.extractTerm(modSymbol, (KQMLList) context);
@@ -67,6 +70,7 @@ public class GoalAdder {
 				if (asList.getKeywordArg(":OF") != null)
 					ofSymbol = asList.getKeywordArg(":OF").stringValue();
 
+				// Is there an existing goal to modify?
 				if (ofSymbol == null || !gp.hasGoal(ofSymbol))
 					responseContent = gp.modify(new Goal(what, (KQMLList) context), strictModify, false);
 				else if (gp.hasGoal(ofSymbol))
@@ -137,6 +141,12 @@ public class GoalAdder {
 
 	}
 
+	/**
+	 * Check if a given goal in the context is unambiguously a new goal
+	 * @param goalTerm
+	 * @param context
+	 * @return
+	 */
 	private boolean isDefiniteNewGoal(KQMLList goalTerm, KQMLList context) {
 		KQMLObject beneficiary = KQMLUtilities.getLinkedArguments(goalTerm, context, ":BENEFICIARY", ":GROUND",
 				":REFERS-TO");
@@ -152,6 +162,12 @@ public class GoalAdder {
 		return false;
 	}
 
+	/**
+	 * Check if a given goal in the context is unambiguosly a new goal
+	 * @param goalTerm
+	 * @param context
+	 * @return
+	 */
 	private boolean isDefiniteSubGoal(KQMLList goalTerm, KQMLList context) {
 		KQMLObject beneficiary = KQMLUtilities.getLinkedArguments(goalTerm, context, ":BENEFICIARY", ":GROUND",
 				":REFERS-TO");

@@ -213,7 +213,44 @@ ONT::INTERACT
 		      :condition ?!test)
 		     ;; (ONT::EVENT ?!what ONT::SITUATION-ROOT)
 		     ;; (ONT::EVENT ?!test ONT::EVENT-OF-CAUSATION) 
-		     (?!sp1 ?!st (? t1 ONT::SITUATION-ROOT))
+		     (?!sp1 ?!st (? t1 ONT::SITUATION-ROOT
+;;; These are DRUM events.  Eventually they will go into a branch in the ontology.
+ONT::ACTIVITY
+ONT::DEPLETE
+ONT::PHOSPHORYLATION
+ONT::UBIQUITINATION
+ONT::ACETYLATION
+ONT::FARNESYLATION
+ONT::GLYCOSYLATION
+ONT::HYDROXYLATION
+ONT::METHYLATION
+ONT::RIBOSYLATION
+ONT::SUMOYLATION
+ONT::PTM
+ONT::EXPRESS
+ONT::TRANSCRIBE
+ONT::TRANSLATE
+ONT::HYDROLYZE
+ONT::CATALYZE
+ONT::ACTIVATE
+ONT::PRODUCE
+ONT::DEACTIVATE
+ONT::CONSUME
+ONT::STIMULATE
+ONT::INHIBIT
+ONT::INCREASE
+ONT::DECREASE
+ONT::PPEXPT
+ONT::BIND
+ONT::BREAK
+ONT::TRANSLOCATE
+ONT::MODULATE
+ONT::NO-CHANGE
+ONT::TRANSFORM
+ONT::SIGNALING
+ONT::INTERACT
+				    
+				    ))
 		     (ont::eval (generate-AKRL-context :what ?!st :result ?akrl-context))
 		     (ont::eval (find-attr :result ?goal :feature ACTIVE-GOAL))
 		     -propose-wh-test>
@@ -1476,6 +1513,7 @@ ONT::INTERACT
 		     -ba-propose-psact>
 		     (UPDATE-CSM (PROPOSED :content ?!ps-action :context ?context))
 		     (RECORD PROPOSAL-ON-TABLE (ONT::PROPOSE :content ?!ps-action :context ?context))
+		     (RECORD QUERY-ON-TABLE nil)
 		     (RECORD ACTIVE-GOAL ?!goal)
 		     (RECORD ACTIVE-CONTEXT ?context)
 		     (GENERATE
@@ -1522,13 +1560,25 @@ ONT::INTERACT
 	 |#
 	 
 	 (transition
-	  :description "action completed!"
+	  :description "goal accomplished!"
 	  :pattern '((BA-RESPONSE ?!X REPORT :psact EXECUTION-STATUS :goal ?!action :status ONT::DONE)
 		     -ba-done>
 		     (UPDATE-CSM (STATUS-REPORT :goal ?!action :status ONT::DONE))
 		     (QUERY-CSM :content (ACTIVE-GOAL))
 		     (GENERATE
 		      :content (ONT::TELL :content (ONT::DONE :what ?!action)))
+		     )
+	  :destination 'what-next-initiative-on-new-goal)
+
+	 (transition
+	  :description "(non joint) action completed - a simple report from system"
+	  :pattern '((BA-RESPONSE ?!X REPORT :psact EXECUTION-STATUS :action ?!action :status ?!status
+		      :context ?context)
+		     -ba-done>
+		     (UPDATE-CSM (STATUS-REPORT :action ?!action :status ?!status))
+		     (QUERY-CSM :content (ACTIVE-GOAL))
+		     (GENERATE
+		      :content (ONT::TELL :content (?!status :what ?!action) :context ?context))
 		     )
 	  :destination 'what-next-initiative-on-new-goal)
 
@@ -1927,6 +1977,8 @@ ONT::INTERACT
 		     -done1>
 		     (UPDATE-CSM (STATUS-REPORT :GOAL ?!active
 		      :STATUS ONT::DONE))  ; what if the active goal isn't the top goal? It seems that "I'm done" could refer to the current goal and not say the task is complete. So I'm going with that right now. So I'm redirecting this back to what-next!! Then if we are done, we'll find out then.
+		     (NOTIFY-BA :msg-type TELL
+				:msg (REPORT :content (EXECUTION-STATUS :GOAL ?!active :STATUS ONT::DONE)))
 		     (GENERATE :content (ONT::EVALUATION :content (ONT::GOOD)))
 		     (QUERY-CSM :content (ACTIVE-GOAL)))
 	  :destination 'what-next-initiative-on-new-goal

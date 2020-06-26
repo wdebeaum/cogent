@@ -7,6 +7,8 @@ CONFIGDIR=../../config
 include $(CONFIGDIR)/c++/prog.mk
 include $(CONFIGDIR)/TextTagger/defs.mk
 
-EXTRA_CXXFLAGS=$(TEXTTAGGER_CXXFLAGS)
+# FIXME? maybe should call pkg-config in configure instead
+EXTRA_CXXFLAGS=$(TEXTTAGGER_CXXFLAGS) $(shell pkg-config --cflags icu-uc)
 EXTRA_LDFLAGS=$(TEXTTAGGER_LDFLAGS)
+EXTRA_LIBS=$(shell pkg-config --libs icu-uc)
 

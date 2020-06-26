@@ -39,7 +39,6 @@
      (LF-FORM W::be)
      (TEMPL NEUTRAL-NEUTRAL1-NP-EQUAL-TEMPL)
      )
-
     (  ;; the fact is he's happy
      (LF-PARENT ont::proposition-equal);used for generalized equality - the fact is that ...
      (LF-FORM w::BE)

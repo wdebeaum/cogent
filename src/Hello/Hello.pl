@@ -19,7 +19,7 @@ sub receive_request {
   if ($verb eq 'hello') {
     $self->reply_to_msg($msg,
       '(tell :content (hello' .
-      (exists($content->{sender}) ? ' ' . $content->{sender} : '') . '))'
+      (exists($msg->{':sender'}) ? ' ' . $msg->{':sender'} : '') . '))'
     );
   } else {
     $self->reply_to_msg($msg,

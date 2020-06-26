@@ -170,17 +170,18 @@ public class GoalPlanner {
 		}
 		Goal parentGoal = oldGoal.getParent();
 		System.out.println("Replacing goal " + oldGoal.getVariableName() + 
-				" with " + newGoal.getVariableName());
+				" with " + newGoal.getVariableName() + " with strict modify = " +
+				strict);
 		
-		// This might be put back, but now we're just doing subgoals
-		//replaceGoal(newGoal, oldGoal);
+		if (strict)
+		{
+			replaceGoal(newGoal, oldGoal);
+			return newGoal.adoptContent("MODIFICATION", oldGoal.getId());
+		}
 		
 		addGoal(newGoal, oldGoalName);
 		
-		if (strict)
-			return newGoal.adoptContent("MODIFICATION", oldGoal.getId());
-		
-		return newGoal.adoptContent("ELABORATION", oldGoal.getId());
+		return newGoal.adoptContent("SUBGOAL", oldGoal.getId());
 	
 		
 	}
@@ -236,10 +237,13 @@ public class GoalPlanner {
 			Goal activeParentGoal = activeGoal.getParent();
 			String activeGoalName = activeGoal.getVariableName();
 			String activeGoalId = activeGoal.getId();
-			if (accepted)
-				replaceGoal(newGoal, activeGoal);
+			// Not replacing goals anymore
+			//if (accepted)
+			//	replaceGoal(newGoal, activeGoal);
 			
-			return newGoal.adoptContent("MODIFICATION", activeGoalId);
+			// Changing to make this a new subgoal instead
+			//return newGoal.adoptContent("MODIFICATION", activeGoalId);
+			return newGoal.adoptContent("SUBGOAL", activeParentGoal.getId());
 			
 		}
 		else if (underDiscussion != null)
@@ -248,11 +252,16 @@ public class GoalPlanner {
 			{
 				String underDiscussionName = underDiscussion.getVariableName();
 				String underDiscussionId = underDiscussion.getId();
-				if (accepted)
-					replaceGoal(newGoal,underDiscussion);
-				underDiscussion = newGoal;
 				
-				return newGoal.adoptContent("MODIFICATION", underDiscussionId);
+				// Not replacing goals anymore
+				//if (accepted)
+				//	replaceGoal(newGoal,underDiscussion);
+				//underDiscussion = newGoal;
+				
+				Goal activeParentGoal = underDiscussion.getParent();
+				// Changing to make this a new subgoal instead
+				//return newGoal.adoptContent("MODIFICATION", underDiscussionId);
+				return newGoal.adoptContent("SUBGOAL", activeParentGoal.getId());
 			}
 			else
 			{

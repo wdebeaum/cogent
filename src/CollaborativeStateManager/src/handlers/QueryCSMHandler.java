@@ -17,15 +17,13 @@ public class QueryCSMHandler extends MessageHandler implements Runnable {
 
 	KQMLList innerContent;
 	GoalPlanner goalPlanner;
-	OntologyReader ontologyReader;
 	String query;
 	
 	
 	public QueryCSMHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
 			GoalPlanner goalPlanner, OntologyReader ontologyReader, CollaborativeStateManager csm) {
-		super(msg, content,referenceHandler,csm);
+		super(msg, content,referenceHandler,csm, ontologyReader);
 		this.goalPlanner = goalPlanner;
-		this.ontologyReader = ontologyReader;
 		
 		// TODO Auto-generated constructor stub
 	}

@@ -15,12 +15,11 @@ import utilities.KQMLUtilities;
 public class TakeInitiativeHandler extends MessageHandler {
 
 	private GoalPlanner goalPlanner;
-	private OntologyReader ontologyReader;
 	
 	public TakeInitiativeHandler(KQMLPerformative msg, KQMLList content, ReferenceHandler referenceHandler,
 			GoalPlanner goalPlanner, OntologyReader ontologyReader, CollaborativeStateManager csm)
 	{
-		super(msg,content,referenceHandler, csm);
+		super(msg,content,referenceHandler, csm, ontologyReader);
 		this.goalPlanner = goalPlanner;
 		this.ontologyReader = ontologyReader;
 	}
@@ -44,7 +43,9 @@ public class TakeInitiativeHandler extends MessageHandler {
 		if (goalPlanner.isOverrideSystemInitiative())
 		{
 			if (goalPlanner.getOverrideSystemInitiativeValue() == true)
+			{
 				return takeInitiativeContent("YES", goalWhat, context);
+			}
 			else
 				return takeInitiativeContent("NO", goalWhat, context);
 		}
@@ -106,7 +107,9 @@ public class TakeInitiativeHandler extends MessageHandler {
 			{
 				// The user gave the system a command
 				if (agentEquals.stringValue().equalsIgnoreCase("ONT::SYS"))
+				{
 					takeInitContent = takeInitiativeContent("YES", goalWhat, context);
+				}
 				else if (agentEquals.stringValue().equalsIgnoreCase("ONT::USER"))
 					takeInitContent = takeInitiativeContent("MAYBE", goalWhat, context);
 				

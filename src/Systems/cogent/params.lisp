@@ -119,5 +119,5 @@
 ; just the default user
 (setq dagent::*users* (list (cons "desktop" (dagent::make-user :name "desktop" :channel-id 'dagent::desktop))))
 
-(setq im::*extraction-sequence* '((im::preprocessRules) (im::cogentRules)))
+(setq im::*extraction-sequence* '((im::cogentRules)))
 (setq im::*substitute-terms-in-extraction* t)

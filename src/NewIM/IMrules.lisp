@@ -599,6 +599,14 @@
     (ONT::IDENTIFY :who *USER* :to *ME* :what ?!vv)
     )
 
+   ; I mean the dog
+   ((ONT::SPEECHACT ?!a ONT::SA_TELL :CONTENT ?!vv)
+    (ONT::F ?!vv ONT::INTENTION :FORMAL ?!f)
+    ((? x ont::THE ont::THE-SET ont::A ont::INDEF-SET ont::PRO ont::PRO-SET ONT::QUANTIFIER ONT::SM ONT::BARE) ?!f ?!type)
+    -np-answer-I-mean> 
+    (ONT::IDENTIFY :who *USER* :to *ME* :what ?!f)
+    )
+   
    ;; FRAGMENTS 
 
    #||
@@ -795,7 +803,16 @@
        -greet>
        (ONT::GREET :who *USER* :to *ME* :content ?!y)
        )
-      
+
+      #| ; maybe we don't need this
+      ; hello bob
+      ((ONT::SPEECHACT ?!x  ONT::SA_GREET :content ?!y :vocative ?!v)
+       (ONT::THE ?!v ONT::AGENT) ; system name defined as ONT::AGENT in domain-words
+       -greet-vocative>
+       (ONT::GREET :who *USER* :to *ME* :content ?!y)
+       )
+      |#
+
    ;; conventional prompts e.g., hello?  
    ((ONT::SPEECHACT ?!x ONT::SA_PROMPT-FOR :content ?!y)
        -prompt>

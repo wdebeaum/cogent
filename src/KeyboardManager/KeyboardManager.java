@@ -2,7 +2,7 @@
  * KeyboardManager.java
  *
  * Dave Costello, costello@cs.rochester.edu, 19 Oct 1998
- * $Id: KeyboardManager.java,v 1.24 2016/03/14 17:34:55 lgalescu Exp $
+ * $Id: KeyboardManager.java,v 1.25 2020/03/06 19:31:02 wdebeaum Exp $
  */
 
 package TRIPS.KeyboardManager;
@@ -343,6 +343,9 @@ public class KeyboardManager extends StandardTripsModule
 	// Get input string
 	compositionArea.setCaretPosition(0);
 	String text = canonicalizeLine(compositionArea.getText());
+	// ignore empty input
+	if (text.equals(""))
+	  return;
 	// Put utterance at end of history if not same as last
 	if (utteranceHistory.isEmpty() ||
 	    !text.equals(utteranceHistory.get(utteranceHistory.size()-1))) {

@@ -35,11 +35,33 @@
 ;; higher-level type for evaluation
 (define-type ont::evaluation-attribute-val
     :parent ont::property-val
-  :wordnet-sense-keys ("disadvantageous%3:00:00::" "poor%3:00:02::")
     :arguments ((:REQUIRED ONT::FIGURE (?any (F::tangible +))))
     :comment "properties which need an observer to be recognized -- subjective to the observer"
     :sem (F::abstr-obj (F::scale ont::evaluation-scale ))
     )
+
+(define-type ont::desirability-val
+ :parent ont::evaluation-attribute-val ;evoking-pos-experience-property-val
+ :sem (F::abstr-obj (F::scale ont::desire-scale) )
+)
+
+(define-type ont::desirable-val
+ :parent ont::desirability-val ;evaluation-attribute-val ;evoking-pos-experience-property-val
+ :wordnet-sense-keys ("desirable%3:00:00" "wanted%3:00:00")
+ ;:sem (F::abstr-obj (F::scale ont::desire-scale) )
+)
+
+(define-type ONT::not-desirable-val
+  :parent ONT::desirability-val ;evoking-neg-experience-property-val
+  :wordnet-sense-keys ("unwanted%3:00:00::" "undesirable%3:00:00::" "unwanted%3:00:01::")
+  :comment "(undesirable)"
+)
+
+(define-type ONT::lovable-val
+  :parent ONT::evaluation-attribute-val ;evoking-pos-experience-property-val
+  :wordnet-sense-keys ("lovable%3:00:00::" "loveable%3:00:00::")
+  :comment "(lovable)"
+)
 
 ;; fresh, stale
 (define-type ont::freshness-val
@@ -114,7 +136,7 @@
 
 (define-type ont::bad
  :parent ont::acceptability-val 
- :wordnet-sense-keys ("unsound%3:00:00::" "unpropitious%3:00:00::" "dirty%5:00:00:nasty:00" "unacceptable%5:00:00:unsatisfactory:00" "unacceptable%3:00:00" "unfavorable%3:00:02" "icky%5:00:00:bad:00" "unfavorable%5:00:00:bad:00" "mediocre%5:00:00:bad:00" "bad%3:00:00" "unsatisfactory%3:00:00")
+ :wordnet-sense-keys ("unsound%3:00:00::" "unpropitious%3:00:00::" "dirty%5:00:00:nasty:00" "unacceptable%5:00:00:unsatisfactory:00" "unacceptable%3:00:00" "unfavorable%3:00:02" "icky%5:00:00:bad:00" "unfavorable%5:00:00:bad:00" "mediocre%5:00:00:bad:00" "bad%3:00:00" "unsatisfactory%3:00:00" "disadvantageous%3:00:00")
  ; Words: (W::BAD W::TERRIBLE W::AWFUL W::NASTY W::DREADFUL W::UNACCEPTABLE W::ROTTEN W::UNSUPPORTABLE W::UNBEARABLE W::INTOLERABLE W::INSUFFERABLE W::UNFAVORABLE W::MEDIOCRE W::LOUSY)
  ; Antonym: ONT::good (W::GOOD W::GREAT W::FINE W::NICE W::ACCEPTABLE W::ALRIGHT W::SATISFACTORY W::SUPERB W::OKAY W::OK W::PEACHY W::FAVORABLE W::BEARABLE W::TOLERABLE W::SUPPORTABLE ALL_RIGHT)
 :sem (F::abstr-obj (F::scale ont::badness-scale))
@@ -153,6 +175,7 @@
 
 (define-type ONT::recommendability-val
   :parent ONT::evaluation-attribute-val
+  :sem (F::abstr-obj (F::scale ont::recommendability-scale))
   )
 
 (define-type ont::recommendable-val
@@ -210,6 +233,7 @@
 ;; particular, specific
 (define-type ont::specificity-val
  :parent ont::evaluation-attribute-val 
+ :sem (F::abstr-obj (F::scale ont::specificity-scale))
 )
 
 (define-type ont::specific-val
@@ -378,7 +402,6 @@
 
 ;; (un)important, (un)necessary, (in)significant, central, critical, principal
 (define-type ont::importance-val
-    :wordnet-sense-keys ("immodest%3:00:02" "immodestly%4:02:00")
     :parent ont::evaluation-attribute-val 
     :comment "of primary (i.e., major, significant), secondary (i.e., minor), or no importance"
     :sem (F::abstr-obj (F::scale ont::importance-scale))
@@ -435,7 +458,8 @@
 
 ;; senior, junior
 (define-type ont::seniority-val
- :parent ont::evaluation-attribute-val 
+ :parent ont::evaluation-attribute-val
+ :sem (F::abstr-obj (F::scale ont::seniority-scale)) 
 )
 
 (define-type ont::senior-val
@@ -528,7 +552,8 @@
 
 ;; basic, fundamental, inherent
 (define-type ont::basicness-val
- :parent ont::evaluation-attribute-val 
+ :parent ont::evaluation-attribute-val
+ :sem (F::abstr-obj (F::scale ont::basic-scale)) 
 )
 
 (define-type ont::basic-val
@@ -603,6 +628,7 @@
 ;; dependable, reliable
 (define-type ont::reliability-val
  :parent ont::evaluation-attribute-val
+ :sem (F::abstr-obj (F::scale ont::reliability-scale))
 )
 
 (define-type ont::reliable
@@ -645,6 +671,7 @@
 ;; judgement
 (define-type ont::judgement-val
  :parent ont::evaluation-attribute-val
+ :sem (F::abstr-obj (F::scale ont::judgement-scale))
 )
 
 ;; morality, righteousness, virtuousness, principle, purity
@@ -779,7 +806,8 @@
 
 ;; free vs. bound
 (define-type ont::freedom-val
- :parent ont::evaluation-attribute-val 
+ :parent ont::evaluation-attribute-val
+ :sem (F::abstr-obj (F::scale ont::freedom-scale)) 
 )
 
 (define-type ont::free-val
@@ -933,7 +961,7 @@
 
 (define-type ont::likely-val
  :parent ont::likelihood-val
- :wordnet-sense-keys ("expected%3:00:00::" "plausible%3:00:00::" "prospective%3:00:00::" "likely%3:00:00::" "likely%3:00:04" "probable%3:00:00" )
+ :wordnet-sense-keys ("expected%3:00:00::" "plausible%3:00:00::" "likely%3:00:00::" "likely%3:00:04" "probable%3:00:00" )
  :sem (F::abstr-obj (F::scale ont::likely-scale))
  )
 
@@ -1340,21 +1368,21 @@
  :wordnet-sense-keys ("nuclear%3:00:00")
 )
 
-;; 20111017 added for obtw demo (word for type)
-(define-type ont::electrical
- :parent ont::substantial-property-val 
-)
-
+#|
 ;; boneless, skinless
-(define-type ont::food-preparation
- :parent ont::substantial-property-val 
-  :wordnet-sense-keys ("boneless%3:00:00::")
+(define-type ont::food-property-val ;food-preparation
+ :parent ont::associated-with-food-val ;substantial-property-val 
+ :wordnet-sense-keys ("boneless%3:00:00::")
 )
+|#
 
+
+#|
 ;;; noisy (data, signal)
 (define-type ont::interference-val
  :parent ont::substantial-property-val 
 )
+|#
 
 ;; optical, magnetic, holographic
 (define-type ont::medium
@@ -1363,6 +1391,11 @@
  :arguments ((:OPTIONAL ONT::FIGURE )) 
  :sem (F::Abstr-obj (F::gradability - ))
  :comment "means of production and dissemination (c.f. ont::mode)"
+)
+
+;; 20111017 added for obtw demo (word for type)
+(define-type ont::electrical
+ :parent ont::medium ;substantial-property-val
 )
 
 (define-type ont::multimedia-val
@@ -1480,7 +1513,7 @@
 
 ;; hot, cold
 (define-type ont::temperature-val
- :parent ont::physical-property-val 
+ :parent ont::property-val 
  :sem (F::abstr-obj (F::scale ont::temperature-scale ))
  :comment "having to do with temperature"
 )
@@ -1604,9 +1637,8 @@
 (define-type ont::texture-val
  :parent ont::touch-property-val 
   :wordnet-sense-keys ("fine%3:00:00::")
- :sem (F::Abstr-obj (F::MEasure-function F::VALUE ))
- :sem (F::abstr-obj (F::scale ont::texture-scale))
-)
+ :sem (F::Abstr-obj (F::MEasure-function F::VALUE ) (F::scale ont::texture-scale))
+ )
 
 (define-type ont::thickeness-in-texture-val
  :parent ont::texture-val
@@ -1625,13 +1657,13 @@
 )
 
 (define-type ont::hardness-val
- :parent ont::texture-val 
-)
+    :parent ont::texture-val
+    )
 
 (define-type ont::hard-val
  :parent ont::hardness-val 
  :wordnet-sense-keys ("leathery%5:00:00:tough:01" "hard%3:00:01" "solid%5:00:00:hard:01" "tough%3:00:01" )
- :sem (F::Abstr-obj (F::scale ONT::hardness*1--07--00 ))
+; :sem (F::Abstr-obj (F::scale ONT::hardness*1--07--00 ))
  :sem (F::abstr-obj (F::scale ont::tactile-hardness-scale))
 )
 
@@ -1639,7 +1671,7 @@
 (define-type ont::soft-val
  :parent ont::hardness-val 
  :wordnet-sense-keys ("tender%3:00:01::" "soft%3:00:01" "fluffy%5:00:00:soft:01" "plushy%5:00:00:coarse:00")
- :sem (F::Abstr-obj (F::scale ONT::softness*1--07--00 ))
+; :sem (F::Abstr-obj (F::scale ONT::softness*1--07--00 ))
  :sem (F::abstr-obj (F::scale ont::tactile-softness-scale))
 )
 
@@ -1965,7 +1997,7 @@
 
 ;; abiliity touch
 (define-type ont::tangibility-val
- :parent ont::sensory-property-val 
+ :parent ont::appearance-property-val 
  :sem (F::abstr-obj (F::scale ont::tactile-scale))
 )
 
@@ -2046,7 +2078,7 @@
 
 ;; complete vs. incomplete
 (define-type ont::completeness-val
- :parent ont::part-whole-val
+ :parent ont::physical-property-val ;part-whole-val
  :comment "having or not having all the necessary parts"
  :sem (F::abstr-obj (F::scale ont::completeness-scale))
 )
@@ -2277,13 +2309,13 @@
 
 (define-type ont::asleep-val
     :parent ont::awakeness-val
-    :definitions (ont::not (ont::awake-val :figure ?neutral))
+    :definitions ((ont::not (ont::awake-val :figure ?neutral)))
     :wordnet-sense-keys ("asleep%3:00:00::" "unawakened%3:00:00::" "dormant%3:00:00::" "inactive%3:00:05::" "asleep%4:02:00" )
     )
 
 (define-type ont::awake-val
     :parent ont::awakeness-val
-    :definitions (ont::not (ont::asleep-val :figure ?neutral))
+    :definitions ((ont::not (ont::asleep-val :figure ?neutral)))
     :wordnet-sense-keys ("awake%3:00:00" )
     )
 
@@ -2295,7 +2327,7 @@
 
 ;; parallel to ont::medical-condition 
 (define-type ont::medical-condition-property-val
- :parent ont::physical-property-val
+ :parent ont::negative-body-condition-property-val ;physical-property-val
 )
 
 ;; mute, deaf, blind
@@ -2337,6 +2369,7 @@
  :parent ont::property-val
   :wordnet-sense-keys ("flowering%3:00:00::")
  :comment "properties that describe life processes"
+ :sem (F::abstr-obj (F::scale ont::life-process-scale))
 )
 
 (define-type ont::of-death-val
@@ -2410,14 +2443,16 @@
 ;;; process-related adjectives
 (define-type ont::process-val
   :parent ont::property-val 
- :comment "properties that describe processes"
+  :comment "properties that describe processes"
+  :sem (F::abstr-obj (F::scale ont::process-property-scale))
 )
 
 ;; adjectives meaning "can [not] be verb'd" for some verb
 (define-type ont::can-be-done-val
  :parent ont::property-val 
-  :wordnet-sense-keys ("inheritable%3:00:00::" "heritable%3:00:00::" "excitable%3:00:00::" "noninheritable%3:00:00::" "nonheritable%3:00:00::" "noncombustible%3:00:00::" "incombustible%3:00:00::" "unprofitable%3:00:00::" "profitable%3:00:00::" "passable%3:00:00::" "digestible%3:00:00::" "edible%3:00:00::" "comestible%3:00:00::" "eatable%3:00:00::" "nontaxable%3:00:00::" "exempt%3:00:02::" "impassable%3:00:00::" "unpassable%3:00:00::" "corrigible%3:00:00::" "attachable%3:00:00::" "unforgettable%3:00:00::" "incalculable%3:00:00::" "unpardonable%3:00:00::" "inevitable%3:00:00::" "determinable%3:00:00::" "expressible%3:00:00::" "pardonable%3:00:00::" "contestable%3:00:00::" "thinkable%3:00:00::" "indivisible%3:00:00::" "disposable%3:00:02::" "indeterminable%3:00:00::" "undeterminable%3:00:00::" "collapsible%3:00:00::" "collapsable%3:00:00::" "reversible%3:00:00::" "commutable%3:00:00::" "perishable%3:00:00::" "salable%3:00:00::" "saleable%3:00:00::" "infallible%3:00:00::" "undeniable%3:00:00::" "calculable%3:00:00::" "imperishable%3:00:00::" "incorrigible%3:00:00::" "undatable%3:00:00::" "soluble%3:00:02::" "unalterable%3:00:00::" "inalterable%3:00:00::" "deniable%3:00:00::" "revocable%3:00:00::" "revokable%3:00:00::" "placable%3:00:00::" "distinguishable%3:00:00::" "recoverable%3:00:00::" "incommutable%3:00:00::" "unrecoverable%3:00:00::" "irrecoverable%3:00:00::" "unsalable%3:00:00::" "unsaleable%3:00:00::" "immeasurable%3:00:00::" "unmeasurable%3:00:00::" "immensurable%3:00:00::" "unmeasured%3:00:00::" "extensile%3:00:00::" "extensible%3:00:00::" "indeterminate%3:00:01::" "undetermined%3:00:04::" "expendable%3:00:00::" "implacable%3:00:00::" "inexhaustible%3:00:00::" "inexcusable%3:00:00::" "forgettable%3:00:00::" "detachable%3:00:00::" "indefeasible%3:00:00::" "returnable%3:00:00::" "exchangeable%3:00:00::" "unexchangeable%3:00:00::" "inconsolable%3:00:00::" "disconsolate%3:00:04::" "unconsolable%3:00:00::" "livable%3:00:00::" "liveable%3:00:00::" "excusable%3:00:00::" "nondisposable%3:00:02::" "unlivable%3:00:00::" "unliveable%3:00:00::" "disposable%3:00:01::" "exportable%3:00:00::" "compressible%3:00:00::" "washable%3:00:00::" "scalable%3:00:00::" "explicable%3:00:00::" "inviolable%3:00:00::" "reversible%3:00:02::" "two-sided%3:00:02::" "noncollapsible%3:00:00::" "noncollapsable%3:00:00::" "inedible%3:00:00::" "uneatable%3:00:00::" "indigestible%3:00:00::" "exhaustible%3:00:00::" "inexpressible%3:00:00::" "unexpressible%3:00:00::" "unexcitable%3:00:00::" "stoppable%3:00:00::" "ponderable%3:00:00::" "irreversible%3:00:00::" "retractile%3:00:00::" "nonreflective%3:00:00::" "nonreflecting%3:00:00::" "irrevocable%3:00:00::" "irrevokable%3:00:00::" "unstoppable%3:00:00::" "pronounceable%3:00:00::" "unintelligible%3:00:00::" "unrenewable%3:00:00::" "nonrenewable%3:00:00::" "nonadsorbent%3:00:00::" "nonadsorptive%3:00:00::" "rentable%3:00:00::" "unpreventable%3:00:00::" "unshrinkable%3:00:00::" "extricable%3:00:00::" "unexportable%3:00:00::" "datable%3:00:00::" "dateable%3:00:00::" "operable%3:00:00::" "unexpendable%3:00:00::" "submersible%3:00:00::" "submergible%3:00:00::" "unreportable%3:00:00::" "unportable%3:00:00::" "nonretractile%3:00:00::" "nonretractable%3:00:00::" "nonextensile%3:00:00::" "inextensible%3:00:00::" "nonprotractile%3:00:00::" "shockable%3:00:00::" "narrow-minded%3:00:04::" "unactable%3:00:00::" "indistinguishable%3:00:00::" "undistinguishable%3:00:00::" "incurable%3:00:00::" "playable%3:00:00::" "alterable%3:00:00::" "nondisposable%3:00:01::" "invertible%3:00:00::" "unemployable%3:00:00::" "unappealable%3:00:00::" "traceable%3:00:00::" "trackable%3:00:00::" "incompressible%3:00:00::" "adsorbable%3:00:00::" "adsorbate%3:00:00::" "nonsubmersible%3:00:00::" "nonsubmergible%3:00:00::" "repeatable%3:00:00::" "quotable%3:00:00::" "actable%3:00:00::" "nonwashable%3:00:00::" "bridgeable%3:00:00::" "wearable%3:00:00::" "nonvolatile%3:00:00::" "nonvolatilizable%3:00:00::" "nonvolatilisable%3:00:00::" "knowable%3:00:00::" "cognizable%3:00:00::" "cognisable%3:00:00::" "cognoscible%3:00:00::" "unscalable%3:00:00::" "unclimbable%3:00:00::" "puncturable%3:00:00::" "imponderable%3:00:00::" "preventable%3:00:00::" "resistible%3:00:00::" "nonreversible%3:00:00::" "one-sided%3:00:02::" "consolable%3:00:00::" "non-invertible%3:00:00::" "paintable%3:00:00::" "printable%3:00:00::" "unpronounceable%3:00:00::" "employable%3:00:00::" "unopposable%3:00:00::" "unpublishable%3:00:00::" "irreducible%3:00:00::" "publishable%3:00:00::" "undrinkable%3:00:00::" "unsinkable%3:00:00::" "translatable%3:00:00::" "nondeductible%3:00:00::" "adoptable%3:00:00::" "seasonable%3:00:00::" "drinkable%3:00:00::" "potable%3:00:00::" "unrentable%3:00:00::" "inoperable%3:00:00::" "appealable%3:00:00::" "unshockable%3:00:00::" "broad-minded%3:00:04::" "irreplaceable%3:00:00::" "unreplaceable%3:00:00::" "inextinguishable%3:00:00::" "unseasonable%3:00:00::" "unadoptable%3:00:00::" "nonreturnable%3:00:00::" "opposable%3:00:00::" "apposable%3:00:00::" "reportable%3:00:00::" "sinkable%3:00:00::" "unrepeatable%3:00:00::" "unquotable%3:00:00::" "reducible%3:00:00::" "untraceable%3:00:00::" "nonarbitrable%3:00:00::" "absorbable%3:00:00::" "unpaintable%3:00:00::" "curable%3:00:00::" "unbridgeable%3:00:00::" "shrinkable%3:00:00::" "defeasible%3:00:00::" "unprintable%3:00:00::" "untranslatable%3:00:00::" "extinguishable%3:00:00::" "arbitrable%3:00:00::" "unwearable%3:00:00::" "violable%3:00:00::" "renewable%3:00:00::" "unplayable%3:00:00::" "breakable%3:00:00::" "unchangeable%3:00:00::" "intractable%3:00:00::" "admissible%3:00:00::" "attributable%3:00:00::" "destructible%3:00:00::" "deductible%3:00:00::" "inconvertible%3:00:00::" "unconvertible%3:00:00::" "unexchangeable%3:00:04::" "indispensable%3:00:00::" "inadmissible%3:00:00::" "nonabsorbent%3:00:00::" "nonabsorptive%3:00:00::" "indestructible%3:00:00::" "convertible%3:00:00::" "exchangeable%3:00:04::" "sympathetic%3:00:02::" "appealing%3:00:02::" "likeable%3:00:02::" "likable%3:00:02::" "charitable%3:01:00::" "unattributable%3:00:00::" "unascribable%3:00:00::" "dispensable%3:00:00::" "inhospitable%3:00:02::" "machine_readable%3:01:00::" "computer_readable%3:01:00::" "differentiable%3:01:00::" "hydrolyzable%3:01:00::" "packable%3:01:00::" "fermentable%3:01:00::" "positionable%3:01:00::" "nonfissionable%3:00:00::" "unsympathetic%3:00:02::" "unappealing%3:00:02::" "unlikeable%3:00:02::" "unlikable%3:00:02::" "deliverable%3:01:00::" "metastable%3:01:00::" "stainable%3:01:00::" "sustainable%3:01:00::" "diagonalizable%3:01:00::" "fissionable%3:00:00::" "fissile%3:00:02::" "uninjectable%3:00:00::" "injectable%3:00:00::" "measurable%3:00:00::" "mensurable%3:00:00::" "mensural%3:01:00::" "measured%3:01:00::" "mensurable%3:01:00::")
- :arguments ((:optional ONT::GROUND )) 
+ :wordnet-sense-keys ("inheritable%3:00:00::" "heritable%3:00:00::" "excitable%3:00:00::" "noninheritable%3:00:00::" "nonheritable%3:00:00::" "noncombustible%3:00:00::" "incombustible%3:00:00::" "unprofitable%3:00:00::" "profitable%3:00:00::" "passable%3:00:00::" "digestible%3:00:00::" "edible%3:00:00::" "comestible%3:00:00::" "eatable%3:00:00::" "nontaxable%3:00:00::" "exempt%3:00:02::" "impassable%3:00:00::" "unpassable%3:00:00::" "corrigible%3:00:00::" "attachable%3:00:00::" "unforgettable%3:00:00::" "incalculable%3:00:00::" "unpardonable%3:00:00::" "inevitable%3:00:00::" "determinable%3:00:00::" "expressible%3:00:00::" "pardonable%3:00:00::" "contestable%3:00:00::" "thinkable%3:00:00::" "indivisible%3:00:00::" "disposable%3:00:02::" "indeterminable%3:00:00::" "undeterminable%3:00:00::" "collapsible%3:00:00::" "collapsable%3:00:00::" "reversible%3:00:00::" "commutable%3:00:00::" "perishable%3:00:00::" "salable%3:00:00::" "saleable%3:00:00::" "infallible%3:00:00::" "undeniable%3:00:00::" "calculable%3:00:00::" "imperishable%3:00:00::" "incorrigible%3:00:00::" "undatable%3:00:00::" "soluble%3:00:02::" "unalterable%3:00:00::" "inalterable%3:00:00::" "deniable%3:00:00::" "revocable%3:00:00::" "revokable%3:00:00::" "placable%3:00:00::" "distinguishable%3:00:00::" "recoverable%3:00:00::" "incommutable%3:00:00::" "unrecoverable%3:00:00::" "irrecoverable%3:00:00::" "unsalable%3:00:00::" "unsaleable%3:00:00::" "immeasurable%3:00:00::" "unmeasurable%3:00:00::" "immensurable%3:00:00::" "unmeasured%3:00:00::" "extensile%3:00:00::" "extensible%3:00:00::" "indeterminate%3:00:01::" "undetermined%3:00:04::" "expendable%3:00:00::" "implacable%3:00:00::" "inexhaustible%3:00:00::" "inexcusable%3:00:00::" "forgettable%3:00:00::" "detachable%3:00:00::" "indefeasible%3:00:00::" "returnable%3:00:00::" "exchangeable%3:00:00::" "unexchangeable%3:00:00::" "inconsolable%3:00:00::" "disconsolate%3:00:04::" "unconsolable%3:00:00::" "livable%3:00:00::" "liveable%3:00:00::" "excusable%3:00:00::" "nondisposable%3:00:02::" "unlivable%3:00:00::" "unliveable%3:00:00::" "disposable%3:00:01::" "exportable%3:00:00::" "compressible%3:00:00::" "washable%3:00:00::" "scalable%3:00:00::" "explicable%3:00:00::" "inviolable%3:00:00::" "reversible%3:00:02::" "two-sided%3:00:02::" "noncollapsible%3:00:00::" "noncollapsable%3:00:00::" "inedible%3:00:00::" "uneatable%3:00:00::" "indigestible%3:00:00::" "exhaustible%3:00:00::" "inexpressible%3:00:00::" "unexpressible%3:00:00::" "unexcitable%3:00:00::" "stoppable%3:00:00::" "ponderable%3:00:00::" "irreversible%3:00:00::" "retractile%3:00:00::" "nonreflective%3:00:00::" "nonreflecting%3:00:00::" "irrevocable%3:00:00::" "irrevokable%3:00:00::" "unstoppable%3:00:00::" "pronounceable%3:00:00::" "unintelligible%3:00:00::" "unrenewable%3:00:00::" "nonrenewable%3:00:00::" "nonadsorbent%3:00:00::" "nonadsorptive%3:00:00::" "rentable%3:00:00::" "unpreventable%3:00:00::" "unshrinkable%3:00:00::" "extricable%3:00:00::" "unexportable%3:00:00::" "datable%3:00:00::" "dateable%3:00:00::" "operable%3:00:00::" "unexpendable%3:00:00::" "submersible%3:00:00::" "submergible%3:00:00::" "unreportable%3:00:00::" "unportable%3:00:00::" "nonretractile%3:00:00::" "nonretractable%3:00:00::" "nonextensile%3:00:00::" "inextensible%3:00:00::" "nonprotractile%3:00:00::" "shockable%3:00:00::" "narrow-minded%3:00:04::" "unactable%3:00:00::" "indistinguishable%3:00:00::" "undistinguishable%3:00:00::" "incurable%3:00:00::" "playable%3:00:00::" "alterable%3:00:00::" "nondisposable%3:00:01::" "invertible%3:00:00::" "unemployable%3:00:00::" "unappealable%3:00:00::" "traceable%3:00:00::" "trackable%3:00:00::" "incompressible%3:00:00::" "adsorbable%3:00:00::" "adsorbate%3:00:00::" "nonsubmersible%3:00:00::" "nonsubmergible%3:00:00::" "repeatable%3:00:00::" "quotable%3:00:00::" "actable%3:00:00::" "nonwashable%3:00:00::" "bridgeable%3:00:00::" "wearable%3:00:00::" "nonvolatile%3:00:00::" "nonvolatilizable%3:00:00::" "nonvolatilisable%3:00:00::" "knowable%3:00:00::" "cognizable%3:00:00::" "cognisable%3:00:00::" "cognoscible%3:00:00::" "unscalable%3:00:00::" "unclimbable%3:00:00::" "puncturable%3:00:00::" "imponderable%3:00:00::" "preventable%3:00:00::" "resistible%3:00:00::" "nonreversible%3:00:00::" "one-sided%3:00:02::" "consolable%3:00:00::" "non-invertible%3:00:00::" "paintable%3:00:00::" "printable%3:00:00::" "unpronounceable%3:00:00::" "employable%3:00:00::" "unopposable%3:00:00::" "unpublishable%3:00:00::" "irreducible%3:00:00::" "publishable%3:00:00::" "undrinkable%3:00:00::" "unsinkable%3:00:00::" "translatable%3:00:00::" "nondeductible%3:00:00::" "adoptable%3:00:00::" "seasonable%3:00:00::" "drinkable%3:00:00::" "potable%3:00:00::" "unrentable%3:00:00::" "inoperable%3:00:00::" "appealable%3:00:00::" "unshockable%3:00:00::" "broad-minded%3:00:04::" "irreplaceable%3:00:00::" "unreplaceable%3:00:00::" "inextinguishable%3:00:00::" "unseasonable%3:00:00::" "unadoptable%3:00:00::" "nonreturnable%3:00:00::" "opposable%3:00:00::" "apposable%3:00:00::" "reportable%3:00:00::" "sinkable%3:00:00::" "unrepeatable%3:00:00::" "unquotable%3:00:00::" "reducible%3:00:00::" "untraceable%3:00:00::" "nonarbitrable%3:00:00::" "absorbable%3:00:00::" "unpaintable%3:00:00::" "curable%3:00:00::" "unbridgeable%3:00:00::" "shrinkable%3:00:00::" "defeasible%3:00:00::" "unprintable%3:00:00::" "untranslatable%3:00:00::" "extinguishable%3:00:00::" "arbitrable%3:00:00::" "unwearable%3:00:00::" "violable%3:00:00::" "renewable%3:00:00::" "unplayable%3:00:00::" "breakable%3:00:00::" "unchangeable%3:00:00::" "intractable%3:00:00::" "admissible%3:00:00::" "attributable%3:00:00::" "destructible%3:00:00::" "deductible%3:00:00::" "inconvertible%3:00:00::" "unconvertible%3:00:00::" "unexchangeable%3:00:04::" "indispensable%3:00:00::" "inadmissible%3:00:00::" "nonabsorbent%3:00:00::" "nonabsorptive%3:00:00::" "indestructible%3:00:00::" "convertible%3:00:00::" "exchangeable%3:00:04::" "sympathetic%3:00:02::" "appealing%3:00:02::" "likeable%3:00:02::" "likable%3:00:02::" "charitable%3:01:00::" "unattributable%3:00:00::" "unascribable%3:00:00::" "dispensable%3:00:00::" "inhospitable%3:00:02::" "machine_readable%3:01:00::" "computer_readable%3:01:00::" "differentiable%3:01:00::" "hydrolyzable%3:01:00::" "packable%3:01:00::" "fermentable%3:01:00::" "positionable%3:01:00::" "nonfissionable%3:00:00::" "unsympathetic%3:00:02::" "unappealing%3:00:02::" "unlikeable%3:00:02::" "unlikable%3:00:02::" "deliverable%3:01:00::" "metastable%3:01:00::" "stainable%3:01:00::" "sustainable%3:01:00::" "diagonalizable%3:01:00::" "fissionable%3:00:00::" "fissile%3:00:02::" "uninjectable%3:00:00::" "injectable%3:00:00::" "measurable%3:00:00::" "mensurable%3:00:00::" "mensural%3:01:00::" "measured%3:01:00::" "mensurable%3:01:00::")
+ :arguments ((:optional ONT::GROUND ))
+ :sem (F::abstr-obj (F::scale ont::can-be-done-scale)) ;process-property-scale)) 
 )
 
 ;; reparability, fixability, able to remedy, resolvable
@@ -2568,6 +2603,7 @@
  :parent ont::property-val 
   :wordnet-sense-keys ("dominical%3:01:00::" "sabbatarian%3:01:00::" "semicentennial%3:01:00::" "semicentenary%3:01:00::" "tricentenary%3:01:00::" "tricentennial%3:01:00::" "spatiotemporal%3:01:00::" "quincentennial%3:01:00::" "quincentenary%3:01:00::" "ferial%3:01:00::" "temporal%3:01:01::" "equinoctial%3:01:00::" "bicentennial%3:01:00::" "bicentenary%3:01:00::" "sabbatical%3:01:01::" "sabbatic%3:01:00::")
  :comment "properties relating to time"
+ :sem (F::abstr-obj (F::scale ont::temporal-scale))
 )
 
 ;; temporal occurrence
@@ -2615,6 +2651,7 @@
  :wordnet-sense-keys ("cyclic%3:00:01::" "cyclical%3:00:00::" "continual%3:00:00")
 )
 
+#|
 (define-type ont::regularity-val
  :parent ont::frequency-val 
  :sem (F::abstr-obj (F::scale ont::regularity-scale))
@@ -2633,6 +2670,7 @@
  ; Words: (W::IRREGULAR)
  :sem (F::abstr-obj (F::scale ont::not-regular-scale))
 )
+|#
 
 (define-type ont::frequent
  :parent ont::frequency-val 
@@ -2672,6 +2710,7 @@
 (define-type ont::process-status-val
  :parent ont::process-val
  :comment "properties relating to status of processes"
+ :sem (F::abstr-obj (F::scale ont::process-status-scale))
 )
 
 ;; done, finished
@@ -2720,37 +2759,20 @@
  :comment "outcome of the process"
 )
 
-;;; This is for speed values - fast, slow, etc
-(define-type ont::speed-val
- :parent ont::process-val 
- :arguments ((:REQUIRED ONT::FIGURE ((? type F::phys-obj F::situation F::abstr-obj )))) ;; e.g., "rate" is an abstract object
- :sem (F::abstr-obj (F::scale ont::speed-scale ))
-)
-
-(define-type ont::slow-val
- :parent ont::speed-val 
- :wordnet-sense-keys ("slow%3:00:01" )
-)
-
-(define-type ont::instantaneous-val
- :parent ont::speed-val 
- :wordnet-sense-keys ("instantaneous%5:00:00:fast:01" "instant%5:00:00:fast:01" "sudden%3:00:00" )
-)
-
-(define-type ont::speedy
- :parent ont::speed-val 
- :wordnet-sense-keys ("quick%5:00:02:fast:01" "fleet%5:00:00:fast:01" "rapid%5:00:00:fast:01" "rapid%5:00:02:fast:01" "fast%3:00:01" "quick%5:00:00:fast:01"
-					      "hurried%3:00:00" "hastily%4:02:00")
- ; Words: (W::QUICK W::FAST W::RAPID W::SWIFT W::SPEEDY)
- ; Antonym: NIL (W::SLOW)
-)
-
 ;; process evaluation
 (define-type ont::process-evaluation-val
- :parent ont::process-val
- :comment "evaluation properties of processes"
- :sem (F::abstr-obj (F::scale ont::process-evaluation-scale))
+  :parent ont::evaluation-attribute-val ;process-val
+  :comment "evaluation properties of processes"
+  :sem (F::abstr-obj (F::scale ont::process-evaluation-scale))
 )
+
+
+;; process evaluation
+;(define-type ont::process-evaluation-val
+; :parent ont::evaluation-attribute-val ;process-val
+; :comment "evaluation properties of processes"
+; :sem (F::abstr-obj (F::scale ont::process-evaluation-scale))
+;)
 
 ;; productive
 (define-type ont::productivity-val
@@ -2910,20 +2932,22 @@
 )
 
 
-(define-type ont::animal-disposition-val
+(define-type ont::disposition-val ;animal-disposition-val
  :parent ont::animal-propensity-val
+ :wordnet-sense-keys ("temperamental%3:01:00::" "adventuristic%3:01:00::")
+ :sem (F::abstr-obj (F::scale ont::disposition-scale))
 )
 
 ;; grumpy, cholaric, churlish, crabbed etc
 (define-type ont::negative-disposition-val
- :parent ont::animal-disposition-val
- :wordnet-sense-keys ("temperamental%3:01:00::" "adventuristic%3:01:00::" "ill-natured%3:00:00")
+ :parent ont::disposition-val ;animal-disposition-val
+ :wordnet-sense-keys ("ill-natured%3:00:00") ;"cantankerous%5:00:00:ill-natured:00" "churlish%5:00:00:ill-natured:00" "currish%5:00:00:ill-natured:00" "disagreeable%5:00:00:ill-natured:00" "hotheaded%5:00:00:ill-natured:00" "ill-humored%5:00:00:ill-natured:00" "misanthropic%5:00:00:ill-natured:00" "misogynous%5:00:00:ill-natured:00" "moody%5:00:00:ill-natured:00" "nagging%5:00:00:ill-natured:00" "prickly%5:00:00:ill-natured:00" "snappy%5:00:00:ill-natured:00" "snorty%5:00:00:ill-natured:00" "spoilt%5:00:00:ill-natured:00" "sulky%5:00:00:ill-natured:00" "surly%5:00:00:ill-natured:00" "vinegarish%5:00:00:ill-natured:00")
 )
 
 ;; amiable, euqable, placid
 (define-type ont::positive-disposition-val
- :parent ont::animal-disposition-val
- :wordnet-sense-keys ("good-natured%3:00:00")
+ :parent ont::disposition-val ;animal-disposition-val
+ :wordnet-sense-keys ("good-natured%3:00:00") ;"amiable%5:00:00:good-natured:00" "even-tempered%5:00:00:good-natured:00" "good-natured%3:00:00")
 )
 
 ;; (dis)honest
@@ -2951,7 +2975,8 @@
 
 ;; bold, timid
 (define-type ont::boldness-val
- :parent ont::animal-propensity-val 
+ :parent ont::animal-propensity-val
+ :sem (F::abstr-obj (F::scale ont::boldness-scale)) 
  :comment "foreceful approach to situations or challenge"
 )
 
@@ -2962,7 +2987,7 @@
 )
 
 (define-type ont::aggressive-val
- :parent ont::boldness-val 
+ :parent ont::animal-propensity-val ;boldness-val 
  :wordnet-sense-keys ("domineering%3:00:00::" "assertive%3:00:00::" "self-asserting%3:00:00::" "self-assertive%3:00:00::" "aggressive%3:00:00" "violent%3:00:00" "strident%5:00:00:imperative:00")
  :sem (F::abstr-obj (F::scale ont::aggressiveness-scale) (f::orientation f::pos))
 )
@@ -2981,6 +3006,7 @@
 ;; courageous, cowardly
 (define-type ont::courage-val
  :parent ont::animal-propensity-val
+ :sem (F::abstr-obj (F::scale ont::courage-scale))
  :comment "strength in face of fear or tribulation"
 )
 
@@ -3004,13 +3030,13 @@
 
 (define-type ont::modest-val
  :parent ont::modesty-val 
- :wordnet-sense-keys ("humble%3:00:00::" "modest%3:00:02" "unassuming%5:00:00:modest:02" )
+ :wordnet-sense-keys ("humble%3:00:00::" "modest%3:00:01::" "modest%3:00:02" "unassuming%5:00:00:modest:02" )
  :sem (F::abstr-obj (F::scale ont::modesty-scale) (f::orientation f::pos))
 )
 
 (define-type ont::arrogant-val
  :parent ont::modesty-val 
- :wordnet-sense-keys ("arrogant%5:00:00:proud:00" "immodest%3:00:02" )
+ :wordnet-sense-keys ("arrogant%5:00:00:proud:00" "immodest%3:00:02" ) ;"immodestly%4:02:00"
  :sem (F::abstr-obj (F::scale ont::modesty-scale) (f::orientation f::pos))
 )
 
@@ -3019,19 +3045,25 @@
 (define-type ont::social-interaction-val
  :parent ont::animal-propensity-val 
  :arguments ((:required ont::FIGURE ((? lof f::abstr-obj f::phys-obj f::situation )))) 
+ :sem (F::abstr-obj (F::scale ont::sociability-scale))
  :comment "sociability"
 ; :comment "properties of human behavior having to do with social interaction, e.g. friendly, kind, mean.)"
 )
 
+(define-type ont::sociability-val
+ :parent ont::social-interaction-val
+ :sem (F::abstr-obj (F::scale ont::sociability-scale))
+)
+
 ;; social
 (define-type ont::social-val
- :parent ont::social-interaction-val
+ :parent ont::sociability-val ;social-interaction-val
  :wordnet-sense-keys ("social%3:01:00" "social%3:00:00" "gregarious%3:00:00" "sociable%3:00:00")
  :sem (F::abstr-obj (F::scale ont::sociability-scale) (f::orientation f::pos))
 )
 
 (define-type ont::not-social-val
- :parent ont::social-interaction-val
+ :parent ont::sociability-val ;social-interaction-val
  :wordnet-sense-keys ("unapproachable%3:00:00::" "cool%3:00:02::" "ungregarious%3:00:00" "unsociable%3:00:00" "unsocial%3:00:00")
  :sem (F::abstr-obj (F::scale ont::sociability-scale) (f::orientation f::neg))
 )
@@ -3180,6 +3212,7 @@
 
 (define-type ONT::skillfulness-val
   :parent ONT::animal-propensity-val
+  :sem (F::abstr-obj (F::scale ont::skillfulness-scale))
   )
 
 (define-type ont::skillful-val
@@ -3191,9 +3224,34 @@
 ;; dimensional-property
 (define-type ont::dimensional-property-val
     :parent ont::property-val
-    :sem (F::abstr-obj (F::scale ont::measure-scale))
+    :sem (F::abstr-obj (F::scale ont::dimensional-scale)) ;measure-scale))
     :comment "properties pertaining to dimensions and measurable extents"
     )
+
+;;; This is for speed values - fast, slow, etc
+(define-type ont::speed-val
+ :parent ont::dimensional-property-val ;process-evaluation-val ;process-val 
+ :arguments ((:REQUIRED ONT::FIGURE ((? type F::phys-obj F::situation F::abstr-obj )))) ;; e.g., "rate" is an abstract object
+ :sem (F::abstr-obj (F::scale ont::speed-scale ))
+)
+
+(define-type ont::slow-val
+ :parent ont::speed-val 
+ :wordnet-sense-keys ("slow%3:00:01" "gradually%4:02:00")
+ )
+
+(define-type ont::instantaneous-val
+ :parent ont::speed-val 
+ :wordnet-sense-keys ("instantaneous%5:00:00:fast:01" "instant%5:00:00:fast:01" "sudden%3:00:00" )
+)
+
+(define-type ont::speedy
+ :parent ont::speed-val 
+ :wordnet-sense-keys ("quick%5:00:02:fast:01" "fleet%5:00:00:fast:01" "rapid%5:00:00:fast:01" "rapid%5:00:02:fast:01" "fast%3:00:01" "quick%5:00:00:fast:01"
+					      "hurried%3:00:00" "hastily%4:02:00")
+ ; Words: (W::QUICK W::FAST W::RAPID W::SWIFT W::SPEEDY)
+ ; Antonym: NIL (W::SLOW)
+)
 
 (define-type ont::physical-strength-val
  :parent ont::dimensional-property-val
@@ -3292,6 +3350,8 @@
 (define-type ont::tall-val
     :sem (F::abstr-obj (F::scale ont::height-scale ))
     :parent ont::vertical-val 
+    :arguments ((:ESSENTIAL ONT::FIGURE ((? of f::phys-obj))) ; to distinguish between this and ONT::HIGH-VAL
+             )
     :wordnet-sense-keys ("high-rise%3:00:00::" "tall%3:00:00" )
 )
 
@@ -3512,9 +3572,10 @@
 
 ;; queen, king e.g. bed size
 (define-type ont::predefined-size-val
- :parent ont::predefined-measure-val 
- :wordnet-sense-keys("double%5:00:00:large:00")
-)
+    :arguments ((:essential ont::FIGURE (f::phys-obj (F::intentional -) (F::type ont::furnishings))))
+    :parent ont::predefined-measure-val 
+    :wordnet-sense-keys("double%5:00:00:large:00")
+    )
 
 ;; for foodkb
 ;; lean, nonfat, lowfat
@@ -3578,7 +3639,7 @@
 (define-type ONT::DIFFERENT
  :parent ONT::SIMILARITY-VAL
  ; Words: (W::DIFFERENT W::SEPARATE W::DISTINCT)
- :wordnet-sense-keys ("inequitable%3:00:00::" "unjust%3:00:02::" "unlike%3:00:02::" "unequal%3:00:00::" "unlike%3:00:00" "unlike%3:00:00" "discrete%5:00:00:separate:00" "different%3:00:00" "separate%3:00:00" "distinct%5:00:00")
+ :wordnet-sense-keys ("inequitable%3:00:00::" "unjust%3:00:02::" "unlike%3:00:02::" "unequal%3:00:00::" "unlike%3:00:00" "discrete%5:00:00:separate:00" "different%3:00:00" "separate%3:00:00" "distinct%5:00:00")
  ; Antonym: ONT::SIMILAR (W::SIMILAR W::LIKE W::ANALOGOUS W::KINDRED) 
   :sem (F::abstr-obj (F::scale ont::different-scale))
 )
@@ -3594,19 +3655,19 @@
 
 
 ;; relative, absolute
-(define-type ont::comparative-val
+(define-type ont::relational-val ;comparative-val
  :parent ont::relational-attribute-val 
 )
 
 (define-type ont::relative
- :parent ont::comparative-val 
+ :parent ont::relational-val ;comparative-val 
  :wordnet-sense-keys ("relative%3:00:00" "comparative%3:00:00" )
  ; Words: (W::RELATIVE W::COMPARATIVE)
  ; Antonym: NIL (W::ABSOLUTE)
 )
 
 (define-type ont::not-relative-val
- :parent ont::comparative-val 
+ :parent ont::relational-val ;comparative-val 
  :wordnet-sense-keys ("absolute%3:00:00" )
 )
 
@@ -3647,25 +3708,32 @@
 ;; consecutive, sequential, groups of ordered items
 ;; didn't use ordered-domain here because these words describe the ordered
 ;; nature of the objects, but not the domain itself
-(define-type ont::ordered-val
+(define-type ont::systematicity-val ;ordered-val
  :parent ont::relational-attribute-val 
  :comment "properties that deal with ordered nature of objects"
- :wordnet-sense-keys ("ordered%3:00:00")
+ ;:wordnet-sense-keys ("ordered%3:00:00")
+ :sem (F::abstr-obj (F::scale ont::systematicity-scale))
 )
+
+(define-type ont::systematic-val
+ :parent ont::systematicity-val
+ :wordnet-sense-keys ("systematic%3:00:00")
+)
+
+(define-type ONT::organized-val
+  :parent ONT::systematic-val ;orderly-val
+  :wordnet-sense-keys ("organized%3:00:02::" "organized%3:00:01::" "classified%3:00:01::" "structured%3:00:00::")
+  :comment "having category, organization and/or structure (organized)"
+  )
 
 (define-type ont::sequential-val
- :parent ont::ordered-val 
- :wordnet-sense-keys ("serial%3:01:00::" "sequential%5:00:00:ordered:00" "consecutive%5:00:00:ordered:00" "sequent%5:00:00:ordered:00" "successive%5:00:00:ordered:00" "serial%5:00:00:ordered:00" "progressive%5:00:00:ordered:00")
-)
-
-(define-type ont::random-val
- :parent ont::ordered-val 
- :wordnet-sense-keys ("arbitrary%3:00:00::" "random%3:00:00" "randomized%5:00:00:irregular:00")
+ :parent ont::systematic-val ;systematicity-val ;ordered-val 
+ :wordnet-sense-keys ("ordered%3:00:00" "serial%3:01:00::"); "sequential%5:00:00:ordered:00" "consecutive%5:00:00:ordered:00" "sequent%5:00:00:ordered:00" "successive%5:00:00:ordered:00" "serial%5:00:00:ordered:00" "progressive%5:00:00:ordered:00")
 )
 
 ;; next, previous, last, penultimate, etc.
 (define-type ont::sequence-val
- :parent ont::relational-attribute-val 
+ :parent ont::systematic-val ;systematicity-val ;relational-attribute-val 
  :arguments ((:optional ONT::GROUND )) 
  :sem (F::Abstr-obj (F::gradability - ))
  :comment "properties that deal with an object's location with respect to another object in an ordered sequence"
@@ -3701,6 +3769,36 @@
  :wordnet-sense-keys ("halfway%5:00:00:intermediate:00" "intermediate%3:00:00" )
 )
 
+(define-type ont::regular
+ :parent ont::systematic-val ;regularity-val
+ :wordnet-sense-keys ("regular%5:00:00:steady:00" "regular%3:00:00")
+ ; Words: (W::REGULAR)
+ :sem (F::abstr-obj (F::scale ont::regular-scale))
+)
+
+(define-type ont::nonsystematic-val
+ :parent ont::systematicity-val
+ :wordnet-sense-keys ("unsystematic%3:00:00")
+)
+
+(define-type ONT::not-organized-val
+  :parent ONT::nonsystematic-val ;not-orderly-val
+  :wordnet-sense-keys ("disorganized%3:00:00::" "disorganised%3:00:00::" "unorganized%3:00:00::" "unorganised%3:00:00::" "unstructured%3:00:00::" "unclassified%3:00:01::" "unsystematic%3:00:00::")
+  :comment "lacking category, organization and/or structure (disorganized)"
+)
+
+(define-type ont::random-val
+ :parent ont::nonsystematic-val ;systematicity-val ;ordered-val 
+ :wordnet-sense-keys ("arbitrary%3:00:00::" "random%3:00:00" "randomized%5:00:00:irregular:00")
+)
+
+(define-type ont::irregular
+ :parent ont::nonsystematic-val ;regularity-val
+ :wordnet-sense-keys ("aperiodic%3:00:00::" "nonperiodic%3:00:00::" "sporadic%3:00:00" "irregular%5:00:00:sporadic:00" "casual%5:00:00:irregular:00" )
+ ; Words: (W::IRREGULAR)
+ :sem (F::abstr-obj (F::scale ont::not-regular-scale))
+)
+
 ;; old, young
 (define-type ont::age-val
  :parent ont::temporal-val 
@@ -3725,21 +3823,24 @@
  :comment "relating to the distinct periods in history"
 )
 
+(define-type ont::relative-time-location-val
+ :parent ont::temporal-val 
+)
+
 (define-type ont::ancient-val
- :parent ont::historical-era-val 
+ :parent ont::relative-time-location-val
  :wordnet-sense-keys ("nonmodern%3:00:00::" "early%3:00:00::" "classical%3:00:00::" "classic%3:00:00::" "ancient%5:00:00:past:00" "prehistoric%5:00:00:past:00" "prehistoric%3:01:00" )
 )
 
 (define-type ont::modern-val
- :parent ont::historical-era-val 
+ :parent ont::relative-time-location-val
  :wordnet-sense-keys ("nonclassical%3:00:00::" "modern%3:00:00" "contemporary%5:00:00:modern:00" )
 )
 
-;; this isn't exactly era. current is in ont::now
-;(define-type ont::current-val
-; :parent ont::historical-era-val 
-; :wordnet-sense-keys ("contemporary%5:00:00:current:00" "current%3:00:00")
-;)
+(define-type ont::current-val
+ :parent ont::relative-time-location-val
+ :wordnet-sense-keys ("contemporary%5:00:00:current:00" "current%3:00:00")
+)
 
 ;; object-affordances: properties pertaining to function of an entity or an object
 (define-type ont::object-affordances-val
@@ -3775,7 +3876,7 @@
 
 ;; usable, useless
 (define-type ont::usability-val
- :parent ont::evaluation-attribute-val 
+ :parent ont::object-affordances-val
  :sem (F::abstr-obj (F::scale ont::usability-scale) )
 )
 
@@ -3889,6 +3990,7 @@
  :parent ont::property-val 
  :arguments ((:optional ONT::GROUND )) 
  :comment "properties that describe social, political or official status or position"
+ :sem (F::abstr-obj (F::scale ont::unordered-domain))
 )
 
 ;; reputation
@@ -3924,7 +4026,10 @@
 
 ;; wealthy, poor
 (define-type ont::wealthiness-val
- :parent ont::status-val 
+ :sem (F::abstr-obj (F::scale ont::wealth-scale))
+ :parent ont::evaluation-attribute-val ;status-val
+ :arguments ((:REQUIRED ONT::figure (F::Phys-obj (f::type (? t ONT::POLITICAL-REGION ONT::PERSON)))) ; country, person
+	     )
 )
 
 (define-type ont::poor-val
@@ -4025,9 +4130,15 @@
 
 ;; social status relating to fame
 (define-type ont::fame-val
- :parent ont::status-val 
- :wordnet-sense-keys ("famous%5:00:00:known:00" "celebrated%5:00:00:known:00" "legendary%5:00:00:known:00")
+ :parent ont::EVALUATION-ATTRIBUTE-VAL ;status-val 
+ ;:wordnet-sense-keys ("famous%5:00:00:known:00" "celebrated%5:00:00:known:00" "legendary%5:00:00:known:00")
  :comment "social status relating to fame"
+ :sem (F::abstr-obj (F::scale ont::fame-scale))
+)
+
+(define-type ont::famous-val
+ :parent ont::fame-val
+ :wordnet-sense-keys ("famous%5:00:00:known:00" "celebrated%5:00:00:known:00" "legendary%5:00:00:known:00")
 )
 
 (define-type ont::infamous-val
@@ -4158,7 +4269,7 @@
 
 ;; sure, certain, confident
 (define-type ont::certainty-val
- :parent ont::information-property-val 
+ :parent ont::psychological-property-val
  :arguments ((:optional ONT::GROUND )) 
  :sem (F::abstr-obj (F::scale ont::certainty-scale) )
 )
@@ -4191,7 +4302,7 @@
 
 ;; worrying, disturbing, tiresome
 (define-type ont::evoking-experience-property-val
- :parent ont::psychological-property-val 
+ :parent ont::property-val ;psychological-property-val 
  :comment "attributes that indicate the evocation of a particular emotion"
 )
 
@@ -4230,12 +4341,12 @@
  :wordnet-sense-keys ("disorienting%3:00:00::" "confusing%5:00:00:disorienting:00" )
 )
 
-(define-type ont::boring
+(define-type ont::boring-val
  :parent ont::evoking-neg-experience-property-val 
  :wordnet-sense-keys ("humorless%3:00:00::" "humourless%3:00:00::" "unhumorous%3:00:00::" "dull%3:00:03::" "uninteresting%3:00:00" "boring%5:00:00:uninteresting:00" "wearisome%5:00:00:uninteresting:00" "tiresome%5:00:00:uninteresting:00")
  ; Words: (W::DULL W::BORING W::UNINTERESTING)
  ; Antonym: NIL (W::INTERESTING)
- :sem (F::abstr-obj (F::scale ont::interest-scale) (f::orientation f::neg))
+ :sem (F::abstr-obj (F::scale ont::interestingness-scale) (f::orientation f::neg))
 )
 
 ;(define-type ont::tiresome-val
@@ -4262,7 +4373,7 @@
 (define-type ont::interesting-val
  :parent ont::evoking-pos-experience-property-val 
  :wordnet-sense-keys ("colorful%3:00:03::" "colourful%3:00:03::" "fascinating%5:00:00:interesting:00" "interesting%3:00:00" )
- :sem (F::abstr-obj (F::scale ont::interest-scale) )
+ :sem (F::abstr-obj (F::scale ont::interestingness-scale) )
 )
 
 (define-type ont::pleasing-val
@@ -4277,12 +4388,13 @@
 ; :sem (F::abstr-obj (F::scale ont::pleasantness-scale) )
 ; )
 
+#|
 (define-type ont::desirable-val
  :parent ont::evoking-pos-experience-property-val 
- :wordnet-sense-keys ("desirable%3:00:00" )
+ :wordnet-sense-keys ("desirable%3:00:00" "wanted%3:00:00")
  :sem (F::abstr-obj (F::scale ont::desire-scale) )
 )
-
+|#
 
 ;; EXPERIENCER PROPERTIES
 (define-type ont::experiencer-property-val
@@ -4290,6 +4402,7 @@
   :wordnet-sense-keys ("appetitive%3:01:00::" "algolagnic%3:01:00::" "technophobic%3:01:00::" "anglophilic%3:01:00::" "aversive%3:01:00::" "technophilic%3:01:00::" "libidinal%3:01:00::" "emotional%3:01:00::" "anglophobic%3:01:00::" "agonal%3:01:00::")
  :arguments ((:ESSENTIAL ONT::FIGURE (F::Phys-obj (f::origin (? org f::human f::non-human-animal)))))
  :comment "state of experiencing a particular emotion or cognitive state"
+ :sem (F::abstr-obj (F::scale ont::experiencer-condition-scale))
 )
 
 ;; happy, sad, gloomy...
@@ -4312,10 +4425,16 @@
 )
 
 (define-type ont::bitter-val
- :parent ONT::neg-experiencer-property-val 
- :wordnet-sense-keys ("resentful%3:00:00::" "bitter%5:00:00:tasty:00" )
-; :sem (F::Abstr-obj (F::scale ONT::bitter*1--07--00 ))
+ :parent ONT::taste-property-val
+ :wordnet-sense-keys ("bitter%5:00:00:tasty:00" )
  :sem (F::abstr-obj (F::scale ont::bitterness-scale))
+ )
+
+(define-type ont::bitter-resentful-val
+ :parent ONT::neg-experiencer-property-val 
+ :wordnet-sense-keys ("resentful%3:00:00::" )
+; :sem (F::Abstr-obj (F::scale ONT::bitter*1--07--00 ))
+ :sem (F::abstr-obj (F::scale ont::resentfulness-scale))
 )
 
 ;; experiencer properties: NEUTRAL experiences
@@ -4335,13 +4454,13 @@
 (define-type ont::interested-val
  :parent ont::pos-experiencer-property-val 
  :wordnet-sense-keys ("curious%3:00:00::" "interested%3:00:00" "curious%5:00:00:interested:00" )
- :sem (F::abstr-obj (F::scale ont::interest-scale) )
+ :sem (F::abstr-obj (F::scale ont::interestedness-scale) )
 )
 
 ; wanting/desiring
 (define-type ONT::desirous
  :parent ONT::pos-experiencer-property-val
- :wordnet-sense-keys ("wanted%3:00:00::" "desirous%3:00:00" "avariciously%4:02:00" )
+ :wordnet-sense-keys ("desirous%3:00:00" "avariciously%4:02:00") ;"wanted%3:00:00"
  :sem (F::abstr-obj (F::scale ont::desire-scale) )
  ; every living thing is desirous of avoiding pain
  )
@@ -4410,12 +4529,6 @@
  :parent ont::neg-experiencer-property-val 
  :wordnet-sense-keys ("ungrateful%3:00:00" "thankless%3:00:00" "unthankful%3:00:00" )
  :sem (F::abstr-obj (F::scale ont::gratitude-scale) )
-)
-
-(define-type ont::not-interested-val
- :parent ont::neg-experiencer-property-val 
- :wordnet-sense-keys ("incurious%3:00:00::" "uneager%3:00:00::" "uninterested%3:00:00" "disinterested%5:00:00:impartial:00" )
- :sem (F::abstr-obj (F::scale ont::apathy-scale) )
 )
 
 (define-type ont::concerned-val
@@ -4499,10 +4612,18 @@
 
 (define-type ONT::bored
  :parent ONT::neg-experiencer-property-val
- :wordnet-sense-keys ("bored%5:00:00:tired:00" "bored%5:00:00:uninterested:00")
- :sem (F::abstr-obj (F::scale ont::interest-scale) (f::orientation f::neg))
+ :wordnet-sense-keys ("incurious%3:00:00::" "uneager%3:00:00::" "uninterested%3:00:00")
+ ;:wordnet-sense-keys ("bored%5:00:00:tired:00" "bored%5:00:00:uninterested:00")
+ :sem (F::abstr-obj (F::scale ont::apathy-scale) (f::orientation f::neg))
  )
 
+#|
+(define-type ont::not-interested-val
+ :parent ont::neg-experiencer-property-val 
+ :wordnet-sense-keys ("incurious%3:00:00::" "uneager%3:00:00::" "uninterested%3:00:00")
+ :sem (F::abstr-obj (F::scale ont::apathy-scale) )
+)
+|#
 
 ;; smart, (un)intelligent
 (define-type ont::intelligence-val
@@ -4574,6 +4695,7 @@
  :parent ont::property-val
   :wordnet-sense-keys ("modified%3:00:00::" "changed%3:00:00::" "altered%3:00:00::" "paid%3:00:00::" "undiluted%3:00:00::" "unmodified%3:00:00::" "unpaid%3:00:00::" "diluted%3:00:00::" "dilute%3:00:00::" "decreased%3:00:00::" "reduced%3:00:04::" "unsettled%3:00:01::" "inhabited%3:00:00::" "supported%3:00:00::" "increased%3:00:00::" "planted%3:00:00::" "agitated%3:00:02::" "balanced%3:00:00::" "uninhabited%3:00:00::" "saved%3:00:00::" "unmerited%3:00:00::" "unbuttoned%3:00:00::" "unfastened%3:00:02::" "cursed%3:00:00::" "curst%3:00:00::" "extended%3:00:00::" "lowered%3:00:00::" "surmounted%3:44:00::" "settled%3:00:01::" "hurried%3:00:00::" "treated%3:00:02::" "unplanted%3:00:00::" "unfueled%3:00:00::" "appointive%3:00:00::" "appointed%3:00:02::" "elective%3:00:00::" "elected%3:00:02::" "unlisted%3:00:00::" "unaccustomed%3:00:00::" "addressed%3:00:00::" "unaddressed%3:00:00::" "unperplexed%3:00:00::" "unobligated%3:00:00::" "nonaligned%3:00:00::" "aligned%3:00:01::" "opposed%3:00:00::" "fitted%3:44:00::" "scented%3:00:00::" "unsized%3:00:01::" "sized%3:00:01::" "preconceived%3:44:00::" "plugged%3:44:00::" "geared%3:00:00::" "ungeared%3:00:00::" "unmotivated%3:00:00::" "unassisted%3:00:00::" "powered%3:00:00::" "assisted%3:00:00::" "aided%3:00:00::" "fueled%3:00:00::" "cooked%3:00:00::" "covered%3:00:00::" "destroyed%3:00:00::" "frozen%3:00:00::" "involved%3:00:00::" "cut%3:00:01::" "uninhibited%3:00:00::" "melted%3:00:00::" "liquid%3:00:04::" "liquified%3:00:04::" "unfrozen%3:00:00::" "undiversified%3:00:00::" "unaffected%3:00:00::" "recorded%3:00:00::" "cut%3:00:03::" "ununderstood%3:00:00::" "unshaven%3:00:00::" "unshaved%3:00:00::" "segregated%3:00:00::" "unintegrated%3:00:01::" "unventilated%3:00:00::" "unaccompanied%3:00:00::" "moderating%3:00:00::" "trained%3:00:00::" "coated%3:00:00::" "unmitigated%3:00:00::" "afloat%3:00:00::" "undefeated%3:00:00::" "reported%3:00:00::" "painted%3:00:00::" "mined%3:00:00::" "raised%3:00:00::" "crowded%3:00:00::" "abridged%3:00:00::" "encumbered%3:00:00::" "burdened%3:00:00::" "specialized%3:00:00::" "specialised%3:00:00::" "detected%3:00:00::" "furrowed%3:00:00::" "rugged%3:00:02::" "castrated%3:00:00::" "unsexed%3:00:00::" "delineated%3:00:00::" "represented%3:00:02::" "delineate%3:00:00::" "unpolished%3:00:00::" "mitigated%3:00:00::" "ventilated%3:00:00::" "corrected%3:00:00::" "unfixed%3:00:00::" "unprocessed%3:00:00::" "derived%3:00:00::" "improved%3:00:00::" "undetected%3:00:00::" "unplowed%3:00:00::" "unploughed%3:00:00::" "unbroken%3:00:04::" "understood%3:00:00::" "unimproved%3:00:00::" "unagitated%3:00:02::" "unconstipated%3:00:00::" "regular%3:00:06::" "signed%3:00:00::" "motivated%3:00:00::" "reflected%3:00:00::" "blended%3:00:00::" "induced%3:00:00::" "unscheduled%3:00:00::" "developed%3:00:00::" "undeveloped%3:00:00::" "assigned%3:00:00::" "defeated%3:00:00::" "uncut%3:00:01::" "unfastened%3:00:00::" "unmelted%3:00:00::" "used%3:00:00::" "paved%3:00:00::" "loaded%3:00:00::" "unexploited%3:00:00::" "undeveloped%3:00:04::" "wired%3:00:00::" "sold%3:00:00::" "shared%3:00:00::" "caulked%3:00:00::" "unbound%3:00:01::" "unendowed%3:00:00::" "uncared-for%3:00:00::" "undelineated%3:00:00::" "unaccompanied%3:00:01::" "drained%3:00:00::" "unsupported%3:00:00::" "unturned%3:00:00::" "lighted%3:00:00::" "lit%3:00:02::" "shaven%3:00:00::" "shaved%3:00:00::" "lost%3:00:02::" "adjusted%3:00:00::" "expired%3:00:00::" "misused%3:00:00::" "touched%3:00:00::" "unloaded%3:00:00::" "polished%3:00:00::" "fastened%3:00:00::" "cosmopolitan%3:00:02::" "unseasoned%3:00:00::" "buried%3:00:00::" "inhumed%3:00:00::" "interred%3:00:00::" "unarmed%3:00:02::" "unconvinced%3:00:00::" "uncensored%3:00:00::" "unrequested%3:00:00::" "abused%3:00:01::" "ill-treated%3:00:00::" "maltreated%3:00:00::" "mistreated%3:00:00::" "unmarked%3:00:00::" "undifferentiated%3:00:00::" "uniform%3:00:04::" "censored%3:00:00::" "untreated%3:00:00::" "punished%3:00:00::" "unreflected%3:00:00::" "modulated%3:00:00::" "untrimmed%3:00:00::" "uncut%3:00:05::" "determined%3:00:00::" "unmated%3:00:00::" "exploited%3:00:00::" "uncut%3:00:03::" "rough%3:00:05::" "sealed%3:00:01::" "traveled%3:00:00::" "uncorrected%3:00:00::" "unbalanced%3:00:00::" "imbalanced%3:00:00::" "untraveled%3:00:00::" "untravelled%3:00:00::" "trimmed%3:00:00::" "cut%3:00:05::" "packaged%3:00:00::" "untangled%3:00:00::" "unsupervised%3:00:00::" "unlighted%3:00:00::" "unlit%3:00:02::" "mated%3:00:00::" "contracted%3:00:00::" "compartmented%3:00:00::" "unblended%3:00:00::" "unstained%3:00:00::" "unadjusted%3:00:00::" "earned%3:00:00::" "tied%3:00:00::" "fastened%3:00:03::" "unabridged%3:00:00::" "diversified%3:00:00::" "unburdened%3:00:00::" "contaminated%3:00:00::" "cared-for%3:00:00::" "unpunished%3:00:00::" "uninsured%3:00:00::" "unpatronized%3:00:00::" "unpatronised%3:00:00::" "patronless%3:00:00::" "unmodulated%3:00:00::" "scheduled%3:00:00::" "unoccupied%3:00:02::" "unspecialized%3:00:00::" "unspecialised%3:00:00::" "uncrowned%3:00:00::" "crownless%3:00:00::" "uninvolved%3:00:00::" "rusted%3:00:00::" "amended%3:00:00::" "found%3:00:00::" "noticed%3:00:00::" "uncultivated%3:00:00::" "unexpired%3:00:00::" "unstaged%3:00:00::" "unpackaged%3:00:00::" "unconditioned%3:00:00::" "innate%3:00:02::" "unlearned%3:00:02::" "lost%3:00:03::" "sworn%3:00:00::" "silenced%3:00:00::" "unanalyzed%3:00:00::" "awakened%3:00:00::" "insured%3:00:00::" "plowed%3:00:00::" "ploughed%3:00:00::" "blessed%3:00:00::" "blest%3:00:00::" "born%3:00:00::" "unsuspected%3:00:00::" "inbred%3:00:00::" "owned%3:00:00::" "endowed%3:00:00::" "supported%3:00:02::" "shaded%3:00:02::" "seasoned%3:00:00::" "untempered%3:00:02::" "unhardened%3:00:04::" "tapped%3:00:00::" "constipated%3:00:00::" "uncastrated%3:00:00::" "undetermined%3:00:00::" "irremovable%3:00:00::" "unearned%3:00:00::" "inflected%3:00:00::" "designed%3:00:00::" "intentional%3:00:04::" "selected%3:00:00::" "unpaved%3:00:00::" "analyzed%3:00:00::" "calibrated%3:44:00::" "graduated%3:44:00::" "defined%3:00:00::" "unfurnished%3:00:00::" "noninstitutionalized%3:00:00::" "noninstitutionalised%3:00:00::" "undeciphered%3:00:00::" "re-created%3:44:00::" "elapsed%3:44:00::" "parked%3:44:00::" "supervised%3:00:00::" "pursued%3:44:00::" "published%3:00:00::" "unpasteurized%3:44:00::" "unpasteurised%3:44:00::" "ionized%3:00:00::" "ionised%3:00:00::" "contested%3:44:00::" "unwrapped%3:00:00::" "unfunded%3:00:00::" "unconsummated%3:00:00::" "expanded%3:00:01::" "unsigned%3:00:00::" "enfranchised%3:00:00::" "unchartered%3:00:00::" "shrieked%3:44:00::" "disenfranchised%3:00:00::" "disfranchised%3:00:00::" "voiceless%3:00:00::" "voteless%3:00:00::" "uncarved%3:00:00::" "requested%3:00:00::" "accompanied%3:00:00::" "untied%3:00:00::" "unfastened%3:00:03::" "accompanied%3:00:01::" "attended%3:00:00::" "differentiated%3:00:00::" "unrefined%3:00:02::" "unprocessed%3:00:02::" "crude%3:00:02::" "counterrevolutionary%3:00:00::" "unwaxed%3:00:00::" "noncommissioned%3:00:00::" "convinced%3:00:00::" "crystallized%3:00:00::" "crystallised%3:00:00::" "pasteurized%3:44:00::" "pasteurised%3:44:00::" "sheared%3:00:00::" "shorn%3:00:00::" "hypophysectomized%3:44:00::" "hypophysectomised%3:44:00::" "tucked%3:00:00::" "baptized%3:00:00::" "baptised%3:00:00::" "unowned%3:00:00::" "ownerless%3:00:00::" "brainwashed%3:00:00::" "unleavened%3:00:00::" "unraised%3:00:00::" "crossed%3:00:02::" "uncrossed%3:00:02::" "atrophied%3:00:00::" "wasted%3:00:04::" "diminished%3:00:04::" "hypertrophied%3:00:00::" "enlarged%3:00:04::" "cultivated%3:00:00::" "commissioned%3:00:00::" "seated%3:00:00::" "sitting%3:00:02::" "unshaded%3:00:02::" "well-defined%3:00:00::" "clear%3:00:04::" "adopted%3:00:00::" "adoptive%3:00:04::" "reconstructed%3:00:00::" "unreconstructed%3:00:00::" "tempered%3:00:01::" "posed%3:44:00::" "stacked%3:44:00::" "moneyed%3:00:00::" "monied%3:00:00::" "labeled%3:00:00::" "labelled%3:00:00::" "tagged%3:00:00::" "focused%3:00:00::" "focussed%3:00:04::" "thoriated%3:44:00::" "tittering%3:44:00::" "suspected%3:00:00::" "collected%3:44:00::" "gathered%3:44:00::" "laced%3:00:00::" "tied%3:00:02::" "oxidized%3:44:00::" "oxidised%3:44:00::" "regulated%3:00:00::" "deciphered%3:00:00::" "saponified%3:44:00::" "tanned%3:00:00::" "penciled%3:44:00::" "pencilled%3:44:00::" "wrapped%3:00:00::" "solved%3:00:00::" "resolved%3:00:04::" "glazed%3:00:01::" "glassed%3:00:00::" "keyed%3:00:00::" "avenged%3:44:00::" "unavenged%3:44:00::" "enforced%3:00:00::" "implemented%3:00:02::" "sintered%3:44:00::" "funded%3:00:00::" "beneficed%3:00:00::" "chartered%3:00:00::" "hired%3:00:02::" "leased%3:00:02::" "camphorated%3:00:00::" "unoiled%3:00:00::" "unlabeled%3:00:00::" "unlabelled%3:00:00::" "untagged%3:00:00::" "untucked%3:00:00::" "leavened%3:00:00::" "sanitized%3:44:00::" "sanitised%3:44:00::" "sleeved%3:00:00::" "stained%3:00:00::" "branded%3:00:00::" "lamented%3:00:00::" "unposed%3:44:00::" "unassigned%3:00:00::" "uncollected%3:44:00::" "ungathered%3:44:00::" "unburied%3:00:00::" "uncarpeted%3:00:00::" "uncaulked%3:00:00::" "uncompartmented%3:00:00::" "uncamphorated%3:00:00::" "nonionized%3:00:00::" "nonionised%3:00:00::" "unionized%3:00:00::" "unionised%3:00:00::" "nonionic%3:00:00::" "unsaponified%3:44:00::" "untanned%3:00:00::" "uncontaminated%3:00:00::" "uncrossed%3:00:01::" "unlaureled%3:00:00::" "unlaurelled%3:00:00::" "undedicated%3:00:00::" "uncontested%3:44:00::" "undesigned%3:00:00::" "undrained%3:00:00::" "unenforced%3:00:00::" "unextended%3:00:00::" "uncrystallized%3:00:00::" "uncrystallised%3:00:00::" "unglazed%3:00:01::" "glassless%3:00:00::" "untreated%3:00:02::" "unlamented%3:00:00::" "unmourned%3:00:00::" "unbeneficed%3:00:00::" "uncoated%3:00:00::" "unlined%3:00:00::" "unsheathed%3:00:00::" "bare%3:00:04::" "unappendaged%3:00:00::" "unbalconied%3:00:00::" "untouched%3:00:00::" "ungusseted%3:00:00::" "unopposed%3:00:00::" "unpowered%3:00:00::" "unbaptized%3:00:00::" "unbaptised%3:00:00::" "unbanded%3:00:00::" "unbarreled%3:00:00::" "unbarrelled%3:00:00::" "nonintegrated%3:00:00::" "unintegrated%3:00:02::" "confined%3:00:01::" "unlubricated%3:00:00::" "ungreased%3:00:00::" "undimmed%3:00:00::" "bright%3:00:02::" "unenlivened%3:00:00::" "unbranded%3:00:00::" "unfurrowed%3:00:00::" "unmined%3:00:00::" "unabused%3:00:01::" "unpotted%3:00:00::" "unframed%3:00:00::" "unshuttered%3:00:00::" "unpublished%3:00:00::" "unregulated%3:00:00::" "unreported%3:00:00::" "unseeded%3:00:00::" "unselected%3:00:00::" "unsheared%3:00:00::" "unshorn%3:00:00::" "unsilenced%3:00:00::" "unsolved%3:00:00::" "unresolved%3:00:04::" "untapped%3:00:00::" "unbrainwashed%3:00:00::" "unweaned%3:00:00::" "mercerized%3:44:00::" "mercerised%3:44:00::" "malted%3:44:00::" "unmalted%3:44:00::" "platyrrhine%3:00:00::" "platyrrhinian%3:00:00::" "platyrhine%3:00:00::" "platyrhinian%3:00:00::" "platyrrhinic%3:00:00::" "broadnosed%3:00:00::" "potted%3:00:00::" "filled%3:44:00::" "unfilled%3:44:00::" "institutionalized%3:00:00::" "institutionalised%3:00:00::" "listed%3:00:00::" "landed%3:00:00::" "sublimed%3:44:00::" "sublimated%3:44:00::" "forced%3:44:00::" "voiced%3:00:00::" "sonant%3:00:00::" "soft%3:00:00::" "hardened%3:00:06::" "gusseted%3:00:00::" "framed%3:00:00::" "branchiate%3:00:00::" "gilled%3:00:00::" "posted%3:44:00::" "barreled%3:00:00::" "barrelled%3:00:02::" "hammered%3:44:00::" "lubricated%3:00:00::" "greased%3:00:00::" "squashed%3:44:00::" "oiled%3:00:00::" "waxed%3:00:00::" "calced%3:00:00::" "shod%3:00:04::" "staged%3:00:00::" "connected%3:00:00::" "unconnected%3:00:00::" "carved%3:00:00::" "carven%3:00:00::" "committed%3:00:00::")
  :comment "adjectives that describe the resulting states of the verb that it pertains to" 
+ :sem (F::abstr-obj (F::scale ont::unordered-domain))
 )
 
 ;; exhausted
@@ -4630,7 +4752,7 @@
 
 (define-type ont::not-protected-val
  :parent ont::protection-val
- :wordnet-sense-keys ("unprotected%3:00:00")
+ :wordnet-sense-keys ("unprotected%3:00:00" "in_the_lurch%4:02:00")
 )
 
 ;; finalized, settled
@@ -4668,6 +4790,7 @@
 (define-type ont::associated-with-val
  :parent ont::property-val
  :comment "adjectives that classify the noun that it is pertaining to" 
+ :sem (F::abstr-obj (F::scale ont::unordered-domain))
 )
 
 ;; associated with purpose
@@ -4970,7 +5093,8 @@
  )
 
 (define-type ONT::orientation-val
- :parent ONT::spatial-val
+    :parent ONT::spatial-val
+    :comment "spatial relations defining the orientation or an object"
   :wordnet-sense-keys ("oriented%3:00:00::" "orientated%3:00:00::" "orienting%3:00:00::" "orientating%3:00:00::" "unoriented%3:00:00::")
   :arguments ((:OPTIONAL ONT::GROUND (F::phys-obj))
              )
@@ -5037,7 +5161,7 @@
 )
 
 (define-type ONT::SHAPE-VAL
-  :parent ONT::visual-property-val
+  :parent ONT::appearance-property-val
   :wordnet-sense-keys ("formed%3:00:00::" "rounded%3:00:00::" "curved%3:00:00::" "curving%3:00:00::" "pointed%3:00:00::" "reticulate%3:00:00::" "reticular%3:00:00::" "coiled%3:00:00::" "crosswise%3:00:00::" "uncoiled%3:00:00::" "straight%3:00:02::" "prolate%3:00:00::" "watermelon-shaped%3:00:00::" "oblate%3:00:00::" "pumpkin-shaped%3:00:00::" "crooked%3:00:01::" "concave%3:00:00::" "convex%3:00:00::" "bulging%3:00:06::" "curly%3:00:00::" "straight%3:00:03::" "azimuthal%3:01:00::" "sigmoid%3:01:01::" "hyperbolic%3:01:00::" "two-humped%3:01:00::" "double-humped%3:01:00::" "polygonal%3:01:00::" "pentangular%3:01:00::" "pentagonal%3:01:00::" "sectorial%3:01:00::" "diametral%3:01:00::" "diametric%3:01:00::" "diametrical%3:01:00::" "hemispherical%3:01:00::" "campanulate%3:01:00::" "campanular%3:01:00::" "campanulated%3:01:00::" "octangular%3:01:00::" "octagonal%3:01:00::" "radial%3:01:00::" "bicylindrical%3:01:00::" "icosahedral%3:01:00::" "rhombic%3:01:00::" "rhomboid%3:01:00::" "rhomboidal%3:01:00::" "polyhedral%3:01:00::" "asymptotic%3:01:00::" "shaped%3:01:00::" "triangulate%3:01:00::" "striate%3:01:00::" "quadratic%3:01:01::" "hexangular%3:01:00::" "hexagonal%3:01:00::" "nonspherical%3:01:00::" "angular%3:01:00::" "spherical%3:01:00::" "quadrangular%3:01:00::" "toroidal%3:01:00::" "tangential%3:01:00::" "wedge-shaped%3:01:00::" "cuneal%3:01:00::" "cuneiform%3:01:01::" "trapezoidal%3:01:00::" "tetragonal%3:01:00::" "asteriated%3:01:00::" "one-humped%3:01:00::" "single-humped%3:01:00::" "stemmatic%3:01:00::")
  :sem (F::Abstr-obj (F::Measure-function F::VALUE))
  :sem (F::abstr-obj (F::scale ont::shape-scale ))
@@ -5136,7 +5260,7 @@
 ;; the proposal is close to done; the hotel is close to an address; the reporter got close to the riot;
 ;; close to, near
 (define-type ONT::distance-val
- :parent ONT::spatial-val
+ :parent ONT::dimensional-property-val
  :sem (F::abstr-obj (:required (f::scale ont::distance-scale))
 		    (:default (F::gradability +)))
  :arguments ((:REQUIRED ONT::neutral ((? th f::situation f::phys-obj f::abstr-obj)))
@@ -5271,6 +5395,7 @@
 	     (:optional ONT::STANDARD)
              )
  :wordnet-sense-keys("quantitative%3:00:00")
+ :sem (F::abstr-obj (F::scale ont::quantity-related-scale))
  )
 
 (define-type ONT::additional-val
@@ -5295,9 +5420,10 @@
 
 (define-type ONT::adequacy-VAL
 ;   :sem (F::Abstr-obj (F::scale ONT::adequacy-val))
-   :parent  ONT::quantity-related-property-val
+   :parent  ONT::evaluation-attribute-val ;quantity-related-property-val
    :arguments ((:ESSENTIAL ONT::GROUND)
 	       )
+  ; :sem (F::abstr-obj (F::scale ont::evaluation-scale))
  )
 
 (define-type ONT::number-related-property-val
@@ -5366,7 +5492,7 @@
   :arguments ((:required ONT::GROUND (f::phys-obj (f::type ont::material)))
 	      (:required ONT::FIGURE ((? xx  F::phys-obj abstr-obj))))
 					; Words: (W::SHORT W::INADEQUATE W::INSUFFICIENT)
-  :wordnet-sense-keys ("meager%3:00:00::" "meagre%3:00:00::" "meagerly%3:00:00::" "stingy%3:00:02::" "scrimpy%3:00:00::" "inadequate%3:00:00::" "unequal%3:00:03::" "inadequate%5:00:00:insufficient:00" "insufficient%3:00:00" "scarce%3:00:00")
+  :wordnet-sense-keys ("meager%3:00:00::" "meagre%3:00:00::" "meagerly%3:00:00::" "stingy%3:00:02::" "scrimpy%3:00:00::" "inadequate%3:00:00::" "unequal%3:00:03::" "inadequate%5:00:00:insufficient:00" "insufficient%3:00:00" "scarce%3:00:00" "poor%3:00:02::")
 					; Antonym: ONT::ADEQUATE (W::SUFFICIENT W::ADEQUATE W::ENOUGH)
   )
 
@@ -5441,17 +5567,20 @@
 
 (define-type ONT::serving-as-connection-val
   :parent ONT::relational-attribute-val
+  :wordnet-sense-keys ("conjunctive%3:00:00::")
   :comment "(connecting, conjunctive)"
   )
 
+#|
 (define-type ONT::connecting-val
   :parent ONT::serving-as-connection-val
   :wordnet-sense-keys ("conjunctive%3:00:00::")
   :comment "(connecting, conjunctive)"
   )
+|#
 
 (define-type ONT::correspondence-val
-  :parent ONT::relational-attribute-val
+  :parent ONT::compatibility-val ;relational-attribute-val
   :comment "(commesurate, congruous)"
   )
 
@@ -5487,6 +5616,7 @@
 (define-type ONT::shapeliness-val
   :parent ONT::evaluation-attribute-val
   :comment "(shapely)"
+  :sem (F::abstr-obj (F::scale ont::shapeliness-scale))
   )
 
 (define-type ONT::shapely-val
@@ -5507,25 +5637,27 @@
   :comment "(unadvisable)"
   )
 
-(define-type ONT::favorability-to-life-val
+(define-type ONT::hospitability-val ;favorability-to-life-val
   :parent ONT::evaluation-attribute-val
   :comment "(hospitable)"
+  :sem (F::abstr-obj (F::scale ont::hospitability-scale))
   )
 
 (define-type ONT::hospitable-val
-  :parent ONT::favorability-to-life-val
+  :parent ONT::hospitability-val ;favorability-to-life-val
   :wordnet-sense-keys ("hospitable%3:00:00::")
   :comment "(hospitable)"
   )
 
 (define-type ONT::not-hospitable-val
-  :parent ONT::favorability-to-life-val
+  :parent ONT::hospitability-val ;favorability-to-life-val
   :wordnet-sense-keys ("inhospitable%3:00:00::")
   :comment "(inhospitable)"
   )
 
+#|
 (define-type ONT::restriction-val
-  :parent ONT::evaluation-attribute-val
+  :parent ONT::control-val ;evaluation-attribute-val
   :comment "(restricted, restrained)"
   )
 
@@ -5540,11 +5672,13 @@
   :wordnet-sense-keys ("unrestricted%3:00:00::" "unrestrictive%3:00:00::" "unconditional%3:00:00::" "unconditioned%3:00:01::")
   :comment "(unrestricted)"
   )
+|#
 
 (define-type ONT::qualification-val
   :parent ONT::evaluation-attribute-val
   :comment "(qualified, eligible)"
-  )
+  :sem (F::abstr-obj (F::scale ont::qualification-scale))
+)
 
 (define-type ONT::qualified-val
   :parent ONT::qualification-val
@@ -5561,6 +5695,7 @@
 (define-type ONT::helpfulness-val
   :parent ONT::evaluation-attribute-val
   :comment "(helpful)"
+  :sem (F::abstr-obj (F::scale ont::helpfulness-scale))
   )
 
 (define-type ONT::helpful-val
@@ -5586,7 +5721,7 @@
   :wordnet-sense-keys ("unwholesome%3:00:00::" "unhealthful%3:00:00::" "unsanitary%3:00:00::" "insanitary%3:00:00::" "unhealthful%3:00:02::")
   :comment "(unhealthful)"
   )
-
+#|
 (define-type ONT::organized-val
   :parent ONT::orderly-val
   :wordnet-sense-keys ("organized%3:00:02::" "organized%3:00:01::" "classified%3:00:01::" "structured%3:00:00::")
@@ -5598,6 +5733,7 @@
   :wordnet-sense-keys ("disorganized%3:00:00::" "disorganised%3:00:00::" "unorganized%3:00:00::" "unorganised%3:00:00::" "unstructured%3:00:00::" "unclassified%3:00:01::" "unsystematic%3:00:00::")
   :comment "lacking category, organization and/or structure (disorganized)"
   )
+|#
 
 (define-type ONT::control-val
   :parent ONT::evaluation-attribute-val
@@ -5606,14 +5742,32 @@
 
 (define-type ONT::controlled-val
   :parent ONT::control-val
-  :wordnet-sense-keys ("uncontrolled%3:00:00::" "controlled%3:00:00::" "guided%3:00:00::" "manned%3:00:00::")
+  :wordnet-sense-keys ("controlled%3:00:00::" "guided%3:00:00::" "manned%3:00:00::")
   :comment "controlled or controllable by a human entity (controlled, guided)"
   )
 
 (define-type ONT::not-controlled-val
   :parent ONT::control-val
-  :wordnet-sense-keys ("unrestrained%3:00:00::" "untempered%3:00:01::" "unguided%3:00:00::")
+  :wordnet-sense-keys ("unrestrained%3:00:00::" "untempered%3:00:01::" "unguided%3:00:00::"
+						"uncontrolled%3:00:00::")
   :comment "not controlled by human entity (uncontrolled, unguided)"
+  )
+
+(define-type ONT::restriction-val
+  :parent ONT::control-val ;evaluation-attribute-val
+  :comment "(restricted, restrained)"
+  )
+
+(define-type ONT::restricted-val
+  :parent ONT::restriction-val
+  :wordnet-sense-keys ("restrained%3:00:00::" "restricted%3:00:00::" "inhibited%3:00:00::" "restrictive%3:00:00::")
+  :comment "(restricted, restrained)"
+  )
+
+(define-type ONT::not-restricted-val
+  :parent ONT::restriction-val
+  :wordnet-sense-keys ("unrestricted%3:00:00::" "unrestrictive%3:00:00::" "unconditional%3:00:00::" "unconditioned%3:00:01::")
+  :comment "(unrestricted)"
   )
 
 (define-type ONT::inarticulate-val
@@ -5660,6 +5814,7 @@
 (define-type ONT::influence-val
   :parent ONT::evaluation-attribute-val
   :comment "(influential)"
+  :sem (F::abstr-obj (F::scale ont::influence-scale))
   )
 
 (define-type ONT::influential-val
@@ -5677,7 +5832,8 @@
 (define-type ONT::influence-susceptibility-val
   :parent ONT::evaluation-attribute-val
   :comment "not allowing penetration or influence (vulnerable)"
-  )
+  :sem (F::abstr-obj (F::scale ont::influence-susceptibility-scale))  
+)
 
 (define-type ONT::vulnerable-val
   :parent ONT::influence-susceptibility-val
@@ -5954,7 +6110,7 @@
   :comment "(integrated, united)"
   )
 
-(define-type ONT::having-constituent-parts-val
+#|(define-type ONT::having-constituent-parts-val
   :parent ONT::physical-property-val
   )
 
@@ -5974,6 +6130,7 @@
   :parent ONT::having-constituent-parts-val
   :wordnet-sense-keys ("patronized%3:00:00::" "patronised%3:00:00::")
   )
+|#
 
 (define-type ONT::containing-substance-val
   :parent ONT::substantial-property-val
@@ -6278,11 +6435,13 @@
   :comment "(unsurprising)"
   )
 
+#|
 (define-type ONT::not-desirable-val
   :parent ONT::evoking-neg-experience-property-val
   :wordnet-sense-keys ("unwanted%3:00:00::" "undesirable%3:00:00::" "unwanted%3:00:01::")
   :comment "(undesirable)"
   )
+|#
 
 (define-type ONT::discouraging-val
   :parent ONT::evoking-neg-experience-property-val
@@ -6314,11 +6473,13 @@
   :comment "(encouraging)"
   )
 
+#|
 (define-type ONT::lovable-val
   :parent ONT::evoking-pos-experience-property-val
   :wordnet-sense-keys ("lovable%3:00:00::" "loveable%3:00:00::")
   :comment "(lovable)"
   )
+|#
 
 (define-type ONT::remorseless-val
   :parent ONT::neg-experiencer-property-val
@@ -6425,6 +6586,7 @@
 (define-type ONT::creativity-val
   :parent ONT::psychological-property-val
   :comment "(creative)"
+  :sem (F::abstr-obj (F::scale ont::creativity-scale))
   )
 
 (define-type ONT::creative-val
@@ -6679,7 +6841,8 @@
 (define-type ONT::decisiveness-val
   :parent ONT::animal-propensity-val
   :comment "(decisive)"
-  )
+  :sem (F::abstr-obj (F::scale ont::decisiveness-scale))
+)
 
 (define-type ONT::decisive-val
   :parent ONT::decisiveness-val
@@ -6696,6 +6859,7 @@
 (define-type ONT::communicativeness-val
   :parent ONT::animal-propensity-val
   :comment "(communicative)"
+  :sem (F::abstr-obj (F::scale ont::communicativeness-scale))
   )
 
 (define-type ONT::communicative-val
@@ -6712,8 +6876,21 @@
 
 (define-type ONT::financial-behavior-val
   :parent ONT::animal-propensity-val
-  :wordnet-sense-keys ("thrifty%3:00:00::")
-  :comment "(thrifty)"
+  ;:wordnet-sense-keys ("thrifty%3:00:00::")
+  :comment "(frugal, thrifty, wasteful)"
+  :sem (F::abstr-obj (F::scale ont::financial-behavior-scale))
+  )
+
+(define-type ONT::frugal-val
+  :parent ONT::financial-behavior-val
+  :wordnet-sense-keys ("thrifty%3:00:00")
+  :comment "(thrifty, frugal)"
+  )
+
+(define-type ONT::wasteful-val
+  :parent ONT::financial-behavior-val
+  :wordnet-sense-keys ("wasteful%3:00:00")
+  :comment "(wasteful)"
   )
 
 (define-type ONT::not-skillful-val
@@ -6722,26 +6899,28 @@
   :comment "(unskilled)"
   )
 
-(define-type ONT::loyalty-val
+(define-type ONT::loyalty-faithfulness-val ;loyalty-val
   :parent ONT::animal-propensity-val
-  :comment "(loyal)"
+  :comment "(loyal), faithful, dedicated, devoted to something (faithful)"
+  :sem (F::abstr-obj (F::scale ont::loyalty-faithfulness-scale)) ;loyalty-scale))
   )
 
-(define-type ONT::loyal-val
-  :parent ONT::loyalty-val
-  :wordnet-sense-keys ("loyal%3:00:00::" "patriotic%3:00:00::" "loyal%3:00:06::")
-  :comment "(loyal)"
+(define-type ONT::loyal-faithful-val ;loyal-val
+  :parent ONT::loyalty-faithfulness-val
+  :wordnet-sense-keys ("loyal%3:00:00::" "patriotic%3:00:00::" "loyal%3:00:06::" "dedicated%3:00:00::" "faithful%3:00:01::" "faithful%3:00:00::")
+  :comment "(loyal), faithful, dedicated, devoted to something (faithful)"
   )
 
-(define-type ONT::not-loyal-val
-  :parent ONT::loyalty-val
-  :wordnet-sense-keys ("unpatriotic%3:00:00::" "disloyal%3:00:06::" "disloyal%3:00:00::")
-  :comment "(disloyal)"
+(define-type ONT::not-loyal-faithful-val ;not-loyal-val
+  :parent ONT::loyalty-faithfulness-val
+  :wordnet-sense-keys ("disloyal%3:00:00::" "disloyal%3:00:06::" "unpatriotic%3:00:00::" "unfaithful%3:00:00::" "unfaithful%3:00:01::")
+  :comment "(disloyal), (unfaithful)"
   )
-
+#|
 (define-type ONT::faithfulness-val
   :parent ONT::animal-propensity-val
   :comment "faithful, dedicated, devoted to something (faithful)"
+  :sem (F::abstr-obj (F::scale ont::faithfulness-scale))
   )
 
 (define-type ONT::faithful-val
@@ -6755,9 +6934,11 @@
   :wordnet-sense-keys ("unfaithful%3:00:01::" "unfaithful%3:00:00::")
   :comment "(unfaithful)"
   )
+|#
 
 (define-type ONT::self-centeredness-val
   :parent ONT::animal-propensity-val
+  :sem (F::abstr-obj (F::scale ont::self-centeredness-scale))
   :comment "(selfish, egoistic)"
   )
 
@@ -6780,7 +6961,7 @@
 
 (define-type ONT::reticent-val
   :parent ONT::reticence-val
-  :wordnet-sense-keys ("reserved%3:00:01::" "taciturn%3:00:00::" "modest%3:00:01::")
+  :wordnet-sense-keys ("reserved%3:00:01::" "taciturn%3:00:00::") ; "modest%3:00:01::")
   :comment "(taciturn, reticent)"
   )
 
@@ -6793,6 +6974,7 @@
 (define-type ONT::patience-val
   :parent ONT::animal-propensity-val
   :comment "(patient)"
+  :sem (F::abstr-obj (F::scale ont::patience-scale))
   )
 
 (define-type ONT::patient-val
@@ -6844,6 +7026,7 @@
 (define-type ONT::well-intended-val
   :parent ONT::social-intent-val
   :comment "(benevolent)"
+  :wordnet-sense-keys ("benevolent%3:01:00")
   )
 
 (define-type ONT::social-care-and-support-val
@@ -6950,6 +7133,7 @@
 
 (define-type ONT::forgiveness-val
   :parent ONT::animal-propensity-val
+  :sem (F::abstr-obj (F::scale ont::compassion-scale))
   :comment "(forgiving)"
   )
 
@@ -6968,22 +7152,25 @@
 (define-type ONT::frankness-val
   :parent ONT::animal-propensity-val
   :comment "direct, blunt (frank, blunt)"
+  :sem (F::abstr-obj (F::scale ont::frankness-scale))
   )
 
 (define-type ONT::frank-val
   :parent ONT::frankness-val
   :comment "direct, blunt (frank, blunt)"
+  :wordnet-sense-keys ("direct%3:00:02")
   )
 
 (define-type ONT::not-frank-val
   :parent ONT::frankness-val
-  :wordnet-sense-keys ("direct%3:00:02::" "indirect%3:00:02::")
+  :wordnet-sense-keys ("indirect%3:00:02")
   :comment "indirect, allusive (indirect, allusive)"
   )
 
 (define-type ONT::knowledge-experience-val
   :parent ONT::animal-propensity-val
   :comment "having experience and knowledge (informed, experienced)"
+  :sem (F::abstr-obj (F::scale ont::knowledge-experience-scale))
   )
 
 (define-type ONT::have-knowledge-val
@@ -7007,6 +7194,7 @@
 (define-type ONT::discernment-val
   :parent ONT::animal-propensity-val
   :comment "(discerning, discriminate)"
+  :sem (F::abstr-obj (F::scale ont::discernment-scale))
   )
 
 (define-type ONT::discerning-val
@@ -7039,7 +7227,7 @@
   )
 
 (define-type ONT::old-fashioned-val
-  :parent ONT::temporal-relation-val
+  :parent ONT::relative-time-location-val
   :comment "(old_fashioned)"
   )
 
@@ -7222,7 +7410,7 @@
 
 (define-type ONT::food-property-val
   :parent ONT::associated-with-food-val
-  :wordnet-sense-keys ("vinous%3:01:00::" "vinaceous%3:01:00::" "alimentative%3:01:00::" "carroty%3:01:00::" "vanilla%3:01:00::" "wheaten%3:01:00::" "whole-wheat%3:01:00::" "wholemeal%3:01:00::" "herbal%3:01:00::" "garlicky%3:01:00::" "oaten%3:01:00::")
+  :wordnet-sense-keys ("alimentative%3:01:00::" "boneless%3:00:00" "carroty%3:01:00::" "garlicky%3:01:00::" "herbal%3:01:00::" "oaten%3:01:00::" "vanilla%3:01:00::" "vinaceous%3:01:00::" "vinous%3:01:00::" "wheaten%3:01:00::" "wholemeal%3:01:00::" "whole-wheat%3:01:00::")
   )
 
 (define-type ONT::political-val

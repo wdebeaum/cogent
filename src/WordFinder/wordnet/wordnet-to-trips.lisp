@@ -371,9 +371,23 @@
 		       ))
 	       )
 	  (when pertainym-infos
-	    `((,(intern "WORDNET" :parser)
-		  :sense-key ,(get-sense-key synset word)
-	    	  :pertainyms ,pertainym-infos))))))))
+	    ;; make sure we have a form of the word that is actually in synset
+	    ;; before trying to make the sense key from it
+	    (let* ((words_
+		     (mapcar (lambda (w) (substitute #\_ #\Space w)) words))
+	           (ss-word
+		     (find-if
+		       (lambda (w)
+		         (member (slot-value w 'word) words_
+				 :test #'string-equal))
+		       (slot-value synset 'words))))
+	      (if ss-word
+		`((,(intern "WORDNET" :parser)
+		      :sense-key
+		        ,(get-sense-key synset (slot-value ss-word 'word))
+		      :pertainyms ,pertainym-infos))
+		(warn "get-domain-info failed: none of the words ~s are in the synset ~s" words_ synset)
+		))))))))
 	  
 (defun convert-synset (synset word score penntags trips-sense-list)
   "Given a Wordnet synset and a string of the original word being looked up, returns an entry to be sent back to the parser."
@@ -1602,12 +1616,28 @@
 (defvar wordnet-synset-to-ont-type-mappings (make-hash-table :test #'equalp))
 
 (defun make-synset-to-ont-type-table ()
-  (mapcar #'(lambda (ont-type)
-	      (let ((sense-keys (om::ont-type-wordnet-sense-keys ont-type)))
-		(when sense-keys
-		  (dolist (sense-key sense-keys)
-		    (setf (gethash sense-key wordnet-synset-to-ont-type-mappings) ont-type)))))
-	  (om::get-all-ont-types)))
+  (clrhash wordnet-synset-to-ont-type-mappings)
+  (loop with mapped-synsets = nil
+        for ont-type in (om::get-all-ont-types)
+	for sense-keys = (om::ont-type-wordnet-sense-keys ont-type)
+	do (loop for sense-key in sense-keys
+		 for old-ont-type =
+		   (gethash sense-key wordnet-synset-to-ont-type-mappings)
+		 for ss = (get-synset-from-sense-key wm sense-key)
+		 when old-ont-type
+		   do (warn "replacing mapping from ~s to ~s~%  with a mapping to ~s" sense-key old-ont-type ont-type)
+		 do (setf (gethash sense-key wordnet-synset-to-ont-type-mappings) ont-type)
+		    (if ss
+		      (pushnew ss mapped-synsets :test #'synsets-equal-p)
+		      (warn "the sense key ~s (mapped to ~s) does not designate a synset in WN3.0" sense-key ont-type)
+		      )
+		 )
+	;; check for synsets mapped via different sense keys to different types
+	finally (loop for ss in mapped-synsets
+		      for ots = (synset-to-ont-type ss)
+		      when (> (length ots) 1)
+		      do (warn "~s~%   is mapped to more than one ONT type:~%     ~s" ss ots))
+	))
 
 (defun ont-type-for-wordnet-sense-key (sense-key)
   (when sense-key

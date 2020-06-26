@@ -86,13 +86,15 @@
    ;; top-level utterance rules
 
    ;; hello calo; we did it, calo
+   ;; hello! calo; goodbye, calo
    ;; any utterance can be addressed to someone
    ;; the vocative feature prevents multiple vocative constructs, esp one at beginning and one at end
    ((utt (var ?v) (vocative +) (lf (% speechact (var ?sv) (class ?cl) (constraint ?constraint))))
     -vocative-utt> .95    ;; nb: lowered below np-conj rule to eliminate bad interps of utterances like 'john and mary"
-    (head (utt (focus ?foc) (var ?v) (vocative -) (lf (% speechact (var ?sv) (class (? cl ont::sa_tell ont::sa_yn-question ont::sa_request)) (constraint ?con)))
-	  (punctype -)))
-    (np (var ?nv) (lf (% description (status (? nm ont::gname ont::name))))
+    (head (utt (focus ?foc) (var ?v) (vocative -) (lf (% speechact (var ?sv) (class (? cl ont::sa_tell ont::sa_yn-question ont::sa_request ont::sa_greet ont::sa_close)) (constraint ?con)))
+	       ;(punctype -)
+	       ))
+    (np (var ?nv) (name +) ;(lf (% description (status (? nm ont::gname ont::name)))) ; np-name gives status definite
 	(sem ($ f::phys-obj (f::intentional +) (f::object-function f::occupation)))
 	)
     (add-to-conjunct (val (vocative ?nv)) (old ?con) (new ?constraint))
@@ -104,12 +106,13 @@
 	 (vocative +))
     ;; lowering this rule allows many bad interpretations in coordops
     -vocative-utt2>  .95
-    (np (var ?nv) (lf (% description (status (? nm ont::gname ont::name))))
+    (np (var ?nv) (name +) ;(lf (% description (status (? nm ont::gname ont::name))))
 	(sem ($ f::phys-obj (f::intentional +) (f::object-function f::occupation)))
 	)
-    (head (utt (punctype -) (focus ?foc) (var ?v) (vocative -) 
+    (head (utt ;(punctype -)
+	       (focus ?foc) (var ?v) (vocative -) 
 	       (lf (% speechact (var ?sv) 
-		      (class (? cl ont::sa_tell ont::sa_yn-question ont::sa-request)) (constraint ?con))))
+		      (class (? cl ont::sa_tell ont::sa_yn-question ont::sa-request ont::sa_greet ont::sa_close)) (constraint ?con))))
      )
     (add-to-conjunct (val (vocative ?nv)) (old ?con) (new ?constraint))
     )
@@ -484,13 +487,16 @@
      )
     -s1>
     (np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex) (sort pred) ;; lex needed for expletives? 
-      (pp-word -) (changeagr -) (gap -) (expletive ?exp))
+	(pp-word -) (changeagr -) (gap -) (expletive ?exp)
+	;(class ?npclass)
+	)
     (head (vp (lf ?lf) (gap ?g)
               ;(template (? !x  lxm::propositional-equal-templ))
               (template (? !x  lxm::NEUTRAL-NEUTRAL1-CP-STHAT-EQUAL-TEMPL))
 	      (subjvar ?npvar)
 	      (subj (% np (sem ?npsem) (var ?npvar) (agr ?a) (case (? case sub -)) (lex ?lex)
-		       (pp-word -) (changeagr -) (gap -) (expletive ?exp)))
+		       (pp-word -) (changeagr -) (gap -) (expletive ?exp) ;(class ?npclass)
+		       ))
 	      (var ?v) (vform fin) (agr ?a)
 	      (advbl-needed ?avn)
 	      (neg ?neg)
@@ -720,9 +726,10 @@
      (advbl-needed ?avn)
      )
     -s-subjunctive>  .94 ;; only use if necessary 
-    (np (sem ?npsem) (var ?npvar) ;(agr ?a)
-	(case (? case sub -)) (lex ?lex) ;; lex needed for expletives?
-      (pp-word -) (changeagr -))
+    (np (sem ?npsem) (var ?npvar)  ;(agr ?a)
+     (sort pred)  ;; wh-desc terms are not allowed here
+     (case (? case sub -)) (lex ?lex) ;; lex needed for expletives?
+     (pp-word -) (changeagr -))
     (head (vp (lf ?lf) (gap ?g)
               
 	      (subjvar ?npvar)
@@ -1201,19 +1208,26 @@
      
      ((pred (arg ?arg) (var *)  (sem ?newsem)
             (lf (% prop (status ont::f) (arg ?arg) (var *) (sem ?newsem)
-		   (class ONT::MEMBERSHIP) (constraint (& (figure ?arg) 
-							  (ground (% *pro* (status ont::definite-plural) (var ?v) (class ?c) (constraint ?constr)))
+		   (class ONT::MEMBER-RELN)
+		   (constraint (& (figure ?arg) 
+				  (ground (% *pro* (status ont::bare) ;(status ont::definite-plural) ;(status ?x) 
+					     (var ?v) (class ?c) ; if we use ?!c2 here the LF is wrecked (no ont type!).  Don't know why...
+					     (constraint ?constr)))
 				  ))))
             (argument ?argument)
             (filled -)
-            )
-      -pred4> 
+       )
+      -pred4>  ;;.98 ;;  0.96 ;0.995   ; lower the score since MEMBERSHIP matches roles that specify SITUATION
       (head (np (sem ?sem) (var ?v) (sort pred) (case (? case obj -))
 		(derived-from-name -) (gerund -)
-		(lf (% description (status (? x ont::indefinite ont::bare ont::indefinite-plural)) 
-		       (sem ($ f::phys-obj )) 
-		       (class ?c) (constraint ?constr)))))
-      (compute-sem-features (lf ONT::MEMBERSHIP) (sem ?newsem))
+		(lf (% description (status (? x ont::indefinite ont::bare ont::indefinite-plural)) ;(status (? x ont::indefinite ont::bare ont::indefinite-plural ont::SM ont::wh ONT::what ONT::which ONT::whose ONT::*wh-term* ont::wh-term ONT::WH-PLURAL ont::wh-term-set ont::kind))
+		       (sem ($ f::phys-obj )) ; now don't allow "what kind" (abstr-obj)
+		       (class (? c ONT::PHYS-OBJECT)) ;(class (? !c2 ONT::DOMAIN))  ; hard failure
+		       (constraint ?constr)))
+					;(sem ($ ?!s (f::type (? !t ONT::DOMAIN)))) ; exclude "what color is X" which uses AT-SCALE-VALUE
+		(sem ($ f::phys-obj )) 
+		(lex (? !lex w::what))))  ; exclude "X is what" or "what is X"
+      (compute-sem-features (lf ONT::MEMBER-RELN) (sem ?newsem))
       )
 
    ;; a construction that is limited to pred of emotional state 
@@ -1617,7 +1631,7 @@
    ;; test: who did he see
    ((vp- (subj ?subj) (subjvar ?subjvar) (dobjvar ?gapvar) ;(dobjvar ?dobjvar)
      (main +) (gap (% ?!cat (var ?gapvar) (sem ?gapsem) (agr ?gapagr) (arg ?arg) (gap -) 
-		      (case ?dcase) (ptype ?ptype)
+		      (case ?dcase) (ptype ?ptype) (status ?status) ; status is matched in wh-q2
 		      ))
      (var ?v) 
      (class ?c)
@@ -1719,7 +1733,8 @@
    ;; vp rule with comp3 gap  (typically a path from a "where" question or a prepositional phrase)
    ;; where did he come from
    ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar)
-     (main +) (gap (% ?s4 (var ?!gapvar) (case ?ccase) (agr ?gapagr) (sem ?compsem) (ptype ?ptype) (arg ?arg)
+	 (main +) (gap (% ?s4 (var ?!gapvar) (case ?ccase) (agr ?gapagr) (sem ?compsem) (ptype ?ptype)
+			  (arg ?arg) (status ?status) ; status is matched in wh-q2
 		      ))
      (var ?v) 
      (class ?c) (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1753,7 +1768,7 @@
    ;; and then the direct object can come after the particle
    ;; the double matching is necessary to differentiate from the cases where there is a non-empty particle
    ((vp- (subj ?subj) (subjvar ?subjvar)  (dobjvar ?dobjvar)
-     (main +) (gap (% ?s4 (var ?!gapvar) (case ?ccase) (agr ?gapagr) (sem ?compsem) (ptype ?ptype) (arg ?arg)
+     (main +) (gap (% ?s4 (var ?!gapvar) (case ?ccase) (agr ?gapagr) (sem ?compsem) (ptype ?ptype) (arg ?arg) (status ?status) ; status is matched in wh-q2
 		      ))
      (var ?v) 
      (class ?c) (constraint (& (lsubj ?subjvar) (lobj ?dobjvar)
@@ -1896,7 +1911,8 @@
     ;(advbl (particle +) (var ?adv-v)  (arg ?v) (argument (% s (sem ?sem))) (gap -))
     (advbl (particle +) (particle-role-map manner) (var ?adv-v) (arg ?v) 
 	   (argument (% s (sem ?sem))) (gap -)
-	   (sem ?asem))
+     ;;(sem ?asem)     ;; I think this is a mistake - copied from the RESULT rule
+     )
     ?dobj
     ?comp
     )
@@ -2547,7 +2563,9 @@
 	    (sem ?sem) (tma ?tma)
 	    (transform ?transform)
 	    ))
-     (gap (% ?!s3 (case ?dcase) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap -)))
+     (gap (% ?!s3 (case ?dcase) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap -) (status ?status-out)))  ; status is matched in wh-q2
+     ;(gap (% PRED (case ?dcase) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap -) (status ?status-out)))  ; status is matched in wh-q2
+
      (advbl-needed ?avn)
      )
     -s-ynq-be-gap> 0.98
@@ -2569,7 +2587,9 @@
 	   (subj ?subj) (subj (% ?s1 (var ?subjvar) (sem ?subjsem) (agr ?subjagr) (lex ?subjlex) (gap -))) ;; note double matching required
 	   (iobj (% -))
 	   (part (% -))		 
-	   (dobj ?!dobj) (dobj (% ?!s3 (case (? dcase obj -)) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap ?gap)))
+	   (dobj ?!dobj)
+	   (dobj (% ?!s3 (case (? dcase obj -)) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap ?gap) (status ?dstatus)))
+	   ;(dobj (% PRED (case (? dcase obj -)) (agr ?dagr) (var ?dobjvar) (sem ?dobjsem) (gap ?gap) (status ?dstatus))) ; "what is the red block" should use S1 + -DECL-WH-QUESTION1>
 	   (comp3 (% -))
 	   ;;	   (comp3 ?comp) (comp3 (% ?s4 (case (? ccase obj -)) (var ?compvar) (sem ?compsem) ))
 	    
@@ -2578,6 +2598,7 @@
     (np (var ?subjvar) (case sub) (sem ?subjsem) (agr ?subjagr) (wh -) (sort (? !sort wh-desc)) (gap -) (lex ?subjlex) )  ;; lots of restrictions on this np to eliminate sentences like "is where the people"
     ;;?!dobj
     (add-to-conjunct (val (tense (? vf past pres fut))) (old ?tma) (new ?newtma))
+    (add-status (in1 ?dstatus) (out ?status-out))
     )
 
    
@@ -2691,7 +2712,8 @@
 					    ont::predicate)))) ; property-val: "regular" adverbs; position-reln: in; predicate: if, eventually
      (argument (% s (sem ?sem)))
      (result-only -)
-     (arg ?v) (var ?mod) (role ?advrole) (subcat -))
+     (arg ?v) (var ?mod) (role ?advrole) ;(subcat -) ; subcat: conditional (X if Y)
+     )
     (add-to-conjunct (val (mod ?mod)) (old ?con) (new ?newcon))
     )
 #||
@@ -2953,12 +2975,13 @@
     ((s (stype whq) (subjvar ?subjvar) (dobjvar ?dobjvar) (subj ?subj) (sem ?sem)
       (qtype q) (lf ?lf) (var ?v))
      -wh-q2>
-     (np (var ?npvar) (sem ?npsem) (wh q) (agr ?a) (case ?case))
+     (np (var ?npvar) (sem ?npsem) (wh q) (agr ?a) (case ?case) (status ?npstatus)); (class ?npclass))
      (head (s (stype ynq) (lf ?lf) (var ?v) (sem ?sem)
 	    (advbl-needed -)
 	    (subj ?subj)
 	    (subjvar ?subjvar) (dobjvar ?dobjvar)
-	    (gap (% np (sem ?npsem) (case ?case) (var ?npvar) (agr ?a))))
+	    (gap (% np (sem ?npsem) (case ?case) (var ?npvar) (agr ?a) (status ?npstatus); (class ?npclass)
+		    ))) ; match status for HAVE-PROPERTY
       )
      )
 
@@ -3040,6 +3063,23 @@
 	    (gap (% advbl (sem ?predsem) (var ?predvar) (arg ?dobjvar))))
        )
       )
+
+    #|
+    ; What kind of pizza is the supreme?
+    ((s (stype whq) (subjvar ?subjvar) (dobjvar ?dobjvar) (subj ?subj)
+      (qtype q) (lf ?lf) (var ?v))
+     -wh-q-predgap3>
+     (pred (var ?predvar) (sem ?predsem) (wh q) (arg ?subjvar)
+	   (LF (% ?s (CLASS ONT::MEMBERSHIP))) ; match the LF (not the sem) so that it must be MEMBERSHIP
+	   )
+     (head (s (stype ynq) (lf ?lf) (var ?v) 
+	    (advbl-needed -)
+	    (subjvar ?subjvar) (dobjvar ?dobjvar)
+	    (subj ?subj)
+	    (gap (% pred (sem ?predsem) (var ?predvar))))
+       )
+      )
+    |#
     
     ))
 
@@ -3326,7 +3366,9 @@
            (punctype (? x imp decl)))
       
       -vp-utt-inform> .95
-      (head (vp (gap -) (sem ?sem) (sem ($ f::situation (f::cause (? cs f::stimulating f::phenomenal f::mental -))))
+      (head (vp (gap -) (sem ?sem) (sem ($ f::situation (f::cause (? cs f::stimulating f::phenomenal f::mental -))
+					   (f::type ONT::NECESSITY) ; restrict this to "have" for now; we need to re-work this rule
+					   )) 
 	     (var ?v)
 	     (constraint ?constraint) (class ?class)
 	     (vform (? vform pres past fut)) (agr (? agr 1s 1p))
@@ -3417,7 +3459,7 @@
 	     ))
        (sem ?sem) (transform ?transform) 
       )
-     -ynq-aux-modal-nocomp> .96 ;; only execute if we have to so we don't explode the search space
+     -ynq-aux-modal-nocomp> .94 ; .96 ;; only execute if we have to so we don't explode the search space
      (head (aux 
 	    (tma-contrib ?tma-contrib)
 	    (sem-contrib ?sem-contrib)
@@ -3678,7 +3720,7 @@
 	     ))
        (sem ?sem) (transform ?transform) 
       )
-     -ynq-aux-modal-nocomp-neg> .96 ;; only execute if we have to so we don't explode the search space
+     -ynq-aux-modal-nocomp-neg> .94 ; .96 ;; only execute if we have to so we don't explode the search space
      (head (aux 
 	    (tma-contrib ?tma-contrib)
 	    (sem-contrib ?sem-contrib)  (lex ?lx)

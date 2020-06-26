@@ -173,9 +173,9 @@
             
             )
            (F::non-living
-	    (F::Artifact)
 	    )
            )
+	  (F::Artifact)
           
           )
  )
@@ -212,7 +212,7 @@
           (F::line)
           (F::strip)
           (F::spatial-region)
-          )
+          (-))
  )
 
 ;;;(define-feature Group))

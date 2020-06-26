@@ -1990,6 +1990,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	((ont::motion (:mod :mod1 :mod2 :mod3 :mod4))
 	 ((ont::pos-as-containment-reln) :location)
 	 ;((ont::direction) :manner) ; e.g., forward 
+	 ((ont::at-scale-value) :manner)
 	 ((ont::to-loc ont::position-reln ont::goal-reln ont::direction-reln) :result)
 	 ((ont::source-reln) :source))	
 	((ont::motion (:result :result1 :result2))
@@ -2025,7 +2026,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	((ont::phys-object (:mod :mod1 :mod2 :mod3 :mod4))
 	 ((ont::position-reln ) :location)
 	 ((ont::temporal-location) :time)
-	 ((ont::source-reln) :source)
+	 ;((ont::source-reln) :source)  ; make it :source only for events
 	 )
 	 ;;((ont::assoc-with) :assoc-with))
 	((ont::abstract-object (:mod :mod1 :mod2 :mod3 :mod4))
@@ -2033,7 +2034,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 ((ont::temporal-location) :time) ; prices in 2016
 	 ;; ((ont::assoc-with) :assoc-with)
 	 ((ont::degree-modifier) :degree)
-	 ((ont::source-reln) :source)
+	 ;((ont::source-reln) :source)
 	 )
 	((ont::situation-root (:mod :mod1 :mod2 :mod3 :mod4))
 	 ((ont::goal-reln) :result)
@@ -2049,6 +2050,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	 ((ont::acceptability-val) :evaluation)
 	 ((ont::pos-condition) :condition)
 	 ;;((ont::goal-reln) :goal)
+	 ((ont::at-scale-value) :manner) ; this goes before position-reln
 	 ((ont::position-reln ) :location)
 	 ((ont::accompaniment) :agent1)
 	 ((ont::by-means-of ont::with-instrument) :method)
@@ -2063,7 +2065,7 @@ usually not be 0 for speech. Also it finds one path quickly in order to set the 
 	((ont::referential-sem (:mod :mod1 :mod2 :mod3 :mod4))  ; agentnom and missing head
 	 ((ont::position-reln ) :location)
 	 ((ont::temporal-location) :time)
-	 ((ont::source-reln) :source)
+	 ;((ont::source-reln) :source)
 	 )	 
 	)
  )

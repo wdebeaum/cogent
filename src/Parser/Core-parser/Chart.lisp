@@ -192,7 +192,7 @@ separate instances of the chart/parser.")
       as often happens in LFs with several MOD functions"
   (or (constit-match rhs c)
       (progn
-	(format t "~%constit-match failed on ~S and ~S" rhs c)
+	(trace-msg 2 "~%constit-match failed on ~S and ~S" rhs c)
 	nil)))
 
 (defun getsubconstitnames (n constit)
@@ -280,6 +280,7 @@ separate instances of the chart/parser.")
      
      (defun put-in-chart (newentry)
        (setf (numberEntries *chart*) (+ (numberEntries *chart*) 1))
+       
        ;;(up-constit-count (entry-rule-id newentry))
        
        (if (and *beam-pruning-on*
@@ -485,7 +486,7 @@ separate instances of the chart/parser.")
 (defvar *semantic-skeleton-map* nil)
 (defvar *var-type-map* nil)
 (defvar *semantic-skeleton-score-factor* .1)
-(defvar *essential-roles* '(ont::agent ont::agent1 ont::affected ont::affected1 ont::neutral ont::neutral1 ont::formal ont::result ont::affected-result ont::of ont::val ont::figure ont::ground ont::experiencer ont::source ont::transient-result))
+(defvar *essential-roles* '(ont::agent ont::agent1 ont::affected ont::affected1 ont::neutral ont::neutral1 ont::formal ont::result ont::affected-result ont::of ont::val ont::figure ont::ground ont::experiencer ont::source ont::transient-result ont::orientation))
 
 ;; set this variable to a set of scored skeleton debugging
 (defvar *debug-skeleton-info* 
@@ -722,15 +723,19 @@ separate instances of the chart/parser.")
   (declare (ignore name))
   ;;  check if we could skip over constituents in the rule
   (let* ((c (entry-constit entry))
+	 (notes (get-value (arc-mother arc) 'notes))
 	 (cat (get-value c 'cat))
 	 (score 1))
+    
     (cond   
      ;;  skip unknown words
      ((and *ignore-unknown-words* (eq cat 'unknown))
       (extend-arc-end-position arc (entry-end entry) *unknown-word-penalty* 
                                (list 'unknown (car (get-value (entry-constit entry) 'input)))))
      ;; skip constituents with SKIP feature
-     ((and (eq (get-value c 'w::SKIP) '+) (setq score (compute-punc-score c (car (last (arc-pre arc))))))
+     ((and (eq (get-value c 'w::SKIP) '+)
+	   (setq score (compute-punc-score c (car (last (arc-pre arc)))))
+	   (not (assoc 'skipped notes))) ;; we only allow one skipped element per constituent
       (extend-arc-end-position arc (entry-end entry) score ;;(compute-penalty-for-skipping c) 
                                (list 'skipped entry))))
     ;; match entry  to RHS of rule in any event

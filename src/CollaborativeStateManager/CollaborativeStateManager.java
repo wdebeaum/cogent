@@ -45,6 +45,7 @@ public class CollaborativeStateManager extends StandardTripsModule  {
     private ReferenceHandler referenceHandler;
     private final String BASE_DIRECTORY = System.getenv("TRIPS_BASE");
     private String DATA_DIRECTORY = BASE_DIRECTORY + File.separator + "etc";
+    private String JSON_EVENT_GOAL_FILE = BASE_DIRECTORY + File.separator + "cabot" + File.separator + "event-goals.json";
     
     //
     // 3. You should provide the following two constructors,
@@ -98,10 +99,24 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 	referenceHandler = new ReferenceHandler();
 	goalPlanner = new GoalPlanner(referenceHandler);
 	ontologyRequester = new OntologyRequester(this);
-	ontologyReader = new OntologyReader();
-	ontologyReader.readEventOntologyFromFile(DATA_DIRECTORY + File.separator + "events");
-	ontologyReader.readGoalOntologyFromFile(DATA_DIRECTORY + File.separator + "goals-par");
-	ontologyReader.readModelOntologyFromFile(DATA_DIRECTORY + File.separator + "models");
+	
+	System.out.println("JSON filename: " + DATA_DIRECTORY + File.separator + "event-goals.json");
+	File jsonFile = new File(DATA_DIRECTORY + File.separator + "event-goals.json");
+	if (jsonFile.exists())
+	{
+		ontologyReader = new JSONOntologyReader();
+		((JSONOntologyReader)ontologyReader).readEventGoalJSONFile(DATA_DIRECTORY + File.separator + "event-goals.json");
+		System.out.println("Loaded JSON File");
+	}
+	else
+	{
+		System.out.println("Events filename: " + DATA_DIRECTORY + File.separator + "events");
+		ontologyReader = new OntologyReader();
+		ontologyReader.readEventOntologyFromFile(DATA_DIRECTORY + File.separator + "events");
+		ontologyReader.readGoalOntologyFromFile(DATA_DIRECTORY + File.separator + "goals-par");
+		ontologyReader.readModelOntologyFromFile(DATA_DIRECTORY + File.separator + "models");
+		System.out.println("Loaded non-JSON files");
+	}
 	
 	// Subscriptions
 	try {
@@ -245,6 +260,8 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 			System.out.println("Shutting down");
 			shutdown();
 		}
+		else if (content0.equalsIgnoreCase("restart"))
+			resetSystem();
 		else if (content0.equalsIgnoreCase("set-parameters"))
 		{
 
@@ -335,7 +352,7 @@ public class CollaborativeStateManager extends StandardTripsModule  {
 		{
 			KQMLObject replyWith = msg.getParameter(":REPLY-WITH");	
 			UpdateCSMHandler uch = new UpdateCSMHandler(msg, content, referenceHandler, goalPlanner,
-											 this);
+											 this, ontologyReader);
 			KQMLList responseContent = null;
 			try {
 				responseContent = uch.process();

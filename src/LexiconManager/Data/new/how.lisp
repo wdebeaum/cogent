@@ -14,8 +14,9 @@
     ((LF-PARENT ont::at-scale-value)
      (example "how are you")
       ;(TEMPL ppword-question-adv-pred-templ)
-     (TEMPL ppword-question-adv-NP-templ)
-     (syntax (W::IMPRO-CLASS ONT::STATUS) (W::HOW +))
+     ;(TEMPL ppword-question-adv-NP-templ)
+     (TEMPL ppword-question-adv-templ)
+     (syntax (W::IMPRO-CLASS ONT::LEVEL) (W::HOW +))
      )
     )
    )))
@@ -25,19 +26,21 @@
  :words (
   (W::HOW
    (SENSES
-    ((LF-PARENT ONT::DEGREE)
+    (;(LF-PARENT ONT::DEGREE)
+     (LF-PARENT ONT::AT-SCALE-VALUE)
      (example "how blue is it")
-     (SYNTAX (W::IMPRO-CLASS ONT::degree) (W::HOW +))
+     ;(SYNTAX (W::IMPRO-CLASS ONT::degree) (W::HOW +))
+     (syntax (W::IMPRO-CLASS ONT::LEVEL) (W::HOW +))
      (SEM (F::information F::information-content))
      (templ ppword-question-adv-how-templ)
-     (preference .97) ;; prefer method sense
+     ;(preference .97) ;; prefer method sense
      )
     )
    )
 ))
 
 
-
+#|
 (define-words :pos W::adv :templ PPWORD-QUESTION-ADV-TEMPL
  :words (
    ((W::HOW w::far)
@@ -54,6 +57,7 @@
     )
    )
 ))
+|#
 
 #|
 (define-words :pos W::n :templ PPWORD-N-TEMPL
@@ -82,6 +86,7 @@
 ))
 ||#
 
+#|
 (define-words :pos W::adv :templ PPWORD-QUESTION-ADV-TEMPL
  :words (
    ((W::HOW w::long)
@@ -97,3 +102,4 @@
     )
    )
 ))
+|#

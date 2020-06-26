@@ -41,7 +41,6 @@
      (TEMPL NEUTRAL-NEUTRAL1-NP-EQUAL-TEMPL)
      ;(PREFERENCE 0.96)
      )
-
     (  ;; the fact is he's happy
      (LF-PARENT ont::proposition-equal)
      (LF-FORM w::BE)

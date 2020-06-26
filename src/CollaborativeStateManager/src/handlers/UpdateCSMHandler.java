@@ -32,8 +32,8 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 	
 	public UpdateCSMHandler(KQMLPerformative msg, KQMLList content, 
 			ReferenceHandler referenceHandler,
-			GoalPlanner goalPlanner, CollaborativeStateManager csm) {
-		super(msg, content, referenceHandler, csm);
+			GoalPlanner goalPlanner, CollaborativeStateManager csm, OntologyReader or) {
+		super(msg, content, referenceHandler, csm, or);
 		this.goalPlanner = goalPlanner;
 		this.goalSelector = new GoalSelector(goalPlanner);
 		this.goalRemover = new GoalRemover(goalPlanner, goalSelector);
@@ -145,8 +145,32 @@ public class UpdateCSMHandler extends MessageHandler implements Runnable {
 		{
 			if (completedStatus)
 			{
-				goalPlanner.setCompleted(goalPlanner.getGoal(goalName));
-				System.out.println("Set goal " + goalName + " as completed via status-report");
+				Goal currentGoal = goalPlanner.getGoal(goalName);
+				if (ontologyReader.supportsEventualGoals())
+				{
+					
+					while (currentGoal != null && 
+							!ontologyReader.isEventualGoal(currentGoal.getInstanceOf()) && 
+							!currentGoal.systemTookInitiative())
+					{
+						
+						goalPlanner.setCompleted(goalPlanner.getGoal(currentGoal.getVariableName()));
+						System.out.println("Set non-eventual goal " + currentGoal.getVariableName() + " as completed via status-report");
+						currentGoal = currentGoal.getParent();
+					}
+					
+					if (currentGoal != null)
+					{
+						goalPlanner.setCompleted(goalPlanner.getGoal(currentGoal.getVariableName()));
+						System.out.println("Set eventual goal " + currentGoal.getVariableName() + " as completed via status-report");					
+					}
+				}
+				else
+				{
+					goalPlanner.setCompleted(goalPlanner.getGoal(goalName));
+					System.out.println("Set goal " + goalName + " as completed via status-report");
+					
+				}
 				return null;
 			}
 		}

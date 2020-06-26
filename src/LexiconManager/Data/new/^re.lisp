@@ -36,6 +36,7 @@
      (TEMPL NEUTRAL-NEUTRAL1-NP-EQUAL-TEMPL)
      
      )
+
     ;;;; .. there is a box
     ((LF-PARENT ONT::EXISTS)
      (LF-FORM W::be)

@@ -7,7 +7,8 @@
  :words (
    (W::POINT
    (SENSES
-    ((LF-PARENT ONT::shape)
+    (;(LF-PARENT ONT::shape)
+     (LF-PARENT ONT::shape-object)
      (example "the flag with the point on it")
      (meta-data :origin fruitcarts :entry-date 20050401 :change-date nil :wn ("point%1:25:02") :comments fruitcarts-03-3)
      )
@@ -27,7 +28,7 @@
    (SENSES
     ((LF-PARENT ONT::pointing-to)
      (SEM (F::Aspect F::stage-level) (F::Time-span F::extended))
-     (TEMPL NEUTRAL-NEUTRAL1-XP-TEMPL (xp (% W::PP (W::ptype (? pt W::toward w::towards))))) 
+     (TEMPL NEUTRAL-NEUTRAL1-XP-TEMPL (xp (% W::PP (W::ptype (? pt W::toward w::towards w::to))))) 
      (example "the triangle points towards the square")
      (meta-data :origin calo-ontology :entry-date 20051213 :change-date nil :comments Orient)
      )

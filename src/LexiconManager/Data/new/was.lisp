@@ -45,7 +45,6 @@
      (LF-FORM W::be)
      (TEMPL NEUTRAL-NEUTRAL1-NP-EQUAL-TEMPL)
      )
-
      (  ;; the fact was he's happy
      (lf-parent ont::proposition-equal) 
      (LF-FORM W::be)

@@ -230,6 +230,7 @@
 	      (mapcar #'(lambda (x)
 			  (insertHeadFeatures x (cdr format)))
 		      (merge-lists (mapcar #'(lambda (r)
+					       
 					       (build-rule r cgrammar))
 					   rules)))
 	      cgrammar))
@@ -256,7 +257,10 @@
 ;;   inserts the CAT feature for each constituent and builds all the variables.
 ;;   It also checks the format of the rule, and expands out any complex SEM features
 
+(defvar *rules-to-suppress* nil)
+
 (defun build-rule (r cg)
+  (when (not (member (cadr r) *rules-to-suppress*))
     (init-var-table)
     (if (not (verify-rule-id (cadr r) cg))
 	(parser-warn "Duplicate rule id, ~S, used in rule~%  ~S~%" (cadr r) r))
@@ -288,7 +292,7 @@
 		       (duplicate-feature-check lhs-constit r) (SECOND r)))
 
       (if (GapsDisabled) (list newrule)
-	(generate-gap-features-in-rule newrule))))
+	(generate-gap-features-in-rule newrule)))))
 
 (defun duplicate-feature-check (c r)
   "checks if same feature is defined twice in a constituent, and returns it if found"
@@ -305,8 +309,8 @@
 (defun verify-and-build-constit (constit rule head)
   ;;(declare (optimize (speed 3) (safety 0) (debug 0)))
   (let* ((temp (car constit))
-	 (cat (if (atom temp) temp
-		 (read-value temp rule)))) ;;  handles vars as CAT
+	 (cat ;;(if (atom temp) temp
+		 (read-value temp rule))) ;;  handles vars as CAT
     ;; extract out the LF graph specification
     (multiple-value-bind (lfg synfeats)
 	(split-list #'(lambda (x) (eq (car x) 'w::lfg)) (cdr constit))
@@ -1093,11 +1097,17 @@ then convert the result  to the lex-entry format that the old parser code expect
 
 (defun adjust-lex-probability (prob entry)
   ;; generally we just use the prob returned from the lexicon, except when
-  ;; its a tagged multiword that only has a SEM of REFERENTIAL-SEM
+  ;; its a tagged multiword that only has a SEM of REFERENTIAL-SEM or SITUATION-ROOT
   (let* ((lf (get-value entry 'w::LF))
 	 (lex (get-value entry 'w::lex))
 	 (core-lf (if (consp lf) (second lf) lf)))
-	(if (and (eq core-lf 'ont::referential-sem) (consp lex))
+    (if (and (member core-lf '(ont::referential-sem ont::situation-root))
+	     ;; a multiword as a list of words or a hyphenated symbol
+	     (or (consp lex)
+		 (and (symbolp lex)
+		      (find-if #'(lambda (x) (eq x #\-)) (coerce (symbol-name lex) 'list))
+		      (not (intersection '(#\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\0) (coerce (symbol-name lex) 'list)))
+		      )))  
 	    (* prob .96)
 	    prob)))
 

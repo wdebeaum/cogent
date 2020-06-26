@@ -676,7 +676,7 @@
 	 (context)
 	 (lfs (list content))
 	 (hyps))
-    (when (not (member sender '(graphviz dagent imagedisplay chartdisplay graphdisplay))) ; ignore messages from these modules
+    (when (not (member sender '(graphviz dagent imagedisplay chartdisplay graphdisplay pdfextractor pdflearn))) ; ignore messages from these modules
       (if dstate 
 	  (when (not (process-lf-in-state lfs hyps context newchannel nil user uttnum))
 	    (if (state-implicit-confirm dstate)

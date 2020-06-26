@@ -18,6 +18,7 @@ SRCS = 	CollaborativeStateManager.java \
 	src/handlers/TakeInitiativeHandler.java \
 	src/extractors/OntologyReader.java \
 	src/extractors/TermExtractor.java \
+	src/extractors/JSONOntologyReader.java \
 	src/handlers/QueryCSMHandler.java \
 	src/handlers/UpdateCSMHandler.java \
 	src/states/Goal.java \
@@ -38,7 +39,7 @@ CLASSES = $(SRCS:.java=.class)
 CONFIGDIR=../config
 include $(CONFIGDIR)/defs.mk
 # HACK to work around stuff in ./src/ being in the wrong place in TRIPS.Causalizer.jar
-EXTRA_CLASSPATH = $(prefix)/src/CollaborativeStateManager/src:$(etcdir)/java/TRIPS.JavaWrapper.jar
+EXTRA_CLASSPATH = $(prefix)/src/CollaborativeStateManager/src
 include $(CONFIGDIR)/java/prog.mk
 
 install::

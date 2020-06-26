@@ -2,7 +2,7 @@
 ;;;; messages.lisp for PlowAgent
 ;;;;
 ;;;;
-;;;; Time-stamp: <Tue Aug 14 18:15:19 CDT 2018 james>
+;;;; Time-stamp: <Thu Feb 20 08:58:22 EST 2020 james>
 ;;;;
 
 (in-package :dagent)
@@ -105,6 +105,14 @@
 
 (defcomponent-handler
   '(tell &key :content (start-conversation . *))
+     #'(lambda (msg args)
+	 (declare (ignore msg))
+	 (restart-dagent)
+      )
+  :subscribe t)
+
+(defcomponent-handler
+  '(request &key :content (restart . *))
      #'(lambda (msg args)
 	 (declare (ignore msg))
 	 (restart-dagent)

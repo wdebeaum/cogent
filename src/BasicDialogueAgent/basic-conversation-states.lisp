@@ -36,7 +36,7 @@
 ; thanks, bye
 (add-segment 'thanks
 	     (segment
-	       :trigger '((ONT::SPEECHACT ?!sa (? a ONT::SA_ACK ONT::SA_THANK ONT::SA_WELCOME ONT::CLOSE))
+	       :trigger '((ONT::SPEECHACT ?!sa (? a ONT::SA_ACK ONT::SA_THANK ONT::SA_WELCOME)); ONT::CLOSE))
 			  -thanks1>
 			  (next))
 	       :start-state 'segmentend
@@ -49,6 +49,16 @@
 	       :trigger '((ONT::SPEECHACT ?!sa ONT::GREET :CONTENT (ONT::GOODBYE :CONTENT ?!c))
 			  -goodbye1>
 			  (next))
+	       :start-state 'segmentend
+	      )
+	     )
+
+; goodbye
+(add-segment 'thanks
+	     (segment
+	       :trigger '((ONT::SPEECHACT ?!sa ONT::CLOSE)
+			  -goodbye1b>
+			  (generate :content (ONT::CLOSE)))
 	       :start-state 'segmentend
 	      )
 	     )

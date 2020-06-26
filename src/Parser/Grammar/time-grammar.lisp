@@ -331,7 +331,7 @@
       -units-per-period> 
       (head (np (lf ?lf) (sort unit-measure) (wh -) (var ?v1) (sem ?sem1) (class ?cl)
 	       ))
-     (advbl (var ?per) (lf (% prop (class ont::iteration-period)))
+     (advbl (var ?per) (lf (% prop (class ont::iteration-period))) (gap -)
       ))
 
     ;; $125 a share
@@ -352,6 +352,25 @@
       (sem ?sem2) (mass count)
       ))
 
+    ;; 3 mm over 2 days
+    ((np (LF (% description (var *) (class ont::rate) (status ont::indefinite)
+		(constraint (& (quantity-abstr ?v1) (over-unit ?per)))))
+      (var *) (case (? case sub obj)) (SORT unit-measure) (AGR 3s)
+      (time-converted +) (lex ?x) (class ont::rate) ;(class ?cl)
+      (sem ($ f::abstr-obj (f::intentional -) (f::information -) (f::mobility -) 
+	      (f::type ont::rate) (f::scale ont::rate-scale)))
+      (ratenumsem ?sem1)
+      (ratedenomsem ?sem2)
+       )
+     -units-per-period3> .98
+     (head (np (lf ?lf) (sort unit-measure) (wh -) (var ?v1) (lex ?x) (sem ?sem1) (class ?cl)
+	       (ellided -)
+	       ))
+     (word (lex (? l w::over)))
+     (np (agr 3s) (var ?per) (lf (% description (status ont::indefinite)))
+      (sem ?sem2) (mass count) (sort unit-measure)
+      ))
+    
     ;; Twice a week
     ((np (LF (% description (var *) (class ont::rate) (status ont::indefinite)
 		(constraint (& (repeats ?v1) (over-period ?per)))))
@@ -385,15 +404,17 @@
 	(ratedenomsem ?sem2)
 	)
        -units-slash-time>
-       (head (np (lf ?lfd) (sort unit-measure) (wh -) (var ?v1)
+       (head (np (lf ?lfd) ;(sort unit-measure)  ; allow plants as a "unit": 3 plants/m^2
+		 (wh -) (var ?v1)
 		 (sem ?sem1)
 	          ))
        (punc (lex (? l slash punc-slash)))
        (n (w::agr (? agr w::3s w::3p))  ; km is 3p: e.g., 5km
 	  (var ?v)	(LF ?per) (mass count)
 	  ;(sem ($ f::time (f::scale ont::duration-scale)))
-	  (sem ($ (? t f::time f::abstr-obj) (f::scale ont::measure-scale)))
-	  (sem ?sem2)
+	  (sem ($ (? t f::time f::abstr-obj) (f::scale (? sc ont::measure-scale ont::time-measure-scale))
+		  ))
+	  (sem ?sem2) (sort unit-measure)
 	))
   
     ;; e.g., the gdp / gtp ratio
@@ -534,7 +555,7 @@
       )
      -repetition-number-advbll>
      (head (np (lex W::times) (VAR ?v)
-	       (LF (% description (class (? xx ont::quantity ont::rate)) (constraint ?con)))))
+	       (LF (% description (class (? xx ont::quantity-abstr ont::rate)) (constraint ?con))))) ; this probably doesn't work any more
      (compute-sem-features (lf ont::repetition) (sem ?sem))
      (add-to-conjunct (val (FIGURE ?argvar)) (old ?con) (new ?newcon))
      )
@@ -617,7 +638,7 @@
     ;;  Special construction for last year/next week/ etc which doesn't seem to generalize to non-temporal
     ((np (var ?v) (sort pred) (agr 3s) (lex ?n_lex)
       (LF (% description (var ?v) (status ont::definite)
-	     (class ont::time-loc) (constraint (& (proform ?lex) (extent ?class))) (sem ($ f::time)))) ;(f::time-scale F::INTERVAL)))))
+	     (class ont::time-loc) (constraint (& (mod ?adjv) (proform ?lex) (extent ?class))) (sem ($ f::time)))) ;(f::time-scale F::INTERVAL)))))
       (class ont::time-loc)
       (sem ($ f::time))) ;(f::time-scale F::INTERVAL))))
       -next-last-time1> 1
@@ -652,7 +673,7 @@
      (art (lex the))
      (adjp (lex (? lex next last))
        (var ?adjv) (arg ?valvar))
-     (Head (np (sem ?valsem) (var ?v) (sort unit-measure) (restr ?r)
+     (Head (np (var ?v) (sort unit-measure) (restr ?r)
 	       (sem ($ f::abstr-obj (f::scale ont::DURATION-SCALE)))
 	       ))
      
@@ -1811,7 +1832,7 @@
     ;;  "sq ft: 5000", "population: 1000"
     ((NP (LF (% description (STATUS ONT::INDEFINITE)
 		(VAR ?v) (SORT unit-measure)
-		(CLASS (:* ONT::quantity ?sc))
+		(CLASS (:* ONT::quantity-abstr ?sc))
 		(CONSTRAINT ?constr) (argument ?argument)
 		(sem ?sem) (unit-spec +)
 		))

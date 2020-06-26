@@ -312,4 +312,15 @@ public class OntologyReader {
 		
 		return false;
 	}
+	
+	public boolean isEventualGoal(String goalType)
+	{
+		// Not supported by this goal specification
+		return false;
+	}
+	
+	public boolean supportsEventualGoals()
+	{
+		return false;
+	}
 }

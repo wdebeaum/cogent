@@ -10,18 +10,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.simple.parser.*;
 
 import TRIPS.KQML.KQMLList;
 import TRIPS.KQML.KQMLObject;
 import states.ActType;
 
-public class JSONOntologyReader {
+public class JSONOntologyReader extends OntologyReader {
 
 	private HashMap<String,GoalSpecification> ontTypeToGoalSpecification;
 	private HashMap<String,GoalSpecification> idToGoalSpecification;
@@ -59,7 +59,7 @@ public class JSONOntologyReader {
 		{
 			System.err.println("Could not open goal file " + filename.toString() + " for reading.");
 			ioe.printStackTrace();
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			System.err.println("Could not parse goal file " + filename.toString() + " for reading.");
 			e.printStackTrace();
 		} finally {
@@ -125,6 +125,19 @@ public class JSONOntologyReader {
             	speechActToGoalSpecification.get(gs.speechAct).add(gs);
             }
             
+            if (goal.containsKey("args"))
+            {
+            	Map readMap = (Map)goal.get("args");
+            	
+            	for (Object key : readMap.keySet())
+            	{
+            		String keyString = (String)key;
+            		JSONArray value = (JSONArray)readMap.get(key);
+            		gs.args.put(keyString, new ArrayList<String>());
+            		gs.args.get(keyString).addAll(value);
+            	}
+            }
+            
             idToGoalSpecification.put(id, gs);
             
         }
@@ -135,6 +148,9 @@ public class JSONOntologyReader {
         		gs.parent = idToGoalSpecification.get(gs.parentId);
         		
         }
+        System.out.println("Events read:");
+        for (String event: events.keySet())
+        	System.out.println(event);
 	}
 	
 	public List<String> getRootEvents()
@@ -206,9 +222,30 @@ public class JSONOntologyReader {
 	
 	public boolean isGoalWithArgument(String goalType, String argument)
 	{
-
-		return ontTypeToGoalSpecification.containsKey(goalType.toUpperCase()) &&
-				!ontTypeToGoalSpecification.get(goalType.toUpperCase()).args.isEmpty();
+		// TODO: Too generic, doesn't use argument for ont goals
+		if (ontTypeToGoalSpecification.containsKey(goalType.toUpperCase()) &&
+				!ontTypeToGoalSpecification.get(goalType.toUpperCase()).args.isEmpty())
+			return true;
+		
+		if (speechActToGoalSpecification.containsKey(goalType.toUpperCase()))
+		{
+		
+			for (GoalSpecification gs : speechActToGoalSpecification.get(goalType.toUpperCase()))
+			{
+				// Only look at neutrals for now
+				if (!gs.args.containsKey("neutral"))
+				{
+					System.out.println("No neutral args found");
+					continue;
+				}
+				for (String neutralArg : gs.args.get("neutral"))
+					if (neutralArg.equalsIgnoreCase(argument))
+						return true;
+				
+				System.out.println("No matching args found");
+			}
+		}
+		return false;
 	}
 	
 	
@@ -242,6 +279,23 @@ public class JSONOntologyReader {
 		}
 		
 		return false;
+	}
+	
+	public boolean isEventualGoal(String goalType)
+	{
+		if (ontTypeToGoalSpecification.containsKey(goalType.toUpperCase()))
+		{
+			GoalSpecification gs = ontTypeToGoalSpecification.get(goalType.toUpperCase());
+			return gs.eventual;
+				
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean supportsEventualGoals()
+	{
+		return true;
 	}
 	
 }
