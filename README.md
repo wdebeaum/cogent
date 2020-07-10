@@ -1,6 +1,6 @@
 # Cogent git mirror #
 
-Cogent is a **co**llaborative **gen**eric **t**rips CVS module. The project is funded by DARPA under the Communication with Computers (CwC) program.
+Cogent is a **co**llaborative **gen**eric **t**rips CVS module. The project is funded by DARPA under the Communication with Computers (CwC) program. A list of existing systems based on Cogent, and demonstrations thereof, can be found [here](http://trips.ihmc.us/cogent/video/).
 
 This git repo is a mirror of the TRIPS `cogent` CVS module.
 
